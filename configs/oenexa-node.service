@@ -1,0 +1,42 @@
+# systemd service unit for OENEXA node
+# ─────────────────────────────────────────────────────────────────────────────
+# Install:
+#   sudo cp configs/oenexa-node.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now oenexa-node
+#
+# Logs:
+#   journalctl -u oenexa-node -f
+
+[Unit]
+Description=OENEXA (OEN) Quantum-Shielded Full Node
+Documentation=https://github.com/oenexa/oenexa
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=oenexa
+Group=oenexa
+
+# Binary location (adjust if installed elsewhere).
+ExecStart=/usr/local/bin/oenexa-node start \
+    --config /etc/oenexa/config.toml \
+    --datadir /var/lib/oenexa
+
+EnvironmentFile=-/etc/oenexa/environment
+
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
+# Security hardening.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/oenexa
+ProtectHome=read-only
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
