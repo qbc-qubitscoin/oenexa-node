@@ -99,6 +99,7 @@ func (mp *Mempool) Remove(hashHex string) {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	mp.remove(hashHex)
+	mp.rebuildHeap()
 }
 
 func (mp *Mempool) remove(hashHex string) {
@@ -119,7 +120,9 @@ func (mp *Mempool) remove(hashHex string) {
 	if len(mp.bySender[senderKey]) == 0 {
 		delete(mp.bySender, senderKey)
 	}
-	// Rebuild heap (simple approach acceptable for prototype).
+}
+
+func (mp *Mempool) rebuildHeap() {
 	mp.heap = make(txHeap, 0, len(mp.txs))
 	for _, t := range mp.txs {
 		mp.heap = append(mp.heap, t)
@@ -134,6 +137,7 @@ func (mp *Mempool) PurgeCommitted(committed []*core.Transaction) {
 	for _, tx := range committed {
 		mp.remove(crypto.ToHex(tx.Hash))
 	}
+	mp.rebuildHeap()
 }
 
 // Size returns the current number of transactions in the pool.
