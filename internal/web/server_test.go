@@ -30,8 +30,8 @@ func TestHandler_RootReturnsIndex(t *testing.T) {
 	}
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "QubitsCoin") {
-		t.Errorf("body missing 'QubitsCoin', got: %s", body[:min(len(body), 100)])
+	if !strings.Contains(body, "OENEXA") {
+		t.Errorf("body missing 'OENEXA', got: %s", body[:min(len(body), 100)])
 	}
 }
 
