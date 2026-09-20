@@ -2,7 +2,6 @@ package state
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"sort"
 	"sync"
@@ -14,7 +13,7 @@ import (
 // DB StateDB is an in-memory trie-like account store protected by a mutex.
 type DB struct {
 	mu             sync.RWMutex
-	accounts       map[string]*Account // address hex -> account
+	accounts       map[[crypto.AddressSize]byte]*Account // address -> account
 	shieldedPool   uint64              // Total nano-OEN in the shielded pool
 	nullifiers     map[[32]byte]bool   // Spent note nullifiers
 	commitmentTree *shielded.NoteCommitmentTree
@@ -23,7 +22,7 @@ type DB struct {
 // NewStateDB creates an empty state database.
 func NewStateDB() *DB {
 	return &DB{
-		accounts:       make(map[string]*Account),
+		accounts:       make(map[[crypto.AddressSize]byte]*Account),
 		nullifiers:     make(map[[32]byte]bool),
 		commitmentTree: shielded.NewNoteCommitmentTree(),
 	}
@@ -33,8 +32,7 @@ func NewStateDB() *DB {
 func (s *DB) GetAccount(addr [crypto.AddressSize]byte) *Account {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	key := crypto.ToHex(addr)
-	if a, ok := s.accounts[key]; ok {
+	if a, ok := s.accounts[addr]; ok {
 		return a.Clone()
 	}
 	return &Account{}
@@ -44,7 +42,7 @@ func (s *DB) GetAccount(addr [crypto.AddressSize]byte) *Account {
 func (s *DB) SetAccount(addr [crypto.AddressSize]byte, acc *Account) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.accounts[crypto.ToHex(addr)] = acc.Clone()
+	s.accounts[addr] = acc.Clone()
 }
 
 // GetBalance returns the oenexa balance of an address.
@@ -61,15 +59,14 @@ func (s *DB) GetNonce(addr [crypto.AddressSize]byte) uint64 {
 func (s *DB) Credit(addr [crypto.AddressSize]byte, amount uint64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	key := crypto.ToHex(addr)
-	acc := s.accounts[key]
+	acc := s.accounts[addr]
 	if acc == nil {
 		acc = &Account{}
 	} else {
 		acc = acc.Clone()
 	}
 	acc.Balance += amount
-	s.accounts[key] = acc
+	s.accounts[addr] = acc
 }
 
 // CommitRoot computes a deterministic state root = SHA-3-256 (sorted account entries + shielded state).
@@ -77,17 +74,26 @@ func (s *DB) CommitRoot() [crypto.HashSize]byte {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	keys := make([]string, 0, len(s.accounts))
+	
+	// Compute hashes directly without string hex conversion
+	var keys [][crypto.AddressSize]byte
 	for k := range s.accounts {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+	sort.Slice(keys, func(i, j int) bool {
+		for x := 0; x < crypto.AddressSize; x++ {
+			if keys[i][x] != keys[j][x] {
+				return keys[i][x] < keys[j][x]
+			}
+		}
+		return false
+	})
 
 	var buf []byte
 	b8 := make([]byte, 8)
 	for _, k := range keys {
 		a := s.accounts[k]
-		buf = append(buf, []byte(k)...)
+		buf = append(buf, k[:]...)
 		binary.BigEndian.PutUint64(b8, a.Nonce)
 		buf = append(buf, b8...)
 		binary.BigEndian.PutUint64(b8, a.Balance)
@@ -225,13 +231,7 @@ func (s *DB) Len() int {
 func (s *DB) ForEach(fn func(addr [crypto.AddressSize]byte, acc *Account)) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	for hexKey, acc := range s.accounts {
-		b, err := hex.DecodeString(hexKey)
-		if err != nil || len(b) != crypto.AddressSize {
-			continue
-		}
-		var addr [crypto.AddressSize]byte
-		copy(addr[:], b)
+	for addr, acc := range s.accounts {
 		fn(addr, acc.Clone())
 	}
 }
@@ -245,7 +245,7 @@ func (s *DB) Apply(other *DB) {
 	defer other.mu.RUnlock()
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.accounts = make(map[string]*Account, len(other.accounts))
+	s.accounts = make(map[[crypto.AddressSize]byte]*Account, len(other.accounts))
 	for k, v := range other.accounts {
 		s.accounts[k] = v.Clone()
 	}

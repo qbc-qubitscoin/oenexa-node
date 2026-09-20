@@ -125,8 +125,7 @@ func TestMempool_Get(t *testing.T) {
 	mp := New(0)
 	tx := signedTx(t, walletA, walletB.Address, 0, core.MinGasPrice)
 	_ = mp.Add(tx)
-	hashHex := crypto.ToHex(tx.Hash)
-	got, ok := mp.Get(hashHex)
+	got, ok := mp.Get(tx.Hash)
 	if !ok {
 		t.Fatal("Get: tx not found")
 	}
@@ -139,7 +138,7 @@ func TestMempool_Remove(t *testing.T) {
 	mp := New(0)
 	tx := signedTx(t, walletA, walletB.Address, 0, core.MinGasPrice)
 	_ = mp.Add(tx)
-	mp.Remove(crypto.ToHex(tx.Hash))
+	mp.Remove(tx.Hash)
 	if mp.Size() != 0 {
 		t.Errorf("after Remove: want size 0, got %d", mp.Size())
 	}
@@ -156,7 +155,7 @@ func TestMempool_PurgeCommitted(t *testing.T) {
 	if mp.Size() != 1 {
 		t.Errorf("after PurgeCommitted: want size 1, got %d", mp.Size())
 	}
-	if _, ok := mp.Get(crypto.ToHex(tx1.Hash)); ok {
+	if _, ok := mp.Get(tx1.Hash); ok {
 		t.Fatal("purged tx should no longer be in the pool")
 	}
 }
@@ -184,7 +183,7 @@ func TestMempool_Size_AfterOperations(t *testing.T) {
 	if mp.Size() != 1 {
 		t.Fatalf("after Add: want 1, got %d", mp.Size())
 	}
-	mp.Remove(crypto.ToHex(tx.Hash))
+	mp.Remove(tx.Hash)
 	if mp.Size() != 0 {
 		t.Fatalf("after Remove: want 0, got %d", mp.Size())
 	}

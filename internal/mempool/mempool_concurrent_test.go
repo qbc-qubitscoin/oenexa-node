@@ -184,15 +184,15 @@ func TestConcurrentGetAndRemove(t *testing.T) {
 	if err := mp.Add(tx); err != nil {
 		t.Fatalf("Add: %v", err)
 	}
-	hashHex := crypto.ToHex(tx.Hash)
+	
 
 	var wg sync.WaitGroup
 	for i := 0; i < 20; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, _ = mp.Get(hashHex)
-			mp.Remove(hashHex)
+			_, _ = mp.Get(tx.Hash)
+			mp.Remove(tx.Hash)
 		}()
 	}
 	wg.Wait()
@@ -236,7 +236,7 @@ func TestLen_EqualsSize(t *testing.T) {
 func TestRemove_NonExistentIsNoOp(t *testing.T) {
 	mp := New(100)
 	// Should not panic
-	mp.Remove("nonexistent_hash")
+	mp.Remove([32]byte{})
 	if mp.Size() != 0 {
 		t.Error("pool should be empty after removing non-existent tx")
 	}
@@ -252,7 +252,7 @@ func TestGet_FindsAddedTx(t *testing.T) {
 	tx := makeSignedTx(t, w, w2.Address, 0, 42, core.MinGasPrice)
 	_ = mp.Add(tx)
 
-	found, ok := mp.Get(crypto.ToHex(tx.Hash))
+	found, ok := mp.Get(tx.Hash)
 	if !ok {
 		t.Fatal("Get: expected to find tx")
 	}
@@ -263,7 +263,7 @@ func TestGet_FindsAddedTx(t *testing.T) {
 
 func TestGet_MissingReturnsFalse(t *testing.T) {
 	mp := New(100)
-	_, ok := mp.Get("missing_hash_hex")
+	_, ok := mp.Get([32]byte{})
 	if ok {
 		t.Error("Get on missing hash should return false")
 	}

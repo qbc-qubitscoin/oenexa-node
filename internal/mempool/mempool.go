@@ -18,8 +18,8 @@ const (
 // Mempool is a thread-safe priority queue of unconfirmed transactions.
 type Mempool struct {
 	mu       sync.RWMutex
-	txs      map[string]*core.Transaction   // hash hex -> tx
-	bySender map[string][]*core.Transaction // addr hex -> txs
+	txs      map[[crypto.HashSize]byte]*core.Transaction   // hash -> tx
+	bySender map[[crypto.AddressSize]byte][]*core.Transaction // addr -> txs
 	heap     txHeap
 	maxSize  int
 }
@@ -30,8 +30,8 @@ func New(maxSize int) *Mempool {
 		maxSize = DefaultMaxSize
 	}
 	mp := &Mempool{
-		txs:      make(map[string]*core.Transaction),
-		bySender: make(map[string][]*core.Transaction),
+		txs:      make(map[[crypto.HashSize]byte]*core.Transaction),
+		bySender: make(map[[crypto.AddressSize]byte][]*core.Transaction),
 		maxSize:  maxSize,
 	}
 	heap.Init(&mp.heap)
@@ -50,20 +50,19 @@ func (mp *Mempool) Add(tx *core.Transaction) error {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 
-	key := crypto.ToHex(tx.Hash)
-	if _, exists := mp.txs[key]; exists {
+	if _, exists := mp.txs[tx.Hash]; exists {
 		return errors.New("duplicate transaction")
 	}
 	if len(mp.txs) >= mp.maxSize {
 		return errors.New("mempool full")
 	}
 
-	senderKey := crypto.ToHex(tx.From)
+	senderKey := tx.From
 	if len(mp.bySender[senderKey]) >= MaxSenderQueueLen {
 		return errors.New("sender queue full")
 	}
 
-	mp.txs[key] = tx
+	mp.txs[tx.Hash] = tx
 	mp.bySender[senderKey] = append(mp.bySender[senderKey], tx)
 	heap.Push(&mp.heap, tx)
 	return nil
@@ -87,32 +86,32 @@ func (mp *Mempool) Pending(n int) []*core.Transaction {
 }
 
 // Get retrieves a transaction by its hash hex string.
-func (mp *Mempool) Get(hashHex string) (*core.Transaction, bool) {
+func (mp *Mempool) Get(hash [crypto.HashSize]byte) (*core.Transaction, bool) {
 	mp.mu.RLock()
 	defer mp.mu.RUnlock()
-	tx, ok := mp.txs[hashHex]
+	tx, ok := mp.txs[hash]
 	return tx, ok
 }
 
 // Remove deletes a transaction by hash.
-func (mp *Mempool) Remove(hashHex string) {
+func (mp *Mempool) Remove(hash [crypto.HashSize]byte) {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
-	mp.remove(hashHex)
+	mp.remove(hash)
 	mp.rebuildHeap()
 }
 
-func (mp *Mempool) remove(hashHex string) {
-	tx, ok := mp.txs[hashHex]
+func (mp *Mempool) remove(hash [crypto.HashSize]byte) {
+	tx, ok := mp.txs[hash]
 	if !ok {
 		return
 	}
-	delete(mp.txs, hashHex)
+	delete(mp.txs, hash)
 
-	senderKey := crypto.ToHex(tx.From)
+	senderKey := tx.From
 	senderTxs := mp.bySender[senderKey]
 	for i, t := range senderTxs {
-		if crypto.ToHex(t.Hash) == hashHex {
+		if t.Hash == hash {
 			mp.bySender[senderKey] = append(senderTxs[:i], senderTxs[i+1:]...)
 			break
 		}
@@ -135,7 +134,7 @@ func (mp *Mempool) PurgeCommitted(committed []*core.Transaction) {
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 	for _, tx := range committed {
-		mp.remove(crypto.ToHex(tx.Hash))
+		mp.remove(tx.Hash)
 	}
 	mp.rebuildHeap()
 }

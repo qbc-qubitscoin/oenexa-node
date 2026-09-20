@@ -148,9 +148,8 @@ func TestStateDB_CommitRoot_EmptyIsConsistent(t *testing.T) {
 	}
 }
 
-func TestStateDB_ForEach_InvalidKey(t *testing.T) {
+func TestStateDB_ForEach(t *testing.T) {
 	st := NewStateDB()
-	st.accounts["not_hex_!@#$"] = &Account{Balance: 1}
 
 	addr := makeAddr(99)
 	st.SetAccount(addr, &Account{Balance: 100})
