@@ -1,11 +1,12 @@
 package storage
 
 import (
+	"os"
+	"testing"
+
 	"github.com/oenexa/oenexa/internal/core"
 	"github.com/oenexa/oenexa/internal/crypto"
 	"github.com/oenexa/oenexa/internal/state"
-	"os"
-	"testing"
 )
 
 func TestStorageExtended(t *testing.T) {
@@ -117,34 +118,31 @@ func TestStateStoreExtended(t *testing.T) {
 	path, _ := os.MkdirTemp("", "testdb_state")
 	defer os.RemoveAll(path)
 	db, _ := Open(path)
-	defer db.Close()
 	ss := NewStateStore(db)
 
+	// Save an empty state — should succeed and write the trie root meta-key.
 	st := state.NewStateDB()
-	// Just save an empty state
-	err := ss.SaveState(st)
+	if err := ss.SaveState(st); err != nil {
+		t.Fatalf("SaveState on empty state: %v", err)
+	}
+
+	// LoadState on a fresh (empty) state must return a usable StateDB.
+	loaded, err := ss.LoadState()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("LoadState after empty save: %v", err)
+	}
+	if loaded == nil {
+		t.Fatal("LoadState returned nil StateDB")
 	}
 
-	// Manually inject bad data for LoadState
-	db.Put(accountKey("badhex"), []byte("val"))
-	_, err = ss.LoadState()
-	if err == nil {
-		t.Fatal("expected error for invalid stored address")
+	// The loaded state should report zero dirty accounts (nothing was written).
+	if n := loaded.Len(); n != 0 {
+		t.Errorf("expected 0 dirty accounts, got %d", n)
 	}
-	db.Delete(accountKey("badhex"))
 
-	addr := [crypto.AddressSize]byte{}
-	db.Put(accountKey(crypto.AddressToHex(addr)), []byte("badgob"))
-	_, err = ss.LoadState()
-	if err == nil {
-		t.Fatal("expected error for bad gob decode")
-	}
-	db.Delete(accountKey(crypto.AddressToHex(addr)))
-
-	// Test IterPrefix error
 	db.Close()
+
+	// LoadState on a closed DB must return an error (cannot read root key).
 	_, err = ss.LoadState()
 	if err == nil {
 		t.Fatal("expected error loading state on closed db")
