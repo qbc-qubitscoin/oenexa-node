@@ -2,28 +2,28 @@ package core
 
 // Emission schedule constants.
 //
-// Total max supply: 100M QBC
-//   - 10M QBC pre-mined at genesis (10 %)
-//   - 90M QBC emitted as block rewards via halving schedule
+// Total max supply: 100M OEN
+//   - 10M OEN pre-mined at genesis (10 %)
+//   - 90M OEN emitted as block rewards via halving schedule
 //
 // Reward halves every HalvingInterval blocks.
 // Sum of the infinite geometric series:
 //
-//	InitialBlockReward * HalvingInterval * 2 = 45 QBC * 1,000,000 * 2 = 90M QBC ✓
+//	InitialBlockReward * HalvingInterval * 2 = 45 OEN * 1,000,000 * 2 = 90M OEN ✓
 const (
-	InitialBlockReward uint64 = 45 * OneQBC         // 45 QBC at genesis era
+	InitialBlockReward uint64 = 45 * OneOEN         // 45 OEN at genesis era
 	HalvingInterval    uint64 = 1_000_000           // halve every 1M blocks (~23 days at 2s/block)
-	GenesisPremine     uint64 = 10_000_000 * OneQBC // 10M QBC to bootstrap the validator
+	GenesisPremine     uint64 = 10_000_000 * OneOEN // 10M OEN to bootstrap the validator
 )
 
-// BlockReward returns the block subsidy (in qubits) at the given block height.
+// BlockReward returns the block subsidy (in oenexa) at the given block height.
 //
 // Height 0 (genesis) always returns 0 — genesis has no coinbase.
 // After 32 halving, the reward rounds down to 0 and stays there.
 //
-// Era 0: heights 1 – 1,000,000 → 45 QBC
-// Era 1: heights 1,000,001 – 2,000,000 → 22.5 QBC (integer: 22_500_000_000)
-// Era 2: heights 2,000,001 – 3,000,000 → 11.25 QBC …
+// Era 0: heights 1 – 1,000,000 → 45 OEN
+// Era 1: heights 1,000,001 – 2,000,000 → 22.5 OEN (integer: 22_500_000_000)
+// Era 2: heights 2,000,001 – 3,000,000 → 11.25 OEN …
 func BlockReward(height uint64) uint64 {
 	if height == 0 {
 		return 0
@@ -57,7 +57,7 @@ func TotalEmissionAt(height uint64) uint64 {
 	return total
 }
 
-// CirculatingSupply returns the total QBC in existence at the given height:
+// CirculatingSupply returns the total OEN in existence at the given height:
 // genesis pre-mine + block reward emission so far.
 func CirculatingSupply(height uint64) uint64 {
 	return GenesisPremine + TotalEmissionAt(height)

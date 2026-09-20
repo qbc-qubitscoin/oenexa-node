@@ -15,10 +15,10 @@ func TestNode_NewEphemeral(t *testing.T) {
 	cfg := config.Default()
 	cfg.Node.DataDir = t.TempDir()
 	cfg.Node.KeystoreFile = "keystore.json"
-	cfg.Node.MinerEnabled = false // no block production in this test
-	cfg.RPC.Enabled = false       // no RPC listener
+	cfg.Node.MinerEnabled = false      // no block production in this test
+	cfg.RPC.Enabled = false            // no RPC listener
 	cfg.P2P.ListenAddr = "127.0.0.1:0" // OS-assigned port
-	cfg.P2P.BootstrapPeers = nil  // no bootstrap dials
+	cfg.P2P.BootstrapPeers = nil       // no bootstrap dials
 	cfg.Metrics.Enabled = false
 
 	// Empty password → ephemeral wallet (not persisted).

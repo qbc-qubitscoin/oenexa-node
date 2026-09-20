@@ -1,14 +1,14 @@
-# QubitsCoin Testnet Configuration
+# OENEXA Testnet Configuration
 # ────────────────────────────────────────────────────────────────────────────
 # Use this config to join the public testnet.
-# Start with: qbc-node start --config configs/testnet.toml
+# Start with: oenexa-node start --config configs/testnet.toml
 
 [chain]
 network_id = 2
-name       = "QubitsCoin Testnet"
+name       = "OENEXA Testnet"
 
 [node]
-data_dir      = "~/.qbc-testnet"
+data_dir      = "~/.oenexa-testnet"
 keystore_file = "keystore.json"
 miner_enabled = false
 log_level     = "debug"   # more verbose on testnet
@@ -18,8 +18,8 @@ listen_addr   = "0.0.0.0:18765"
 external_addr = ""
 max_peers     = 50
 bootstrap_peers = [
-  "qbc-testnet-seed1.qubitscoin.io:18765",
-  "qbc-testnet-seed2.qubitscoin.io:18765",
+  "oenexa-testnet-seed1.oenexa.io:18765",
+  "oenexa-testnet-seed2.oenexa.io:18765",
 ]
 
 [rpc]
@@ -38,6 +38,6 @@ enabled     = true   # expose metrics on testnet for dashboards
 listen_addr = "0.0.0.0:19090"
 
 [upgrade]
-release_url    = "https://api.github.com/repos/qbc-qubitscoin/qubitscoin/releases/latest"
+release_url    = "https://api.github.com/repos/oen-oenexa/oenexa-node/releases/latest"
 check_interval = "30m"
 auto_apply     = false

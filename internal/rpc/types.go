@@ -1,4 +1,4 @@
-// Package rpc provides a JSON-RPC 2.0 HTTP API for the QBC node.
+// Package rpc provides a JSON-RPC 2.0 HTTP API for the OEN node.
 package rpc
 
 import "encoding/json"
@@ -101,11 +101,11 @@ type ChainInfo struct {
 
 // FeeEstimateResult holds the fee estimate for each tier.
 type FeeEstimateResult struct {
-	BaseFee         uint64 `json:"base_fee"`
-	UltraLowTip     uint64 `json:"ultra_low_tip"`
-	StandardTip     uint64 `json:"standard_tip"`
-	FastTip         uint64 `json:"fast_tip"`
-	TransferUltraLow uint64 `json:"transfer_ultra_low_qubits"`
-	TransferStandard uint64 `json:"transfer_standard_qubits"`
-	TransferFast     uint64 `json:"transfer_fast_qubits"`
+	BaseFee          uint64 `json:"base_fee"`
+	UltraLowTip      uint64 `json:"ultra_low_tip"`
+	StandardTip      uint64 `json:"standard_tip"`
+	FastTip          uint64 `json:"fast_tip"`
+	TransferUltraLow uint64 `json:"transfer_ultra_low_oenexa"`
+	TransferStandard uint64 `json:"transfer_standard_oenexa"`
+	TransferFast     uint64 `json:"transfer_fast_oenexa"`
 }

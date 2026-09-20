@@ -1,16 +1,16 @@
-# Legal and Privacy Review: QubitID Data Handling
+# Legal and Privacy Review: OenexaID Data Handling
 
-**Target**: QubitID Decentralized Identity System
+**Target**: OenexaID Decentralized Identity System
 **Phase**: 9
 **Regulatory Context**: GDPR (EU), CCPA (California), and equivalent global privacy regimes.
 
 ## 1. Scope of Review
-This document provides a simulated compliance review of the QubitID architecture regarding the handling of Personally Identifiable Information (PII) for KYC/AML and credentialing workflows.
+This document provides a simulated compliance review of the OenexaID architecture regarding the handling of Personally Identifiable Information (PII) for KYC/AML and credentialing workflows.
 
 ## 2. Architectural Findings
 
 ### 2.1 On-Chain Data Minimization
-**Design**: The QubitsCoin blockchain only stores Decentralized Identifiers (DIDs, which resolve to public keys) and cryptographic proofs. No plaintext or encrypted PII (names, dates of birth, national ID numbers) is ever stored on the public ledger.
+**Design**: The OENEXA blockchain only stores Decentralized Identifiers (DIDs, which resolve to public keys) and cryptographic proofs. No plaintext or encrypted PII (names, dates of birth, national ID numbers) is ever stored on the public ledger.
 **Legal Conclusion**: COMPLIANT. By keeping PII strictly off-chain, the network avoids the inherent conflict between blockchain immutability and data privacy laws.
 
 ### 2.2 The "Right to be Forgotten" (GDPR Article 17)
@@ -24,7 +24,7 @@ This document provides a simulated compliance review of the QubitID architecture
 ## 3. KYC/AML Regulatory Alignment
 
 ### 3.1 Financial Action Task Force (FATF) Recommendations
-The QubitID framework supports FATF Travel Rule compliance by allowing Virtual Asset Service Providers (VASPs) to exchange verifiable credentials establishing the identities of the originator and beneficiary, *prior* to executing the on-chain transfer on QubitsCoin.
+The OenexaID framework supports FATF Travel Rule compliance by allowing Virtual Asset Service Providers (VASPs) to exchange verifiable credentials establishing the identities of the originator and beneficiary, *prior* to executing the on-chain transfer on OENEXA.
 
 ## 4. Exit Criteria Status
 - **Legal Sign-Off**: Simulated sign-off achieved. The architecture structurally prevents on-chain GDPR violations.

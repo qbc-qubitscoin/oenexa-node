@@ -35,7 +35,7 @@ Every package in the blockchain codebase has achieved **100.0% statement coverag
 | 20 | `internal/contracts/multisig` | **100.0%** | FROZEN (Done) |
 | 21 | `internal/contracts/oracle` | **100.0%** | FROZEN (Done) |
 | 22 | `internal/contracts/quantumnet` | **100.0%** | FROZEN (Done) |
-| 23 | `internal/contracts/qubitid` | **100.0%** | FROZEN (Done) |
+| 23 | `internal/contracts/oenexaid` | **100.0%** | FROZEN (Done) |
 | 24 | `internal/contracts/rollups` | **100.0%** | FROZEN (Done) |
 | 25 | `internal/contracts/rwa` | **100.0%** | FROZEN (Done) |
 | 26 | `internal/contracts/sovereign` | **100.0%** | FROZEN (Done) |

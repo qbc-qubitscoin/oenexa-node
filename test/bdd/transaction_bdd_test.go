@@ -33,7 +33,7 @@ var _ = Describe("Transaction Lifecycle", func() {
 					senderWallet.Address,
 					receiverWallet.Address,
 					senderWallet.PublicKey,
-					0, 100*core.OneQBC, core.MinGasPrice,
+					0, 100*core.OneOEN, core.MinGasPrice,
 				)
 				Expect(tx.Sign(senderWallet.PrivateKey)).To(Succeed())
 				Expect(tx.Verify()).To(Succeed())
@@ -46,10 +46,10 @@ var _ = Describe("Transaction Lifecycle", func() {
 					senderWallet.Address,
 					receiverWallet.Address,
 					senderWallet.PublicKey,
-					0, 100*core.OneQBC, core.MinGasPrice,
+					0, 100*core.OneOEN, core.MinGasPrice,
 				)
 				Expect(tx.Sign(senderWallet.PrivateKey)).To(Succeed())
-				tx.Amount = 999_999 * core.OneQBC // tamper
+				tx.Amount = 999_999 * core.OneOEN // tamper
 				Expect(tx.Verify()).To(HaveOccurred())
 			})
 		})
@@ -76,7 +76,7 @@ var _ = Describe("Transaction Lifecycle", func() {
 			It("should return identical hashes", func() {
 				tx := core.NewTransfer(
 					senderWallet.Address, receiverWallet.Address,
-					senderWallet.PublicKey, 1, 50*core.OneQBC, core.MinGasPrice,
+					senderWallet.PublicKey, 1, 50*core.OneOEN, core.MinGasPrice,
 				)
 				Expect(tx.Sign(senderWallet.PrivateKey)).To(Succeed())
 				Expect(tx.ComputeHash()).To(Equal(tx.ComputeHash()))
@@ -139,12 +139,12 @@ var _ = Describe("Transaction Lifecycle", func() {
 		It("should set Version=1, Type=TxTransfer, and preserve all fields", func() {
 			tx := core.NewTransfer(
 				senderWallet.Address, receiverWallet.Address,
-				senderWallet.PublicKey, 7, 250*core.OneQBC, core.MinGasPrice,
+				senderWallet.PublicKey, 7, 250*core.OneOEN, core.MinGasPrice,
 			)
 			Expect(tx.Version).To(Equal(uint8(1)))
 			Expect(tx.Type).To(Equal(core.TxTransfer))
 			Expect(tx.Nonce).To(Equal(uint64(7)))
-			Expect(tx.Amount).To(Equal(uint64(250 * core.OneQBC)))
+			Expect(tx.Amount).To(Equal(uint64(250 * core.OneOEN)))
 			Expect(tx.GasLimit).To(Equal(core.GasTransfer))
 			Expect(tx.GasPrice).To(Equal(core.MinGasPrice))
 			Expect(tx.From).To(Equal(senderWallet.Address))

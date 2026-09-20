@@ -1,16 +1,16 @@
 package core
 
 import (
+	"github.com/oenexa/oenexa/internal/crypto"
 	"testing"
 	"time"
-	"github.com/oenexa/oenexa/internal/crypto"
 )
 
 func TestCore_TransactionBasicValidate(t *testing.T) {
 	w, _ := crypto.NewWallet()
 	tx := NewTransfer(w.Address, w.Address, w.PublicKey, 1, 10, MinGasPrice)
 	tx.Sign(w.PrivateKey)
-	
+
 	if err := tx.BasicValidate(); err != nil {
 		t.Fatalf("expected valid tx, got %v", err)
 	}
@@ -56,7 +56,7 @@ func TestCore_TransactionBasicValidate(t *testing.T) {
 		t.Errorf("expected invalid signature size, got %v", err)
 	}
 	tx.Signature = make([]byte, crypto.SignatureSize)
-	
+
 	// 7. Signature verify err -> from does not match public key
 	tx.From[0] ^= 0xFF
 	if err := tx.BasicValidate(); err == nil || err.Error() != "from address does not match the public key" {

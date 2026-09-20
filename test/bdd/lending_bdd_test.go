@@ -7,13 +7,13 @@ import (
 	"github.com/oenexa/oenexa/internal/contracts/lending"
 )
 
-var _ = Describe("QubitLend Protocol", func() {
+var _ = Describe("OenexaLend Protocol", func() {
 
-	var market *lending.QubitLend
+	var market *lending.OenexaLend
 
 	BeforeEach(func() {
-		market = lending.NewQubitLend()
-		market.UpdateOraclePrice(100) // default: 1 QBC = $100
+		market = lending.NewOenexaLend()
+		market.UpdateOraclePrice(100) // default: 1 OEN = $100
 	})
 
 	// ── Deposit Collateral ─────────────────────────────────────────────────
@@ -23,7 +23,7 @@ var _ = Describe("QubitLend Protocol", func() {
 			It("should create a position with the correct collateral", func() {
 				market.DepositCollateral("alice", 10)
 				Expect(market.Positions["alice"]).NotTo(BeNil())
-				Expect(market.Positions["alice"].CollateralQBC).To(Equal(uint64(10)))
+				Expect(market.Positions["alice"].CollateralOEN).To(Equal(uint64(10)))
 			})
 		})
 
@@ -31,7 +31,7 @@ var _ = Describe("QubitLend Protocol", func() {
 			It("should accumulate collateral", func() {
 				market.DepositCollateral("alice", 5)
 				market.DepositCollateral("alice", 5)
-				Expect(market.Positions["alice"].CollateralQBC).To(Equal(uint64(10)))
+				Expect(market.Positions["alice"].CollateralOEN).To(Equal(uint64(10)))
 			})
 		})
 	})
@@ -39,7 +39,7 @@ var _ = Describe("QubitLend Protocol", func() {
 	// ── Borrow QUSD ────────────────────────────────────────────────────────
 
 	Describe("BorrowQUSD", func() {
-		Context("given a user with 10 QBC collateral at $100 each ($1000 total)", func() {
+		Context("given a user with 10 OEN collateral at $100 each ($1000 total)", func() {
 			BeforeEach(func() {
 				market.DepositCollateral("alice", 10) // $1000 collateral
 			})
@@ -103,7 +103,7 @@ var _ = Describe("QubitLend Protocol", func() {
 
 				It("should zero out collateral and debt after liquidation", func() {
 					market.Liquidate("bob")
-					Expect(market.Positions["bob"].CollateralQBC).To(Equal(uint64(0)))
+					Expect(market.Positions["bob"].CollateralOEN).To(Equal(uint64(0)))
 					Expect(market.Positions["bob"].DebtQUSD).To(Equal(uint64(0)))
 				})
 			})
@@ -157,7 +157,7 @@ var _ = Describe("QubitLend Protocol", func() {
 
 	Describe("UpdateOraclePrice", func() {
 		It("should affect collateral value calculations", func() {
-			market.DepositCollateral("dave", 10)   // $1000 at $100
+			market.DepositCollateral("dave", 10) // $1000 at $100
 			Expect(market.BorrowQUSD("dave", 600)).To(BeTrue())
 
 			// Halve the price: $500 collateral, $600 debt → underwater

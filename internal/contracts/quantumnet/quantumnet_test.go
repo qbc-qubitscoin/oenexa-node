@@ -6,7 +6,7 @@ func TestQuantumnetExecution(t *testing.T) {
 	module := NewQuantumnetModule()
 	result := module.Execute()
 	expected := "Phase 30: Quantum Internet Layer executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

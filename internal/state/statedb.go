@@ -47,7 +47,7 @@ func (s *DB) SetAccount(addr [crypto.AddressSize]byte, acc *Account) {
 	s.accounts[crypto.ToHex(addr)] = acc.Clone()
 }
 
-// GetBalance returns the qubit balance of an address.
+// GetBalance returns the oenexa balance of an address.
 func (s *DB) GetBalance(addr [crypto.AddressSize]byte) uint64 {
 	return s.GetAccount(addr).Balance
 }

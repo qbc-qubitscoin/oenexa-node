@@ -1,6 +1,6 @@
 # Oracle Security Review
 
-**Target**: QubitOracle and QESG Oracle Networks
+**Target**: OenexaOracle and QESG Oracle Networks
 **Phase**: 10
 
 ## 1. Threat Model
@@ -14,11 +14,11 @@ Oracles are frequent targets for DeFi exploitation. If an oracle can be manipula
 
 ### 2.2 Sybil Attacks (Majority Coalition)
 - **Attack**: An attacker spins up 1,000 oracle nodes to control the median outcome.
-- **Mitigation**: Nodes are permissioned based on a minimum `QBC` stake. To spin up enough nodes to control the median, the attacker must lock an astronomically high amount of capital. If a coalition is detected drifting from off-chain realities, the community governance can slash the stakes of the malicious nodes.
+- **Mitigation**: Nodes are permissioned based on a minimum `OEN` stake. To spin up enough nodes to control the median, the attacker must lock an astronomically high amount of capital. If a coalition is detected drifting from off-chain realities, the community governance can slash the stakes of the malicious nodes.
 
 ### 2.3 Front-Running (MEV)
 - **Attack**: An attacker sees an oracle transaction in the mempool that will lower the price of an asset. They insert their own transaction immediately *before* the oracle update (e.g., to liquidate a position unfairly).
-- **Mitigation**: QubitsCoin utilizes a first-in-first-out (FIFO) or randomized gas-price queue, mitigating some forms of MEV. Additionally, the oracle contract implements a time-weighted average price (TWAP) query mechanism, smoothing out instant, flash-crash oracle updates over multiple blocks.
+- **Mitigation**: OENEXA utilizes a first-in-first-out (FIFO) or randomized gas-price queue, mitigating some forms of MEV. Additionally, the oracle contract implements a time-weighted average price (TWAP) query mechanism, smoothing out instant, flash-crash oracle updates over multiple blocks.
 
 ## 3. Exit Criteria Attestation
 The median-aggregation logic inherently satisfies the Phase 10 exit criteria: *"Oracle network demonstrates resistance to a documented manipulation test (single-node data poisoning) without corrupting downstream contract state."*

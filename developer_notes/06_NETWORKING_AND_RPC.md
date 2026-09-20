@@ -5,7 +5,7 @@
 Blockchains must communicate peer-to-peer while exposing standard interfaces to wallets, block explorers, and dApps:
 - **P2P Layer**: Uses explicit binary framing over TCP, authenticated by post-quantum ML-KEM-768 key encapsulation and AES-256-GCM encryption.
 - **Mempool Layer**: Thread-safe priority queue ordered by effective tip (`GasPrice - BaseFee`), ensuring highest-paying transactions are mined first.
-- **JSON-RPC 2.0 Layer**: Standard JSON-RPC over HTTP, compatible with standard Ethereum tooling patterns (`qbc_getBalance`, `qbc_sendRawTransaction`, etc.).
+- **JSON-RPC 2.0 Layer**: Standard JSON-RPC over HTTP, compatible with standard Ethereum tooling patterns (`oen_getBalance`, `oen_sendRawTransaction`, etc.).
 
 ---
 
@@ -46,15 +46,15 @@ Located in `internal/rpc/api.go` and `internal/rpc/server.go`:
 
 | Method | Parameters | Returns | Description |
 |---|---|---|---|
-| `qbc_chainInfo` | `[]` | `ChainInfo` | Current chain height, tip block hash, base fee, mempool size, peer count |
-| `qbc_blockHeight` | `[]` | `uint64` | Current chain height |
-| `qbc_blockByHeight` | `[height uint64]` | `BlockInfo` | Block header, transactions, hash at specific height |
-| `qbc_blockByHash` | `[hashHex string]` | `BlockInfo` | Block matching 64-char hash |
-| `qbc_getBalance` | `[addrHex string]` | `uint64` | Qubit balance of account |
-| `qbc_getTransactionCount` | `[addrHex string]` | `uint64` | Nonce of account |
-| `qbc_sendRawTransaction` | `[rawTxHex string]` | `string` (txHash) | Validates and submits signed transaction to mempool |
-| `qbc_feeEstimate` | `[]` | `FeeEstimate` | Low, standard, and fast gas price recommendations |
-| `qbc_gasPrice` | `[]` | `uint64` | Current minimum gas price |
+| `oen_chainInfo` | `[]` | `ChainInfo` | Current chain height, tip block hash, base fee, mempool size, peer count |
+| `oen_blockHeight` | `[]` | `uint64` | Current chain height |
+| `oen_blockByHeight` | `[height uint64]` | `BlockInfo` | Block header, transactions, hash at specific height |
+| `oen_blockByHash` | `[hashHex string]` | `BlockInfo` | Block matching 64-char hash |
+| `oen_getBalance` | `[addrHex string]` | `uint64` | Oenexa balance of account |
+| `oen_getTransactionCount` | `[addrHex string]` | `uint64` | Nonce of account |
+| `oen_sendRawTransaction` | `[rawTxHex string]` | `string` (txHash) | Validates and submits signed transaction to mempool |
+| `oen_feeEstimate` | `[]` | `FeeEstimate` | Low, standard, and fast gas price recommendations |
+| `oen_gasPrice` | `[]` | `uint64` | Current minimum gas price |
 
 - Supports single requests and JSON-RPC 2.0 batch requests (`[ {...}, {...} ]`).
 - Includes `/healthz` HTTP health check endpoint for container probes.

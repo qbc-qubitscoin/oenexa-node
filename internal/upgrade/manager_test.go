@@ -118,7 +118,7 @@ func TestManager_ApplyRelease_HashErr(t *testing.T) {
 		return "wronghash", nil
 	}
 	m2.applyRelease(ctx, rel)
-	
+
 	computeFileHashFunc = orig
 }
 

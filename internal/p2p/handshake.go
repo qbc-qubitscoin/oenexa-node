@@ -7,8 +7,8 @@ import (
 	"net"
 
 	"github.com/cloudflare/circl/kem/mlkem/mlkem768"
-	"golang.org/x/crypto/sha3"
 	"github.com/oenexa/oenexa/internal/crypto"
+	"golang.org/x/crypto/sha3"
 )
 
 var kemScheme = mlkem768.Scheme()

@@ -1,10 +1,10 @@
 # Wallet Security Audit Report
 
-**Target**: QubitsCoin Client-Side Key Handling & MPC Architecture
+**Target**: OENEXA Client-Side Key Handling & MPC Architecture
 **Phase**: 8
 
 ## 1. Scope
-This audit focuses on the theoretical attack surfaces of the QubitsCoin wallet architecture, specifically client-side ML-DSA-65 key handling, storage, and transaction signing.
+This audit focuses on the theoretical attack surfaces of the OENEXA wallet architecture, specifically client-side ML-DSA-65 key handling, storage, and transaction signing.
 
 ## 2. Threat Model
 - **Physical Device Compromise**: Attacker gains access to an unlocked phone/desktop.

@@ -9,12 +9,12 @@ import (
 	"github.com/oenexa/oenexa/internal/contracts/dex"
 )
 
-var _ = Describe("QubitSwap AMM", func() {
+var _ = Describe("OenexaSwap AMM", func() {
 
-	var pool *dex.QubitSwap
+	var pool *dex.OenexaSwap
 
 	BeforeEach(func() {
-		pool = dex.NewQubitSwap()
+		pool = dex.NewOenexaSwap()
 	})
 
 	// ── Add Liquidity ──────────────────────────────────────────────────────

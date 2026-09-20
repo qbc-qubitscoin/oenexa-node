@@ -18,8 +18,8 @@ const (
 // Mempool is a thread-safe priority queue of unconfirmed transactions.
 type Mempool struct {
 	mu       sync.RWMutex
-	txs      map[string]*core.Transaction         // hash hex -> tx
-	bySender map[string][]*core.Transaction        // addr hex -> txs
+	txs      map[string]*core.Transaction   // hash hex -> tx
+	bySender map[string][]*core.Transaction // addr hex -> txs
 	heap     txHeap
 	maxSize  int
 }

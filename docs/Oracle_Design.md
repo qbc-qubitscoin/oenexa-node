@@ -1,17 +1,17 @@
-# QubitOracle & QESG Oracle Design
+# OenexaOracle & QESG Oracle Design
 
 **Version**: v1.0
 **Phase**: 10
 
 ## Overview
-The QubitsCoin Oracle Network bridges off-chain real-world data to the deterministic on-chain QubitVM. It is divided into two logical segments:
-1. **QubitOracle**: General-purpose financial, crypto, and weather data feeds.
+The OENEXA Oracle Network bridges off-chain real-world data to the deterministic on-chain OenexaVM. It is divided into two logical segments:
+1. **OenexaOracle**: General-purpose financial, crypto, and weather data feeds.
 2. **QESG Oracle**: Specialized ESG (Environmental, Social, and Governance) scoring, carbon metrics, and physical climate risk data, directly integrated with accredited registries (e.g., Verra, Gold Standard).
 
 ## Architecture
 
 ### 1. Staked Oracle Nodes
-Oracle nodes must stake `QBC` to participate in data reporting. The stake acts as a security bond that can be slashed if the node is proven to have submitted maliciously manipulated data.
+Oracle nodes must stake `OEN` to participate in data reporting. The stake acts as a security bond that can be slashed if the node is proven to have submitted maliciously manipulated data.
 
 ### 2. The Aggregator Smart Contract
 On-chain contracts do not trust any single oracle node. Instead, the `oracle.go` smart contract implements an aggregator pattern:

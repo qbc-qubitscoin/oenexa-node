@@ -1,5 +1,5 @@
 // Package upgrade provides binary self-update and on-chain protocol upgrade
-// scheduling for QubitsCoin nodes.
+// scheduling for OENEXA nodes.
 package upgrade
 
 import (

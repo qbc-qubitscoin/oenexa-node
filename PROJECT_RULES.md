@@ -1,6 +1,6 @@
-# QubitsCoin (QBC) — Engineering & Development Rules
+# OENEXA (OEN) — Engineering & Development Rules
 
-> **MANDATORY PROJECT POLICY**: All contributors, core developers, and AI assistants working on QubitsCoin must strictly adhere to the following rules. No pull request or commit will be accepted unless all rules are satisfied.
+> **MANDATORY PROJECT POLICY**: All contributors, core developers, and AI assistants working on OENEXA must strictly adhere to the following rules. No pull request or commit will be accepted unless all rules are satisfied.
 
 ---
 
@@ -70,7 +70,7 @@
 ## 5. Pure Go & Zero CGO Dependency
 
 ### Rule Statement
-> **QubitsCoin core must compile and run on Windows, Linux, and macOS without requiring a C compiler (`CGO_ENABLED=0`).**
+> **OENEXA core must compile and run on Windows, Linux, and macOS without requiring a C compiler (`CGO_ENABLED=0`).**
 
 - Use Cloudflare Circl for post-quantum primitives (ML-DSA-65, ML-KEM-768).
 - Use Wazero for the WebAssembly runtime (100% pure Go WebAssembly interpreter/compiler).

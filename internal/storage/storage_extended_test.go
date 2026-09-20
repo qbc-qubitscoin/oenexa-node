@@ -1,11 +1,11 @@
 package storage
 
 import (
-	"os"
-	"testing"
 	"github.com/oenexa/oenexa/internal/core"
 	"github.com/oenexa/oenexa/internal/crypto"
 	"github.com/oenexa/oenexa/internal/state"
+	"os"
+	"testing"
 )
 
 func TestStorageExtended(t *testing.T) {
@@ -23,7 +23,7 @@ func TestStorageExtended(t *testing.T) {
 	}
 
 	hash := crypto.Hash256([]byte("test"))
-	
+
 	// Put a bad block gob to trigger decodeBlock error
 	db.Put(blockKey(hash), []byte("badgob"))
 	_, err = bs.GetBlock(hash)
@@ -37,13 +37,13 @@ func TestStorageExtended(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected decodeBlock error in GetBlockByHeight")
 	}
-	
+
 	// Test HasBlock on valid key
 	has, _ := bs.HasBlock(hash)
 	if !has {
 		t.Fatal("expected HasBlock to be true")
 	}
-	
+
 	// Test ErrNotFound for GetBlock and GetBlockByHeight
 	notFoundHash := crypto.Hash256([]byte("missing"))
 	_, err = bs.GetBlock(notFoundHash)
@@ -58,7 +58,7 @@ func TestStorageExtended(t *testing.T) {
 
 	// db Close to trigger db errors
 	db.Close()
-	
+
 	validBlk := &core.Block{}
 	err = bs.PutBlock(validBlk)
 	if err == nil {
@@ -69,7 +69,7 @@ func TestStorageExtended(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when db is closed")
 	}
-	
+
 	_, err = bs.GetBlock(hash)
 	if err == nil {
 		t.Fatal("expected error when db is closed")
@@ -88,9 +88,9 @@ func TestStorageExtended(t *testing.T) {
 
 func TestDBOpenError(t *testing.T) {
 	// open a bad path (using a file instead of directory to trigger leveldb error)
-    f, _ := os.CreateTemp("", "bad_db")
-    f.Close()
-    defer os.Remove(f.Name())
+	f, _ := os.CreateTemp("", "bad_db")
+	f.Close()
+	defer os.Remove(f.Name())
 	_, err := Open(f.Name())
 	if err == nil {
 		t.Fatal("expected error opening invalid path")
@@ -98,19 +98,19 @@ func TestDBOpenError(t *testing.T) {
 }
 
 func TestDBIterPrefixError(t *testing.T) {
-    path, _ := os.MkdirTemp("", "testdb_iter")
+	path, _ := os.MkdirTemp("", "testdb_iter")
 	defer os.RemoveAll(path)
 	db, _ := Open(path)
-    db.Put([]byte("prefix_1"), []byte("val1"))
-    
-    // trigger fn returning error
-    err := db.IterPrefix([]byte("prefix_"), func(k, v []byte) error {
-        return os.ErrPermission
-    })
-    if err == nil {
-        t.Fatal("expected error from fn")
-    }
-    db.Close()
+	db.Put([]byte("prefix_1"), []byte("val1"))
+
+	// trigger fn returning error
+	err := db.IterPrefix([]byte("prefix_"), func(k, v []byte) error {
+		return os.ErrPermission
+	})
+	if err == nil {
+		t.Fatal("expected error from fn")
+	}
+	db.Close()
 }
 
 func TestStateStoreExtended(t *testing.T) {
@@ -141,12 +141,12 @@ func TestStateStoreExtended(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for bad gob decode")
 	}
-    db.Delete(accountKey(crypto.AddressToHex(addr)))
+	db.Delete(accountKey(crypto.AddressToHex(addr)))
 
-    // Test IterPrefix error
-    db.Close()
-    _, err = ss.LoadState()
-    if err == nil {
-        t.Fatal("expected error loading state on closed db")
-    }
+	// Test IterPrefix error
+	db.Close()
+	_, err = ss.LoadState()
+	if err == nil {
+		t.Fatal("expected error loading state on closed db")
+	}
 }

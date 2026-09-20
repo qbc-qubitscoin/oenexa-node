@@ -6,7 +6,7 @@ func TestHydrochainExecution(t *testing.T) {
 	module := NewHydrochainModule()
 	result := module.Execute()
 	expected := "Phase 14: HydroChain Platform executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

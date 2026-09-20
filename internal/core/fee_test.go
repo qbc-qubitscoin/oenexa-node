@@ -101,29 +101,29 @@ func TestFeeEstimate_Fast_TipLargerThanStandard(t *testing.T) {
 	}
 }
 
-// ── TransferCostQubits ────────────────────────────────────────────────────────
+// ── TransferCostOenexa ────────────────────────────────────────────────────────
 
-func TestTransferCostQubits_AtGenesis(t *testing.T) {
-	cost := TransferCostQubits(InitialBaseFee, 0)
+func TestTransferCostOenexa_AtGenesis(t *testing.T) {
+	cost := TransferCostOenexa(InitialBaseFee, 0)
 	want := GasTransfer * InitialBaseFee
 	if cost != want {
 		t.Errorf("transfer cost at genesis: want %d, got %d", want, cost)
 	}
 }
 
-func TestTransferCostQubits_CheaperThanSolana(t *testing.T) {
-	// At $1/QBC, Solana ~$0.00025.
-	// QBC transfer at genesis base fee = GasTransfer * InitialBaseFee qubits.
-	// Convert to USD assuming $1/QBC.
-	costQBC := float64(TransferCostQubits(InitialBaseFee, 0)) / float64(OneQBC)
+func TestTransferCostOenexa_CheaperThanSolana(t *testing.T) {
+	// At $1/OEN, Solana ~$0.00025.
+	// OEN transfer at genesis base fee = GasTransfer * InitialBaseFee oenexa.
+	// Convert to USD assuming $1/OEN.
+	costOEN := float64(TransferCostOenexa(InitialBaseFee, 0)) / float64(OneOEN)
 	solanaUSD := 0.00025
-	if costQBC >= solanaUSD {
-		t.Errorf("QBC fee $%.10f should be cheaper than Solana $%.5f", costQBC, solanaUSD)
+	if costOEN >= solanaUSD {
+		t.Errorf("OEN fee $%.10f should be cheaper than Solana $%.5f", costOEN, solanaUSD)
 	}
 }
 
-func TestTransferCostQubits_AboveZero(t *testing.T) {
-	cost := TransferCostQubits(MinBaseFee, 0)
+func TestTransferCostOenexa_AboveZero(t *testing.T) {
+	cost := TransferCostOenexa(MinBaseFee, 0)
 	if cost == 0 {
 		t.Error("transfer cost must never be zero (spam prevention)")
 	}
@@ -131,19 +131,19 @@ func TestTransferCostQubits_AboveZero(t *testing.T) {
 
 // ── FeeComparisonTable ────────────────────────────────────────────────────────
 
-func TestFeeComparisonTable_QBCIsCheapest(t *testing.T) {
+func TestFeeComparisonTable_OENIsCheapest(t *testing.T) {
 	table := FeeComparisonTable()
 	var qbcFee float64
 	minOtherFee := 1e18
 	for _, row := range table {
-		if row.Chain[:3] == "QBC" {
+		if row.Chain[:3] == "OEN" {
 			qbcFee = row.TransferUSD
 		} else if row.TransferUSD < minOtherFee {
 			minOtherFee = row.TransferUSD
 		}
 	}
 	if qbcFee >= minOtherFee {
-		t.Errorf("QBC fee $%.10f should be cheaper than all others (cheapest other: $%.8f)",
+		t.Errorf("OEN fee $%.10f should be cheaper than all others (cheapest other: $%.8f)",
 			qbcFee, minOtherFee)
 	}
 }
@@ -164,16 +164,16 @@ func TestFeeComparisonTable_HasExpectedChains(t *testing.T) {
 // ── Gas constants sanity ──────────────────────────────────────────────────────
 
 func TestGasConstants_TransferUltraCheap(t *testing.T) {
-	// Transfer must cost less than 1000 qubits at genesis base fee.
-	cost := TransferCostQubits(InitialBaseFee, 0)
+	// Transfer must cost less than 1000 oenexa at genesis base fee.
+	cost := TransferCostOenexa(InitialBaseFee, 0)
 	if cost >= 1000 {
-		t.Errorf("transfer cost %d qubits should be < 1000 for ultra-cheap positioning", cost)
+		t.Errorf("transfer cost %d oenexa should be < 1000 for ultra-cheap positioning", cost)
 	}
 }
 
 func TestGasConstants_MinGasPriceIsOne(t *testing.T) {
 	if false {
-		t.Errorf("MinGasPrice should be 1 qubit/gas, got %d", MinGasPrice)
+		t.Errorf("MinGasPrice should be 1 oenexa/gas, got %d", MinGasPrice)
 	}
 }
 

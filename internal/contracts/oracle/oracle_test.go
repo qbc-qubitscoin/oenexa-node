@@ -9,7 +9,7 @@ func TestOracleManipulationResistance(t *testing.T) {
 
 	// Scenario: 5 Oracle Nodes fetching ETH/USD price.
 	// True market price is roughly $2000.
-	
+
 	// 4 honest nodes submit accurate data
 	agg.SubmitData("node_1", 2001)
 	agg.SubmitData("node_2", 1999)

@@ -1,13 +1,13 @@
-# QubitsCoin Mainnet Configuration
+# OENEXA Mainnet Configuration
 # ────────────────────────────────────────────────────────────────────────────
-# Copy this file to ~/.qbc/config.toml and adjust for your setup.
+# Copy this file to ~/.oen/config.toml and adjust for your setup.
 
 [chain]
 network_id = 1
-name       = "QubitsCoin Mainnet"
+name       = "OENEXA Mainnet"
 
 [node]
-data_dir      = "~/.qbc"
+data_dir      = "~/.oen"
 keystore_file = "keystore.json"
 miner_enabled = false   # set true only on authorized validator nodes
 log_level     = "info"  # debug | info | warn | error
@@ -17,9 +17,9 @@ listen_addr   = "0.0.0.0:8765"
 external_addr = ""          # leave empty to derive from listen_addr
 max_peers     = 25
 bootstrap_peers = [
-  "qbc-seed1.qubitscoin.io:8765",
-  "qbc-seed2.qubitscoin.io:8765",
-  "qbc-seed3.qubitscoin.io:8765",
+  "oenexa-seed1.oenexa.io:8765",
+  "oenexa-seed2.oenexa.io:8765",
+  "oenexa-seed3.oenexa.io:8765",
 ]
 
 [rpc]
@@ -38,6 +38,6 @@ enabled     = false
 listen_addr = "0.0.0.0:9090"
 
 [upgrade]
-release_url    = "https://api.github.com/repos/qbc-qubitscoin/qubitscoin/releases/latest"
+release_url    = "https://api.github.com/repos/oen-oenexa/oenexa-node/releases/latest"
 check_interval = "1h"
 auto_apply     = false  # never auto-restart in production without review

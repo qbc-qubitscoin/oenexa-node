@@ -62,7 +62,7 @@ func TestP2P_GossipWrappers(t *testing.T) {
 	var valAddr [crypto.AddressSize]byte
 	var hash [crypto.HashSize]byte
 	blk, _ := core.NewBlock(1, hash, hash, time.Now().UnixNano(), valAddr, []*core.Transaction{}, 0, 10, 0)
-	
+
 	msg2, err := NewBlockGossip(blk)
 	if err != nil {
 		t.Fatalf("failed to create block gossip: %v", err)
@@ -89,7 +89,7 @@ func TestP2P_Frames(t *testing.T) {
 	if string(readData) != "hello" {
 		t.Errorf("expected hello, got %s", readData)
 	}
-	
+
 	// 2. Too large frame
 	var largeBuf bytes.Buffer
 	binary.Write(&largeBuf, binary.BigEndian, uint32(maxFrameSize+1))
@@ -103,7 +103,8 @@ type testConn struct {
 	net.Conn
 	*bytes.Buffer
 }
-func (t *testConn) Read(b []byte) (n int, err error) { return t.Buffer.Read(b) }
+
+func (t *testConn) Read(b []byte) (n int, err error)  { return t.Buffer.Read(b) }
 func (t *testConn) Write(b []byte) (n int, err error) { return t.Buffer.Write(b) }
 
 func TestP2P_GobHelpers(t *testing.T) {

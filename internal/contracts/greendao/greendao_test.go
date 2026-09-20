@@ -18,14 +18,18 @@ func TestPilotFundingCycle(t *testing.T) {
 
 	// 2. Voting
 	// Quorum is 20k (20%). We need 60% approval.
-	
+
 	// Bob votes Yes (weight: 15,000)
 	err = dao.Vote(proposalID, "voter_bob", 15000, true)
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Charlie votes No (weight: 5,000)
 	err = dao.Vote(proposalID, "voter_charlie", 5000, false)
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// At this point: Total = 20k (Quorum met). Yes = 15k (75% > 60% threshold).
 	// Proposal should be PASSED.

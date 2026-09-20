@@ -6,7 +6,7 @@ func TestSuperappExecution(t *testing.T) {
 	module := NewSuperappModule()
 	result := module.Execute()
 	expected := "Phase 22: Super App executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

@@ -6,15 +6,15 @@ import (
 
 // ── Unit Tests (table-driven, TDD) ───────────────────────────────────────────
 
-func TestNewQubitSwap_EmptyReserves(t *testing.T) {
-	qs := NewQubitSwap()
+func TestNewOenexaSwap_EmptyReserves(t *testing.T) {
+	qs := NewOenexaSwap()
 	if qs.ReserveA != 0 || qs.ReserveB != 0 {
 		t.Fatalf("new pool should have zero reserves, got A=%d B=%d", qs.ReserveA, qs.ReserveB)
 	}
 }
 
 func TestAddLiquidity_IncreasesReserves(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(1000, 2000)
 	if qs.ReserveA != 1000 {
 		t.Errorf("ReserveA: want 1000, got %d", qs.ReserveA)
@@ -25,7 +25,7 @@ func TestAddLiquidity_IncreasesReserves(t *testing.T) {
 }
 
 func TestAddLiquidity_Cumulative(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(500, 1000)
 	qs.AddLiquidity(500, 1000)
 	if qs.ReserveA != 1000 {
@@ -37,7 +37,7 @@ func TestAddLiquidity_Cumulative(t *testing.T) {
 }
 
 func TestAddLiquidity_ZeroAmounts(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(0, 0)
 	if qs.ReserveA != 0 || qs.ReserveB != 0 {
 		t.Error("adding zero liquidity should keep reserves at zero")
@@ -46,7 +46,7 @@ func TestAddLiquidity_ZeroAmounts(t *testing.T) {
 
 // TestSwapAforB_EmptyPool verifies that swapping into an empty pool fails safely.
 func TestSwapAforB_EmptyPool(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	out, ok := qs.SwapAforB(100)
 	if ok || out != 0 {
 		t.Errorf("swap on empty pool: want (0, false), got (%d, %v)", out, ok)
@@ -55,7 +55,7 @@ func TestSwapAforB_EmptyPool(t *testing.T) {
 
 // TestSwapAforB_ZeroInput verifies that zero input returns failure.
 func TestSwapAforB_ZeroInput(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(1000, 1000)
 	out, ok := qs.SwapAforB(0)
 	if ok || out != 0 {
@@ -65,7 +65,7 @@ func TestSwapAforB_ZeroInput(t *testing.T) {
 
 // TestSwapAforB_BasicSwap checks a known output for a 0.3% fee AMM.
 func TestSwapAforB_BasicSwap(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(10_000, 10_000)
 
 	// Swap 1000 A in: amountAInWithFee = 1000 * 997 / 1000 = 997
@@ -91,7 +91,7 @@ func TestSwapAforB_FeeDeducted(t *testing.T) {
 	rA, rB := uint64(10_000), uint64(10_000)
 	amountA := uint64(100)
 
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(rA, rB)
 	outWithFee, _ := qs.SwapAforB(amountA)
 
@@ -105,7 +105,7 @@ func TestSwapAforB_FeeDeducted(t *testing.T) {
 
 // TestSwapAforB_ReservesUpdated checks that reserves change correctly after swap.
 func TestSwapAforB_ReservesUpdated(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(10_000, 10_000)
 	beforeA, beforeB := qs.ReserveA, qs.ReserveB
 
@@ -125,7 +125,7 @@ func TestSwapAforB_ReservesUpdated(t *testing.T) {
 
 // TestAMMInvariant_HoldsAfterSwap verifies x*y = k is maintained (allowing for rounding down).
 func TestAMMInvariant_HoldsAfterSwap(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(10_000, 10_000)
 	kBefore := qs.ReserveA * qs.ReserveB
 
@@ -143,7 +143,7 @@ func TestAMMInvariant_HoldsAfterSwap(t *testing.T) {
 
 // TestSwapAforB_CannotDrainPool ensures the pool cannot be drained to zero B.
 func TestSwapAforB_CannotDrainPool(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(1, 1)
 
 	// A huge swap that would otherwise require >= all of ReserveB
@@ -159,7 +159,7 @@ func TestSwapAforB_CannotDrainPool(t *testing.T) {
 
 // TestSwapAforB_MultipleSwaps runs 10 sequential swaps and checks invariants hold.
 func TestSwapAforB_MultipleSwaps(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(100_000, 100_000)
 
 	for i := 0; i < 10; i++ {
@@ -180,7 +180,7 @@ func TestSwapAforB_MultipleSwaps(t *testing.T) {
 
 // TestSwapAforB_AsymmetricPool validates correct output in an imbalanced pool.
 func TestSwapAforB_AsymmetricPool(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.AddLiquidity(1_000, 100_000) // 1 A buys ~100 B (cheap A)
 
 	out, ok := qs.SwapAforB(10)
@@ -197,12 +197,12 @@ func TestSwapAforB_AsymmetricPool(t *testing.T) {
 
 func TestSwapAforB_Table(t *testing.T) {
 	tests := []struct {
-		name      string
-		reserveA  uint64
-		reserveB  uint64
-		amountIn  uint64
-		wantOK    bool
-		minOutGT  uint64 // output must be > this
+		name     string
+		reserveA uint64
+		reserveB uint64
+		amountIn uint64
+		wantOK   bool
+		minOutGT uint64 // output must be > this
 	}{
 		{"equal_reserves_small_swap", 10_000, 10_000, 100, true, 0},
 		{"equal_reserves_large_swap", 10_000, 10_000, 9_000, true, 0},
@@ -217,7 +217,7 @@ func TestSwapAforB_Table(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			qs := NewQubitSwap()
+			qs := NewOenexaSwap()
 			qs.ReserveA = tc.reserveA
 			qs.ReserveB = tc.reserveB
 			out, ok := qs.SwapAforB(tc.amountIn)
@@ -235,7 +235,7 @@ func TestSwapAforB_Table(t *testing.T) {
 // never allows the pool to be drained, regardless of whether ok is true or false.
 // This documents the known integer rounding behavior of the AMM.
 func TestSwapAforB_TinyReserveRoundingIsSafe(t *testing.T) {
-	qs := NewQubitSwap()
+	qs := NewOenexaSwap()
 	qs.ReserveA = 1
 	qs.ReserveB = 1
 

@@ -1,11 +1,11 @@
 # Developer Note 02: Core Blockchain Architecture & Tokenomics
 
-## 1. Why QubitsCoin Core Architecture Was Chosen
+## 1. Why OENEXA Core Architecture Was Chosen
 
 Traditional blockchains suffer from high gas fees, slow finality, and vulnerability to quantum computers:
 - **Bitcoin/Ethereum 1.0**: High volatility in transaction fees, vulnerable to Shor's algorithm on ECDSA.
 - **Solana**: High throughput but fragile validator consensus and high hardware requirements.
-- **QubitsCoin Core Goal**: Combine sub-cent transaction fees (< \$0.000000021 at genesis), 2-second deterministic block finality, EIP-1559 base fee burning, and post-quantum ML-DSA-65 cryptography into a pure Go blockchain engine.
+- **OENEXA Core Goal**: Combine sub-cent transaction fees (< \$0.000000021 at genesis), 2-second deterministic block finality, EIP-1559 base fee burning, and post-quantum ML-DSA-65 cryptography into a pure Go blockchain engine.
 
 ---
 
@@ -34,7 +34,7 @@ graph TD
 
 ## 3. Dynamic Fee Market (EIP-1559 Mechanism)
 
-QubitsCoin uses an EIP-1559 elastic block model to prevent network spam while guaranteeing stable fees:
+OENEXA uses an EIP-1559 elastic block model to prevent network spam while guaranteeing stable fees:
 
 - **Target Gas per Block**: $15,000,000$ gas units (`TargetBlockGas()`).
 - **Maximum Gas per Block**: $30,000,000$ gas units (`BlockGasLimit`).
@@ -59,9 +59,9 @@ The base fee is permanently **burned** (removed from circulating supply), while 
 
 ## 4. Tokenomics & Halving Schedule
 
-- **Native Unit**: $1 \text{ QBC} = 1,000,000,000 \text{ qubits}$ ($10^9$).
-- **Maximum Supply Cap**: $100,000,000 \text{ QBC}$ (hard-coded ceiling).
-- **Initial Block Reward**: $45 \text{ QBC}$ per block for Era 0.
+- **Native Unit**: $1 \text{ OEN} = 1,000,000,000 \text{ oenexa}$ ($10^9$).
+- **Maximum Supply Cap**: $100,000,000 \text{ OEN}$ (hard-coded ceiling).
+- **Initial Block Reward**: $45 \text{ OEN}$ per block for Era 0.
 - **Halving Interval**: $1,051,200$ blocks ($\approx 2 \text{ years}$ at 2s block intervals).
 - **Halving Formula** (`BlockReward` in `internal/core/tokenomics.go`):
   $$\text{Era} = \frac{\text{Height}}{1,051,200}$$

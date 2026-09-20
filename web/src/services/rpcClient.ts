@@ -18,7 +18,7 @@ export class RPCError extends Error {
   }
 }
 
-export class QBCClient {
+export class OENClient {
   private endpoint: string
   private idCounter: number = 0
 
@@ -100,35 +100,35 @@ export class QBCClient {
   }
 
   async getChainInfo(): Promise<ChainInfo> {
-    return this.dispatch<ChainInfo>('qbc_chainInfo', [])
+    return this.dispatch<ChainInfo>('oen_chainInfo', [])
   }
 
   async getBlockByHeight(height: number): Promise<BlockInfo> {
-    return this.dispatch<BlockInfo>('qbc_blockByHeight', [height])
+    return this.dispatch<BlockInfo>('oen_blockByHeight', [height])
   }
 
   async getBlockByHash(hash: string): Promise<BlockInfo> {
-    return this.dispatch<BlockInfo>('qbc_blockByHash', [hash])
+    return this.dispatch<BlockInfo>('oen_blockByHash', [hash])
   }
 
   async getBalance(address: string): Promise<string> {
-    return this.dispatch<string>('qbc_getBalance', [address])
+    return this.dispatch<string>('oen_getBalance', [address])
   }
 
   async getTransactionCount(address: string): Promise<number> {
-    return this.dispatch<number>('qbc_getTransactionCount', [address])
+    return this.dispatch<number>('oen_getTransactionCount', [address])
   }
 
   async sendRawTransaction(rawHex: string): Promise<string> {
-    return this.dispatch<string>('qbc_sendRawTransaction', [rawHex])
+    return this.dispatch<string>('oen_sendRawTransaction', [rawHex])
   }
 
   async getFeeEstimate(): Promise<FeeEstimate> {
-    return this.dispatch<FeeEstimate>('qbc_feeEstimate', [])
+    return this.dispatch<FeeEstimate>('oen_feeEstimate', [])
   }
 
   async getGasPrice(): Promise<number> {
-    return this.dispatch<number>('qbc_gasPrice', [])
+    return this.dispatch<number>('oen_gasPrice', [])
   }
 
   async getShieldedBalance(): Promise<{
@@ -150,4 +150,4 @@ export class QBCClient {
   }
 }
 
-export const defaultClient = new QBCClient()
+export const defaultClient = new OENClient()

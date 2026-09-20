@@ -1,35 +1,35 @@
 package dex
 
-// QubitSwap represents a basic Automated Market Maker (AMM) Liquidity Pool.
+// OenexaSwap represents a basic Automated Market Maker (AMM) Liquidity Pool.
 // It implements the constant product formula: x * y = k.
-type QubitSwap struct {
+type OenexaSwap struct {
 	ReserveA uint64 // Reserve of Token A
 	ReserveB uint64 // Reserve of Token B
 }
 
-func NewQubitSwap() *QubitSwap {
-	return &QubitSwap{}
+func NewOenexaSwap() *OenexaSwap {
+	return &OenexaSwap{}
 }
 
 // AddLiquidity adds tokens to the reserves. In a real contract, this would
 // mint LP tokens to the provider based on their proportional share.
-func (qs *QubitSwap) AddLiquidity(amountA, amountB uint64) {
+func (qs *OenexaSwap) AddLiquidity(amountA, amountB uint64) {
 	qs.ReserveA += amountA
 	qs.ReserveB += amountB
 }
 
-// OenSwap is an alias for QubitSwap representing the OENEXA Native DEX.
-type OenSwap = QubitSwap
+// OenSwap is an alias for OenexaSwap representing the OENEXA Native DEX.
+type OenSwap = OenexaSwap
 
 // NewOenSwap creates an empty OenSwap liquidity pool.
 func NewOenSwap() *OenSwap {
-	return NewQubitSwap()
+	return NewOenexaSwap()
 }
 
 // SwapAforB allows a user to trade Token A for Token B.
 // It calculates the output amount ensuring (ReserveA + amountA) * (ReserveB - amountBOut) >= ReserveA * ReserveB.
 // It applies a 0.3% fee to amountA.
-func (qs *QubitSwap) SwapAforB(amountAIn uint64) (amountBOut uint64, success bool) {
+func (qs *OenexaSwap) SwapAforB(amountAIn uint64) (amountBOut uint64, success bool) {
 	if amountAIn == 0 || qs.ReserveA == 0 || qs.ReserveB == 0 {
 		return 0, false
 	}
@@ -51,7 +51,7 @@ func (qs *QubitSwap) SwapAforB(amountAIn uint64) (amountBOut uint64, success boo
 
 // SwapBforA allows a user to trade Token B for Token A.
 // It applies a 0.3% fee to amountB.
-func (qs *QubitSwap) SwapBforA(amountBIn uint64) (amountAOut uint64, success bool) {
+func (qs *OenexaSwap) SwapBforA(amountBIn uint64) (amountAOut uint64, success bool) {
 	if amountBIn == 0 || qs.ReserveA == 0 || qs.ReserveB == 0 {
 		return 0, false
 	}

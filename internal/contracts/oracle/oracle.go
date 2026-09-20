@@ -58,7 +58,7 @@ func (a *OracleAggregator) FinalizeEpoch() uint64 {
 	}
 
 	a.FinalizedData[a.ActiveEpoch] = median
-	
+
 	// Reset for next epoch
 	a.Submissions = make(map[string]uint64)
 	a.ActiveEpoch++

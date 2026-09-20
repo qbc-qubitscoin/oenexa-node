@@ -20,7 +20,7 @@ type GenesisConfig struct {
 // DefaultGenesisConfig returns a sensible genesis config for a single-validator testnet.
 func DefaultGenesisConfig(validatorAddr [crypto.AddressSize]byte) *GenesisConfig {
 	alloc := map[[crypto.AddressSize]byte]uint64{
-		validatorAddr: 10_000_000 * OneQBC, // 10M QBC pre-mine to validator
+		validatorAddr: 10_000_000 * OneOEN, // 10M OEN pre-mine to validator
 	}
 	return &GenesisConfig{
 		ChainID:       ChainID,

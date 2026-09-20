@@ -1,4 +1,4 @@
-# QubitsCoin (QBC) — Architecture & Code Notes
+# OENEXA (OEN) — Architecture & Code Notes
 
 > **Purpose of this document**: A complete explanation of every package,
 > file, function, and how they connect — written for any developer who
@@ -31,7 +31,7 @@
 
 ## 1. Project Overview
 
-QubitsCoin (QBC) is a **quantum-resistant Layer-1 blockchain** written in Go.
+OENEXA (OEN) is a **quantum-resistant Layer-1 blockchain** written in Go.
 Every cryptographic operation uses **NIST Post-Quantum Cryptography (PQC)**
 standards — no RSA, no ECDSA, no secp256k1.
 
@@ -44,8 +44,8 @@ standards — no RSA, no ECDSA, no secp256k1.
 | Smart Contracts | WASM via wazero (pure-Go, no cgo)               |
 | Block time      | 2 seconds                                       |
 | Fee model       | EIP-1559 (dynamic base fee, burned + tip split) |
-| Currency unit   | 1 QBC = 1,000,000,000 qubits (9 decimals)       |
-| Hard cap        | 100,000,000 QBC                                 |
+| Currency unit   | 1 OEN = 1,000,000,000 oenexa (9 decimals)       |
+| Hard cap        | 100,000,000 OEN                                 |
 
 ---
 
@@ -287,9 +287,9 @@ No I/O, no goroutines, no external dependencies except `internal/crypto`.
 | `GasDeploy`        | 5,000                | Gas cost of deploying a WASM contract    |
 | `GasCall`          | 500                  | Base gas cost of calling a contract      |
 | `BlockGasLimit`    | 500,000,000          | Max gas per block (~23M transfers/block) |
-| `MinGasPrice`      | 1                    | Absolute floor: 1 qubit/gas              |
-| `OneQBC`           | 1,000,000,000        | Qubits in one QBC (9 decimal places)     |
-| `MaxSupply`        | 100,000,000 × OneQBC | Hard cap: 100M QBC                       |
+| `MinGasPrice`      | 1                    | Absolute floor: 1 oenexa/gas              |
+| `OneOEN`           | 1,000,000,000        | Oenexa in one OEN (9 decimal places)     |
+| `MaxSupply`        | 100,000,000 × OneOEN | Hard cap: 100M OEN                       |
 | `ProtocolVersion`  | 1                    | Block header version                     |
 | `ChainID`          | 1                    | Mainnet chain identifier                 |
 | `BlockIntervalSec` | 2                    | Target block time in seconds             |
@@ -303,8 +303,8 @@ No I/O, no goroutines, no external dependencies except `internal/crypto`.
 
 ```
 const (
-    InitialBaseFee        = 10  // qubits/gas at genesis
-    MinBaseFee            = 1   // floor: 1 qubit/gas
+    InitialBaseFee        = 10  // oenexa/gas at genesis
+    MinBaseFee            = 1   // floor: 1 oenexa/gas
     MaxBaseFeeChangeDenom = 8   // ±12.5% max change per block
     TargetGasRatioDenom   = 2   // target = 50% of BlockGasLimit
 )
@@ -334,16 +334,16 @@ FeeEstimate(baseFee, tier) → (maxFeePerGas, priorityTip)
 | `FeeTierFast`     | baseFee + baseFee/2  | baseFee/2   |
 
 ```
-TransferCostQubits(baseFee, tip) → uint64
+TransferCostOenexa(baseFee, tip) → uint64
 ```
 - Returns `GasTransfer × (baseFee + tip) = 21 × (baseFee + tip)`.
-- At genesis baseFee=10, no tip: **210 qubits = $0.00000021** (at $1/QBC).
+- At genesis baseFee=10, no tip: **210 oenexa = $0.00000021** (at $1/OEN).
 
 ```
 FeeComparisonTable() → []FeeComparison
 ```
 - Returns benchmark data: ETH ($1.50), BNB ($0.05), Avalanche ($0.02),
-  Polygon ($0.002), Solana ($0.00025), Sui ($0.00002), **QBC ($0.00000021)**.
+  Polygon ($0.002), Solana ($0.00025), Sui ($0.00002), **OEN ($0.00000021)**.
 
 ---
 
@@ -360,8 +360,8 @@ type BlockHeader struct {
     ValidatorAddr [32]byte         // block proposer address
     GasUsed       uint64           // total gas consumed by all txs
     GasLimit      uint64           // always BlockGasLimit
-    BaseFee       uint64           // this block's base fee (qubits/gas)
-    BurnedFees    uint64           // total qubits burned in this block
+    BaseFee       uint64           // this block's base fee (oenexa/gas)
+    BurnedFees    uint64           // total oenexa burned in this block
 }
 
 type Block struct {
@@ -399,9 +399,9 @@ type Transaction struct {
     Nonce     uint64           // sender nonce (replay protection)
     From      [32]byte         // sender address = SHA-3-256(PublicKey)
     To        [32]byte         // recipient / contract address
-    Amount    uint64           // qubits to send
+    Amount    uint64           // oenexa to send
     GasLimit  uint64           // max gas this tx may use
-    GasPrice  uint64           // qubits per gas (must be ≥ baseFee)
+    GasPrice  uint64           // oenexa per gas (must be ≥ baseFee)
     Timestamp int64            // Unix nanoseconds
     Data      []byte           // contract bytecode (Deploy) or call payload (Call)
     PublicKey []byte           // sender's ML-DSA-65 public key (1952 bytes)
@@ -433,9 +433,9 @@ Sets `GasLimit = GasTransfer`, `Type = TxTransfer`.
 
 ```
 const (
-    InitialBlockReward = 45 × OneQBC   // 45 QBC per block in Era 0
+    InitialBlockReward = 45 × OneOEN   // 45 OEN per block in Era 0
     HalvingInterval    = 1,000,000     // ~23 days at 2s/block
-    GenesisPremine     = 10,000,000 × OneQBC
+    GenesisPremine     = 10,000,000 × OneOEN
 )
 ```
 
@@ -448,11 +448,11 @@ BlockReward(height) → uint64
 
 | Era | Block range           | Reward/block |
 |-----|-----------------------|--------------|
-| 0   | 1 – 1,000,000         | 45 QBC       |
-| 1   | 1,000,001 – 2,000,000 | 22.5 QBC     |
-| 2   | 2,000,001 – 3,000,000 | 11.25 QBC    |
+| 0   | 1 – 1,000,000         | 45 OEN       |
+| 1   | 1,000,001 – 2,000,000 | 22.5 OEN     |
+| 2   | 2,000,001 – 3,000,000 | 11.25 OEN    |
 | ... | ...                   | ...          |
-| Max | ~32M+                 | 0 QBC        |
+| Max | ~32M+                 | 0 OEN        |
 
 ```
 TotalEmissionAt(height) → uint64   // total block rewards up to height
@@ -473,10 +473,10 @@ type GenesisConfig struct {
 ```
 
 **`DefaultGenesisConfig(validatorAddr)`** — creates a config with
-10,000,000 QBC pre-mined to the validator.
+10,000,000 OEN pre-mined to the validator.
 
 **`Build()`** — creates the genesis block (height 0):
-- `BaseFee = InitialBaseFee` (10 qubits/gas) — seeds the fee market
+- `BaseFee = InitialBaseFee` (10 oenexa/gas) — seeds the fee market
 - `BurnedFees = 0` — nothing burned in genesis
 - `StateRoot = genesisStateRoot(allocations)` — deterministic hash of
   all pre-mine allocations sorted by address
@@ -508,7 +508,7 @@ EmptyMerkleRoot() → [32]byte
 ```
 type Account struct {
     Nonce       uint64    // incremented each tx from this address
-    Balance     uint64    // balance in qubits
+    Balance     uint64    // balance in oenexa
     CodeHash    [32]byte  // zero for Externally Owned Accounts (EOAs)
     StorageRoot [32]byte  // zero for EOAs
 }
@@ -536,7 +536,7 @@ type StateDB struct {
 | `SetAccount(addr, acc)` | Stores a clone (thread-safe write)                       |
 | `GetBalance(addr)`      | Shortcut for `GetAccount(addr).Balance`                  |
 | `GetNonce(addr)`        | Shortcut for `GetAccount(addr).Nonce`                    |
-| `Credit(addr, amount)`  | Adds qubits (block reward credits)                       |
+| `Credit(addr, amount)`  | Adds oenexa (block reward credits)                       |
 | `CommitRoot()`          | Deterministic SHA-3-256 of all accounts (sorted)         |
 | `Snapshot()`            | Deep copy — used before executing a block                |
 | `Apply(other)`          | Replaces this state with `other` (post-block commit)     |
@@ -1052,16 +1052,16 @@ type VM struct {
 NewVM(ctx) → (*VM, error)
 ```
 - Creates a wazero runtime.
-- Registers the QBC host module (`"env"`) with these host functions:
+- Registers the OEN host module (`"env"`) with these host functions:
 
 | Export             | Parameters            | Description                        |
 |--------------------|-----------------------|------------------------------------|
-| `qbc_get`          | `(slot i32) → i64`    | Read from contract storage         |
-| `qbc_set`          | `(slot i32, val i64)` | Write to contract storage          |
-| `qbc_log`          | `(ptr i32, len i32)`  | Log a message from contract        |
-| `qbc_caller`       | `() → i64`            | Get caller address (first 8 bytes) |
-| `qbc_block_height` | `() → i64`            | Get current block height           |
-| `qbc_value`        | `() → i64`            | Get qubits sent with the call      |
+| `oen_get`          | `(slot i32) → i64`    | Read from contract storage         |
+| `oen_set`          | `(slot i32, val i64)` | Write to contract storage          |
+| `oen_log`          | `(ptr i32, len i32)`  | Log a message from contract        |
+| `oen_caller`       | `() → i64`            | Get caller address (first 8 bytes) |
+| `oen_block_height` | `() → i64`            | Get current block height           |
+| `oen_value`        | `() → i64`            | Get oenexa sent with the call      |
 
 ```
 Deploy(ctx, contractAddr, code) → error
@@ -1091,7 +1091,7 @@ state lives in `ContractStorage`, not in WASM linear memory.
 type ExecutionContext struct {
     ContractAddr [32]byte
     CallerAddr   [32]byte
-    Value        uint64    // qubits sent with call
+    Value        uint64    // oenexa sent with call
     BlockHeight  uint64
     BlockTime    int64
     GasLimit     uint64
@@ -1123,7 +1123,7 @@ type ContractStorage struct {
 
 - Simple key-value store: `(contractAddress, uint32 slot) → uint64 value`.
 - Not persistent — in-memory only (production would use a Merkle trie).
-- Host functions `qbc_get` / `qbc_set` read/write this storage.
+- Host functions `oen_get` / `oen_set` read/write this storage.
 
 ---
 
@@ -1310,9 +1310,9 @@ Manager.applyRelease(ctx, rel)
 | Step | Action                                                                          |
 |------|---------------------------------------------------------------------------------|
 | 1    | Generate two ML-DSA-65 wallets (validator + deployer)                           |
-| 2    | Build genesis block with 10M + 1M QBC pre-mine                                  |
+| 2    | Build genesis block with 10M + 1M OEN pre-mine                                  |
 | 3    | Bootstrap StateDB from genesis allocations; create mempool and P2P node         |
-| 4    | Print fee comparison table (QBC vs ETH/Solana/etc.)                             |
+| 4    | Print fee comparison table (OEN vs ETH/Solana/etc.)                             |
 | 5    | Print halving emission schedule (6 eras)                                        |
 | 5b   | Print `BlockReward()` spot-checks at key heights                                |
 | 6    | Deploy `CounterContract` WASM via `ApplyTransaction`                            |
@@ -1339,9 +1339,9 @@ case blk := <-engine.CommitCh():
 ```
 
 ```go
-func totalAllocQBC(allocs map[[32]byte]uint64) uint64
+func totalAllocOEN(allocs map[[32]byte]uint64) uint64
 ```
-- Helper that sums all genesis allocations and returns the total in QBC.
+- Helper that sums all genesis allocations and returns the total in OEN.
 
 ---
 
@@ -1395,15 +1395,15 @@ which users voluntarily add. This makes the base fee a neutral market signal.
 ### Fee split example
 
 ```
-Block baseFee = 10 qubits/gas
+Block baseFee = 10 oenexa/gas
 Tx:  gasLimit=1000, gasPrice=15, gasUsed=500
 
-Pre-deduct from sender: 1000 × 15 = 15,000 qubits
-Refund unused gas:      (1000 - 500) × 15 = 7,500 qubits
+Pre-deduct from sender: 1000 × 15 = 15,000 oenexa
+Refund unused gas:      (1000 - 500) × 15 = 7,500 oenexa
 
-FeeCollected = 500 × 15 = 7,500 qubits   (net deduction)
-BurnedFee    = 500 × 10 = 5,000 qubits   (base fee destroyed)
-ValidatorTip = 500 × 5  = 2,500 qubits   (priority tip to validator)
+FeeCollected = 500 × 15 = 7,500 oenexa   (net deduction)
+BurnedFee    = 500 × 10 = 5,000 oenexa   (base fee destroyed)
+ValidatorTip = 500 × 5  = 2,500 oenexa   (priority tip to validator)
 ```
 
 ### Base fee adjustment
@@ -1459,13 +1459,13 @@ attacks and maintaining 128-bit post-quantum security for preimages.
 | `GasDeploy`     | 5,000       | Base gas for WASM contract deployment |
 | `GasCall`       | 500         | Base gas for contract function call   |
 | `BlockGasLimit` | 500,000,000 | Max gas per block                     |
-| `MinGasPrice`   | 1           | Minimum 1 qubit per gas unit          |
+| `MinGasPrice`   | 1           | Minimum 1 oenexa per gas unit          |
 
 ### Fee constants (`internal/core/fee.go`)
 
 | Name                    | Value | Meaning                        |
 |-------------------------|-------|--------------------------------|
-| `InitialBaseFee`        | 10    | Genesis base fee in qubits/gas |
+| `InitialBaseFee`        | 10    | Genesis base fee in oenexa/gas |
 | `MinBaseFee`            | 1     | Absolute floor for base fee    |
 | `MaxBaseFeeChangeDenom` | 8     | Denominator for ±12.5% cap     |
 | `TargetGasRatioDenom`   | 2     | Target = 50% of BlockGasLimit  |
@@ -1474,9 +1474,9 @@ attacks and maintaining 128-bit post-quantum security for preimages.
 
 | Name                 | Value               | Meaning                            |
 |----------------------|---------------------|------------------------------------|
-| `InitialBlockReward` | 45 × OneQBC         | 45 QBC per block (Era 0)           |
+| `InitialBlockReward` | 45 × OneOEN         | 45 OEN per block (Era 0)           |
 | `HalvingInterval`    | 1,000,000           | Blocks between halvings (~23 days) |
-| `GenesisPremine`     | 10,000,000 × OneQBC | Initial supply allocation          |
+| `GenesisPremine`     | 10,000,000 × OneOEN | Initial supply allocation          |
 
 ### P2P constants (`internal/p2p/`)
 
@@ -1500,4 +1500,4 @@ attacks and maintaining 128-bit post-quantum security for preimages.
 
 ---
 
-*Generated: 2026-05-20 — QubitsCoin v0.4.0*
+*Generated: 2026-05-20 — OENEXA v0.4.0*

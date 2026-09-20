@@ -98,7 +98,7 @@ func (cx *CarbonXMarketplace) RetireCredit(tokenID uint64, owner, beneficiary st
 	// Generate public retirement certificate
 	cert := fmt.Sprintf("CERTIFICATE OF RETIREMENT | Beneficiary: %s | Tons CO2: %d | Registry: %s | Serial: %s | Date: %s",
 		beneficiary, credit.TonsCO2, credit.RegistryName, credit.SerialNumber, time.Now().Format(time.RFC3339))
-	
+
 	credit.RetirementDoc = cert
 
 	return cert, nil

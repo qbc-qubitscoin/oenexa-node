@@ -2,7 +2,7 @@ package compute
 
 import "fmt"
 
-// Qubit Compute represents the core module for Phase 17
+// Oenexa Compute represents the core module for Phase 17
 type ComputeModule struct {
 	Active bool
 }
@@ -12,5 +12,5 @@ func NewComputeModule() *ComputeModule {
 }
 
 func (m *ComputeModule) Execute() string {
-	return fmt.Sprintf("Phase %d: Qubit Compute executed successfully", 17)
+	return fmt.Sprintf("Phase %d: Oenexa Compute executed successfully", 17)
 }

@@ -32,10 +32,10 @@ func buildRealServer(t *testing.T) (*httptest.Server, *rpc.Server) {
 	validator := &consensus.Validator{Address: w.Address, PublicKey: w.PublicKey, VotingPower: 1}
 	vs, _ := consensus.NewValidatorSet([]*consensus.Validator{validator})
 	engine := consensus.NewEngine(w.Address, w.PublicKey, w.PrivateKey, vs, st, pool, genesis, nil, nil)
-	
+
 	api := rpc.NewAPI(engine, st, pool, nil, "test")
 	srv := rpc.NewServer("127.0.0.1:0", api, 5*time.Second, 5*time.Second)
-	
+
 	ts := httptest.NewServer(srv)
 	t.Cleanup(ts.Close)
 	return ts, srv
@@ -74,7 +74,7 @@ func TestRPCServer_HTTPError(t *testing.T) {
 	if dashResp.StatusCode != http.StatusFound {
 		t.Errorf("GET /dashboard: want 302, got %d", dashResp.StatusCode)
 	}
-	
+
 	// Test bad JSON
 	resp2, _ := http.Post(ts.URL, "application/json", bytes.NewReader([]byte("{bad json")))
 	if resp2.StatusCode != http.StatusOK {
@@ -90,8 +90,8 @@ func TestRPCServer_HTTPError(t *testing.T) {
 func TestRPCServer_Batch(t *testing.T) {
 	ts, _ := buildRealServer(t)
 	req := []map[string]interface{}{
-		{"jsonrpc": "2.0", "id": 1, "method": "qbc_chainInfo"},
-		{"jsonrpc": "2.0", "id": 2, "method": "qbc_gasPrice"},
+		{"jsonrpc": "2.0", "id": 1, "method": "oen_chainInfo"},
+		{"jsonrpc": "2.0", "id": 2, "method": "oen_gasPrice"},
 	}
 	body, _ := json.Marshal(req)
 	resp, _ := http.Post(ts.URL, "application/json", bytes.NewReader(body))
@@ -113,9 +113,9 @@ func TestRPCServer_Batch_Misc(t *testing.T) {
 	if out["error"] == nil {
 		t.Errorf("expected error for empty batch")
 	}
-	
+
 	// Test batch with invalid inner request and one error request
-	body2 := []byte(`[123, {"jsonrpc": "2.0", "id": 2, "method": "qbc_unknown"}]`)
+	body2 := []byte(`[123, {"jsonrpc": "2.0", "id": 2, "method": "oen_unknown"}]`)
 	resp2, _ := http.Post(ts.URL, "application/json", bytes.NewReader(body2))
 	var out2 []map[string]interface{}
 	json.NewDecoder(resp2.Body).Decode(&out2)
@@ -135,6 +135,7 @@ func TestRPCServer_Batch_Misc(t *testing.T) {
 
 // errReader simulates a read error
 type errReader struct{}
+
 func (errReader) Read(p []byte) (n int, err error) {
 	return 0, fmt.Errorf("simulated read error")
 }
@@ -190,7 +191,7 @@ func TestRPCServer_Start(t *testing.T) {
 func TestRPCServer_InvalidJSONRPC2(t *testing.T) {
 	ts, _ := buildRealServer(t)
 	req := map[string]interface{}{
-		"jsonrpc": "1.0", "id": 1, "method": "qbc_chainInfo",
+		"jsonrpc": "1.0", "id": 1, "method": "oen_chainInfo",
 	}
 	body, _ := json.Marshal(req)
 	resp, _ := http.Post(ts.URL, "application/json", bytes.NewReader(body))
@@ -199,7 +200,7 @@ func TestRPCServer_InvalidJSONRPC2(t *testing.T) {
 	if out["error"] == nil {
 		t.Errorf("expected error for missing JSONRPC 2.0")
 	}
-	
+
 	// Test empty body
 	resp2, _ := http.Post(ts.URL, "application/json", bytes.NewReader([]byte("   \n ")))
 	var out2 map[string]interface{}
@@ -212,24 +213,24 @@ func TestRPCServer_InvalidJSONRPC2(t *testing.T) {
 func TestRPC_BlockByHash(t *testing.T) {
 	ts, _ := buildTestHandler(t) // we can use the handler from rpc_test.go
 	// bad param
-	resp := rpcCallErr(t, ts, "qbc_blockByHash", []string{"nothex"})
+	resp := rpcCallErr(t, ts, "oen_blockByHash", []string{"nothex"})
 	if resp == nil {
 		t.Errorf("expected error")
 	}
-	
+
 	// good param but not found
 	hash := crypto.Hash256([]byte("dummy"))
-	_ = rpcCallErr(t, ts, "qbc_blockByHash", []string{crypto.ToHex(hash)})
+	_ = rpcCallErr(t, ts, "oen_blockByHash", []string{crypto.ToHex(hash)})
 }
 
 func TestRPC_MissingParams(t *testing.T) {
 	ts, _ := buildTestHandler(t)
 	methods := []string{
-		"qbc_blockByHeight",
-		"qbc_blockByHash",
-		"qbc_getBalance",
-		"qbc_getTransactionCount",
-		"qbc_sendRawTransaction",
+		"oen_blockByHeight",
+		"oen_blockByHash",
+		"oen_getBalance",
+		"oen_getTransactionCount",
+		"oen_sendRawTransaction",
 	}
 	for _, m := range methods {
 		if err := rpcCallErr(t, ts, m, nil); err == nil {
@@ -240,12 +241,12 @@ func TestRPC_MissingParams(t *testing.T) {
 
 func TestRPC_BlockByHeight_BadParams(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	resp := rpcCallErr(t, ts, "qbc_blockByHeight", []string{"notanumber"})
+	resp := rpcCallErr(t, ts, "oen_blockByHeight", []string{"notanumber"})
 	if resp == nil {
 		t.Errorf("expected error")
 	}
 	// Test out of bounds
-	resp2 := rpcCallErr(t, ts, "qbc_blockByHeight", []uint64{9999})
+	resp2 := rpcCallErr(t, ts, "oen_blockByHeight", []uint64{9999})
 	if resp2 == nil {
 		t.Errorf("expected error for not found")
 	}
@@ -256,8 +257,8 @@ func TestRPC_SendRawTransaction_Success(t *testing.T) {
 	tx := core.NewTransfer(w.Address, w.Address, w.PublicKey, 1, 100, core.MinGasPrice)
 	tx.Sign(w.PrivateKey)
 	raw, _ := rpc.GobEncodeTx(tx)
-	
-	resp := rpcCallErr(t, ts, "qbc_sendRawTransaction", []string{hex.EncodeToString(raw)})
+
+	resp := rpcCallErr(t, ts, "oen_sendRawTransaction", []string{hex.EncodeToString(raw)})
 	if resp != nil {
 		t.Errorf("expected success, got error: %v", resp)
 	}
@@ -266,10 +267,10 @@ func TestRPC_SendRawTransaction_Success(t *testing.T) {
 func TestRPC_BlockByHash_Success(t *testing.T) {
 	ts, _ := buildTestHandler(t)
 	// get height 0 hash first
-	resp := rpcCall(t, ts, "qbc_blockByHeight", []uint64{0})
+	resp := rpcCall(t, ts, "oen_blockByHeight", []uint64{0})
 	hash := resp["hash"].(string)
-	
-	resp2 := rpcCall(t, ts, "qbc_blockByHash", []string{hash})
+
+	resp2 := rpcCall(t, ts, "oen_blockByHash", []string{hash})
 	if resp2["hash"] != hash {
 		t.Errorf("expected hash %s, got %v", hash, resp2["hash"])
 	}
@@ -277,7 +278,7 @@ func TestRPC_BlockByHash_Success(t *testing.T) {
 
 func TestRPC_GetBalance_BadParams(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	resp := rpcCallErr(t, ts, "qbc_getBalance", []string{"nothex"})
+	resp := rpcCallErr(t, ts, "oen_getBalance", []string{"nothex"})
 	if resp == nil {
 		t.Errorf("expected error")
 	}
@@ -285,7 +286,7 @@ func TestRPC_GetBalance_BadParams(t *testing.T) {
 
 func TestRPC_GetTransactionCount_BadParams(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	resp := rpcCallErr(t, ts, "qbc_getTransactionCount", []string{"nothex"})
+	resp := rpcCallErr(t, ts, "oen_getTransactionCount", []string{"nothex"})
 	if resp == nil {
 		t.Errorf("expected error")
 	}
@@ -308,7 +309,7 @@ func rpcCallErr(t *testing.T, ts *httptest.Server, method string, params interfa
 	}
 	var out struct {
 		Result json.RawMessage `json:"result"`
-		Error  *rpcError `json:"error"`
+		Error  *rpcError       `json:"error"`
 	}
 	_ = json.NewDecoder(resp.Body).Decode(&out)
 	return out.Error
@@ -316,22 +317,22 @@ func rpcCallErr(t *testing.T, ts *httptest.Server, method string, params interfa
 
 func TestRPC_SendRawTransaction(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	
-	err := rpcCallErr(t, ts, "qbc_sendRawTransaction", []string{"badhex"})
+
+	err := rpcCallErr(t, ts, "oen_sendRawTransaction", []string{"badhex"})
 	if err == nil {
 		t.Errorf("expected error for bad hex")
 	}
-	
+
 	// test decode tx fail
-	err2 := rpcCallErr(t, ts, "qbc_sendRawTransaction", []string{"000000"})
+	err2 := rpcCallErr(t, ts, "oen_sendRawTransaction", []string{"000000"})
 	if err2 == nil {
 		t.Errorf("expected error for bad gob")
 	}
-	
+
 	// test pool reject (invalid signature)
 	tx := &core.Transaction{Nonce: 1}
 	raw, _ := rpc.GobEncodeTx(tx) // Also tests GobEncodeTx
-	err3 := rpcCallErr(t, ts, "qbc_sendRawTransaction", []string{hex.EncodeToString(raw)})
+	err3 := rpcCallErr(t, ts, "oen_sendRawTransaction", []string{hex.EncodeToString(raw)})
 	if err3 == nil {
 		t.Errorf("expected error for pool reject")
 	}
@@ -339,8 +340,8 @@ func TestRPC_SendRawTransaction(t *testing.T) {
 
 func TestRPC_FeeEstimate(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	
-	err := rpcCallErr(t, ts, "qbc_feeEstimate", []int{0})
+
+	err := rpcCallErr(t, ts, "oen_feeEstimate", []int{0})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

@@ -1,4 +1,4 @@
-// Package config provides TOML-based configuration for the QBC node.
+// Package config provides TOML-based configuration for the OEN node.
 package config
 
 import (
@@ -137,10 +137,10 @@ func Default() *Config {
 	return &Config{
 		Chain: ChainConfig{
 			NetworkID: 1,
-			Name:      "QubitsCoin Mainnet",
+			Name:      "OENEXA Mainnet",
 		},
 		Node: NodeConfig{
-			DataDir:      "~/.qbc",
+			DataDir:      "~/.oen",
 			KeystoreFile: "keystore.json",
 			MinerEnabled: false,
 			LogLevel:     "info",
@@ -149,8 +149,8 @@ func Default() *Config {
 			ListenAddr: "0.0.0.0:8765",
 			MaxPeers:   25,
 			BootstrapPeers: []string{
-				"qbc-seed1.qubitscoin.io:8765",
-				"qbc-seed2.qubitscoin.io:8765",
+				"oenexa-seed1.oenexa.io:8765",
+				"oenexa-seed2.oenexa.io:8765",
 			},
 		},
 		RPC: RPCConfig{
@@ -168,7 +168,7 @@ func Default() *Config {
 			ListenAddr: "0.0.0.0:9090",
 		},
 		Upgrade: UpgradeConfig{
-			ReleaseURL:    "https://api.github.com/repos/qbc-qubitscoin/qubitscoin/releases/latest",
+			ReleaseURL:    "https://api.github.com/repos/oen-oenexa/oenexa-node/releases/latest",
 			CheckInterval: duration{time.Hour},
 			AutoApply:     false,
 		},
@@ -179,11 +179,11 @@ func Default() *Config {
 func TestnetDefault() *Config {
 	cfg := Default()
 	cfg.Chain.NetworkID = 2
-	cfg.Chain.Name = "QubitsCoin Testnet"
+	cfg.Chain.Name = "OENEXA Testnet"
 	cfg.P2P.BootstrapPeers = []string{
-		"qbc-testnet-seed1.qubitscoin.io:8765",
-		"qbc-testnet-seed2.qubitscoin.io:8765",
+		"oenexa-testnet-seed1.oenexa.io:8765",
+		"oenexa-testnet-seed2.oenexa.io:8765",
 	}
-	cfg.Node.DataDir = "~/.qbc-testnet"
+	cfg.Node.DataDir = "~/.oenexa-testnet"
 	return cfg
 }

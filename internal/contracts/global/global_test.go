@@ -6,7 +6,7 @@ func TestGlobalExecution(t *testing.T) {
 	module := NewGlobalModule()
 	result := module.Execute()
 	expected := "Phase 23: Global Expansion executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

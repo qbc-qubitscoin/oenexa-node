@@ -1,4 +1,4 @@
-// Package node wires every QBC subsystem together into a production-ready
+// Package node wires every OEN subsystem together into a production-ready
 // full node.  It replaces the demo harness in cmd/node/main.go.
 //
 // Lifecycle:
@@ -40,7 +40,7 @@ import (
 	"github.com/oenexa/oenexa/internal/vm"
 )
 
-// Node is a fully wired QBC full node.
+// Node is a fully wired OEN full node.
 type Node struct {
 	cfg        *config.Config
 	wallet     *crypto.Wallet
@@ -116,7 +116,8 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 		log.Printf("[node] loading state (tip height=%d)…", storedTip)
 		st, err := n.stateStore.LoadState()
 		if err != nil {
-			n.shutdown(); return nil, fmt.Errorf("load state: %w", err)
+			n.shutdown()
+			return nil, fmt.Errorf("load state: %w", err)
 		}
 		n.st = st
 		log.Printf("[node] state loaded: %d accounts", st.Len())
@@ -137,14 +138,12 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 	// Rebuild the in-memory chain from the block store.
 	chain, err := n.loadChain(genesisBlock, storedTip)
 
-
 	validator := &consensus.Validator{
 		Address:     wallet.Address,
 		PublicKey:   wallet.PublicKey,
 		VotingPower: 1,
 	}
 	vs, err := consensus.NewValidatorSet([]*consensus.Validator{validator})
-
 
 	scheduler := upgrade.NewScheduler(1, nil)
 	n.upgradeMgr = upgrade.NewManager(upgrade.Config{
@@ -196,7 +195,8 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 	if cfg.RPC.Enabled {
 		var peersFn func() int
 		if n.p2pNode != nil {
-			peersFn = nil; _ = n.p2pNode.PeerCount
+			peersFn = nil
+			_ = n.p2pNode.PeerCount
 		}
 		api := rpc.NewAPI(n.engine, n.st, n.pool, peersFn, upgrade.Current().String())
 		n.rpcServer = rpc.NewServer(
@@ -211,7 +211,7 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 
 // Start launches all background goroutines and blocks until ctx is canceled.
 func (n *Node) Start(ctx context.Context) {
-	log.Printf("[node] QubitsCoin v%s starting…", upgrade.Current())
+	log.Printf("[node] OENEXA v%s starting…", upgrade.Current())
 
 	// Upgrade manager.
 	go n.upgradeMgr.Run(ctx)
@@ -270,15 +270,15 @@ func (n *Node) blockLoop(ctx context.Context) {
 			reward := core.BlockReward(h)
 			supply := core.CirculatingSupply(h)
 
-			log.Printf("[node] ✓ block h=%d hash=%s txs=%d gasUsed=%d baseFee=%d burned=%d reward=%dQBC supply=%dQBC",
+			log.Printf("[node] ✓ block h=%d hash=%s txs=%d gasUsed=%d baseFee=%d burned=%d reward=%dOEN supply=%dOEN",
 				h,
 				crypto.ToHex(blk.Hash)[:12]+"…",
 				len(blk.Txs),
 				blk.Header.GasUsed,
 				blk.Header.BaseFee,
 				blk.Header.BurnedFees,
-				reward/core.OneQBC,
-				supply/core.OneQBC,
+				reward/core.OneOEN,
+				supply/core.OneOEN,
 			)
 
 			// Persist.

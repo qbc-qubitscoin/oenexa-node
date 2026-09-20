@@ -16,8 +16,8 @@ func TestIssueKYCCredential_Extended(t *testing.T) {
 		t.Fatalf("NewWallet: %v", err)
 	}
 
-	issuerDID := "did:qbc:issuer-123"
-	subjectDID := "did:qbc:subject-456"
+	issuerDID := "did:oen:issuer-123"
+	subjectDID := "did:oen:subject-456"
 
 	vc, err := identity.IssueKYCCredential(
 		w.PrivateKey,
@@ -41,7 +41,7 @@ func TestIssueKYCCredential_Extended(t *testing.T) {
 	if vc.Proof.JWS == "" {
 		t.Error("Proof.JWS is empty")
 	}
-	
+
 	// Base64 check
 	_, err = base64.StdEncoding.DecodeString(vc.Proof.JWS)
 	if err != nil {
@@ -54,7 +54,7 @@ func TestIssueKYCCredential_Extended(t *testing.T) {
 
 	// Test crypto.Sign error
 	badKey := make([]byte, 10) // Invalid key size for ML-DSA-65
-	_, err = identity.IssueKYCCredential(badKey, "did:qbc:issuer", "did:qbc:subj", "VERIFIED", "LOW", "US")
+	_, err = identity.IssueKYCCredential(badKey, "did:oen:issuer", "did:oen:subj", "VERIFIED", "LOW", "US")
 	if err == nil {
 		t.Error("expected sign error")
 	}
@@ -64,7 +64,7 @@ func TestIssueKYCCredential_Extended(t *testing.T) {
 	identity.JsonMarshal = func(v any) ([]byte, error) {
 		return nil, errors.New("marshal error")
 	}
-	_, err = identity.IssueKYCCredential(w.PrivateKey, "did:qbc:issuer", "did:qbc:subj", "VERIFIED", "LOW", "US")
+	_, err = identity.IssueKYCCredential(w.PrivateKey, "did:oen:issuer", "did:oen:subj", "VERIFIED", "LOW", "US")
 	if err == nil {
 		t.Error("expected marshal error")
 	}

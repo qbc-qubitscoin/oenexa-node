@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="brand-section">
         <div className="brand-logo">⚛</div>
         <div>
-          <h1 className="brand-title">OENEXA (OEN) / QubitsCoin</h1>
+          <h1 className="brand-title">OENEXA (OEN) / OENEXA</h1>
           <span className="brand-badge">NIST ML-DSA-65 • Dual-Pool Mainnet</span>
         </div>
       </div>

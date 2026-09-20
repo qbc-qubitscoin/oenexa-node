@@ -8,7 +8,7 @@ import (
 	"github.com/oenexa/oenexa/internal/crypto"
 )
 
-// Transaction represents a signed QubitsCoin transaction.
+// Transaction represents a signed OENEXA transaction.
 type Transaction struct {
 	Version   uint8
 	Type      TxType

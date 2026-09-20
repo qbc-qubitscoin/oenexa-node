@@ -53,7 +53,7 @@ func Download(ctx context.Context, rel *Release) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("build download request: %w", err)
 	}
-	req.Header.Set("User-Agent", "QubitsCoin-node/"+Current().String())
+	req.Header.Set("User-Agent", "OENEXA-node/"+Current().String())
 
 	resp, err := client.Do(req)
 	if err != nil {

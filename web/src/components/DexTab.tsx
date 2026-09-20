@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 export const DexTab: React.FC = () => {
   const [payAmount, setPayAmount] = useState('10')
-  const [reserveA] = useState(1000000) // 1M QBC
+  const [reserveA] = useState(1000000) // 1M OEN
   const [reserveB] = useState(2500000) // 2.5M USDT
   const [swapped, setSwapped] = useState(false)
 
@@ -22,8 +22,8 @@ export const DexTab: React.FC = () => {
     <section className="tab-pane">
       <div className="tab-header">
         <div>
-          <h2 className="tab-title">QubitSwap AMM Hub</h2>
-          <p className="tab-subtitle">Decentralized Constant-Product AMM ($x \cdot y = k$) on QubitsCoin</p>
+          <h2 className="tab-title">OenexaSwap AMM Hub</h2>
+          <p className="tab-subtitle">Decentralized Constant-Product AMM ($x \cdot y = k$) on OENEXA</p>
         </div>
       </div>
 
@@ -40,7 +40,7 @@ export const DexTab: React.FC = () => {
                 placeholder="0.0"
                 className="form-input large-input"
               />
-              <span className="token-tag">QBC</span>
+              <span className="token-tag">OEN</span>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ export const DexTab: React.FC = () => {
           <div className="swap-meta">
             <div className="meta-row">
               <span>Exchange Rate:</span>
-              <span>1 QBC ≈ {(reserveB / reserveA).toFixed(2)} USDT</span>
+              <span>1 OEN ≈ {(reserveB / reserveA).toFixed(2)} USDT</span>
             </div>
             <div className="meta-row">
               <span>Protocol Fee:</span>
@@ -84,7 +84,7 @@ export const DexTab: React.FC = () => {
           )}
 
           <button onClick={handleSwap} className="btn primary full-width mt-3">
-            🔄 Swap QBC for USDT
+            🔄 Swap OEN for USDT
           </button>
         </div>
 
@@ -92,15 +92,15 @@ export const DexTab: React.FC = () => {
           <h3 className="card-title">Liquidity Pool Metrics</h3>
           <div className="info-row">
             <span className="info-key">Pool Pair:</span>
-            <span className="info-val">QBC / USDT</span>
+            <span className="info-val">OEN / USDT</span>
           </div>
           <div className="info-row">
             <span className="info-key">Total Value Locked (TVL):</span>
             <span className="info-val highlight">$5,000,000</span>
           </div>
           <div className="info-row">
-            <span className="info-key">QBC Reserve:</span>
-            <span className="info-val">{reserveA.toLocaleString()} QBC</span>
+            <span className="info-key">OEN Reserve:</span>
+            <span className="info-val">{reserveA.toLocaleString()} OEN</span>
           </div>
           <div className="info-row">
             <span className="info-key">USDT Reserve:</span>

@@ -1,4 +1,4 @@
-// Package web provides embedded web dashboard and explorer assets for QubitsCoin.
+// Package web provides embedded web dashboard and explorer assets for OENEXA.
 package web
 
 import (

@@ -6,7 +6,7 @@ import (
 )
 
 func TestHash256_Length(t *testing.T) {
-	h := Hash256([]byte("qubitscoin"))
+	h := Hash256([]byte("oenexa"))
 	if len(h) != HashSize {
 		t.Fatalf("expected %d bytes, got %d", HashSize, len(h))
 	}

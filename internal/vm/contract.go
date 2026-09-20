@@ -5,10 +5,10 @@ package vm
 // WAT equivalent:
 //
 //	(module
-//	  (import "env" "qbc_get" (func $get (param i32) (result i64)))
-//	  (import "env" "qbc_set" (func $set (param i32 i64)))
+//	  (import "env" "oen_get" (func $get (param i32) (result i64)))
+//	  (import "env" "oen_set" (func $set (param i32 i64)))
 //	  (func (export "increment")
-//	    ;; qbc_set(0, qbc_get(0) + 1)
+//	    ;; oen_set(0, oen_get(0) + 1)
 //	    i32.const 0
 //	    i32.const 0
 //	    call $get        ;; stack: [i32(0), i64(count)]
@@ -28,8 +28,8 @@ var CounterContractWASM = buildCounterWASM()
 func buildCounterWASM() []byte {
 	// ── Type section (id=0x01) ────────────────────────────────────────────
 	// 4 types:
-	//  [0] (i32) -> (i64): qbc_get
-	//  [1] (i32,i64) -> () : qbc_set
+	//  [0] (i32) -> (i64): oen_get
+	//  [1] (i32,i64) -> () : oen_set
 	//  [2] () -> () : increment
 	//  [3] () -> (i64): get_count
 	typeContent := []byte{
@@ -41,14 +41,14 @@ func buildCounterWASM() []byte {
 	}
 
 	// ── Import section (id=0x02) ─────────────────────────────────────────
-	// 2 imports: "env"."qbc_get" (type 0), "env"."qbc_set" (type 1)
+	// 2 imports: "env"."oen_get" (type 0), "env"."oen_set" (type 1)
 	importContent := []byte{
 		0x02,                   // count=2
 		0x03, 0x65, 0x6e, 0x76, // "env"  (len=3)
-		0x07, 0x71, 0x62, 0x63, 0x5f, 0x67, 0x65, 0x74, // "qbc_get" (len=7)
+		0x07, 0x6f, 0x65, 0x6e, 0x5f, 0x67, 0x65, 0x74, // "oen_get" (len=7)
 		0x00, 0x00, // kind=func, type idx 0
 		0x03, 0x65, 0x6e, 0x76, // "env"  (len=3)
-		0x07, 0x71, 0x62, 0x63, 0x5f, 0x73, 0x65, 0x74, // "qbc_set" (len=7)
+		0x07, 0x6f, 0x65, 0x6e, 0x5f, 0x73, 0x65, 0x74, // "oen_set" (len=7)
 		0x00, 0x01, // kind=func, type idx 1
 	}
 
@@ -60,7 +60,7 @@ func buildCounterWASM() []byte {
 	}
 
 	// ── Export section (id=0x07) ─────────────────────────────────────────
-	// func indices: import 0 = qbc_get (idx 0), import 1 = qbc_set (idx 1)
+	// func indices: import 0 = oen_get (idx 0), import 1 = oen_set (idx 1)
 	// local func: increment (idx 2), get_count (idx 3)
 	exportContent := []byte{
 		0x02,                                                                   // count=2
@@ -71,21 +71,21 @@ func buildCounterWASM() []byte {
 	// ── Code section (id=0x0a) ────────────────────────────────────────────
 	// Body 0: increment()
 	//   locals: 0
-	//   i32.const 0; slot arg for qbc_set
-	//   i32.const 0; slot arg for qbc_get
-	//   call 0       ; qbc_get(0) → i64 on stack
+	//   i32.const 0; slot arg for oen_set
+	//   i32.const 0; slot arg for oen_get
+	//   call 0       ; oen_get(0) → i64 on stack
 	//   i64.const 1
 	//   i64.add
-	//   call 1       ; qbc_set(0, count+1)
+	//   call 1       ; oen_set(0, count+1)
 	//   end
 	body0 := []byte{
 		0x00,       // 0 locals
 		0x41, 0x00, // i32.const 0
 		0x41, 0x00, // i32.const 0
-		0x10, 0x00, // call 0 (qbc_get)
+		0x10, 0x00, // call 0 (oen_get)
 		0x42, 0x01, // i64.const 1
 		0x7c,       // i64.add
-		0x10, 0x01, // call 1 (qbc_set)
+		0x10, 0x01, // call 1 (oen_set)
 		0x0b, // end
 	} // 13 bytes
 
@@ -96,7 +96,7 @@ func buildCounterWASM() []byte {
 	body1 := []byte{
 		0x00,       // 0 locals
 		0x41, 0x00, // i32.const 0
-		0x10, 0x00, // call 0 (qbc_get)
+		0x10, 0x00, // call 0 (oen_get)
 		0x0b, // end
 	} // 6 bytes
 

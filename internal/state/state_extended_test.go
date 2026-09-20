@@ -3,10 +3,9 @@ package state
 import (
 	"bytes"
 	"context"
+	"github.com/oenexa/oenexa/internal/vm"
 	"testing"
 	"time"
-	"github.com/oenexa/oenexa/internal/vm"
-
 
 	"github.com/oenexa/oenexa/internal/core"
 	"github.com/oenexa/oenexa/internal/crypto"
@@ -58,7 +57,7 @@ func TestState_ApplyTransaction_Errors(t *testing.T) {
 	if err == nil || err.Error() != "nonce mismatch: expected 1, got 2" {
 		t.Errorf("expected nonce mismatch, got %v", err)
 	}
-	
+
 	// 6. Unknown tx type
 	tx6 := &core.Transaction{Type: 99, GasLimit: 100000, GasPrice: baseFee, Nonce: 1, From: alice, To: bob}
 	res, _ := ApplyTransaction(st, tx6, 100000, nil, baseFee)
@@ -155,7 +154,7 @@ func TestState_ApplyTransaction_ExecVM(t *testing.T) {
 		GasLimit: 200000,
 		GasPrice: 10,
 		Nonce:    3,
-		Data:     []byte{1, 'f', 0,0,0,0,0,0,0,42}, // param 42
+		Data:     []byte{1, 'f', 0, 0, 0, 0, 0, 0, 0, 42}, // param 42
 	}
 	res, _ = ApplyTransaction(st, txCallUndeployed, 300000, v, 10)
 	if res.Error == nil || res.Error.Error()[:13] != "call reverted" {
@@ -173,7 +172,7 @@ func TestState_ApplyTransaction_ExecVM(t *testing.T) {
 		Data:     []byte{5, 'f'},
 	}
 	ApplyTransaction(st, txCallShort, 300000, v, 10)
-	
+
 	// 4. Deploy with real VM, minimal valid wasm
 	validWasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
 	txDeployOK := &core.Transaction{
@@ -277,14 +276,14 @@ func TestState_ApplyTransaction_CallInsufficientBalanceForValue(t *testing.T) {
 	var alice, contract [crypto.AddressSize]byte
 	alice[0] = 0xAA
 	contract[0] = 0xCC
-	
+
 	st.SetAccount(alice, &Account{Balance: 100000, Nonce: 1})
 	st.SetAccount(contract, &Account{CodeHash: crypto.Hash256([]byte{0x1})})
 
 	// Overflow maxCost + tx.Amount to bypass pre-check
 	// maxCost = 5000 * 10 = 50000
 	var amount uint64 = 0xFFFFFFFFFFFFFFFF - 50000 + 1
-	
+
 	tx := &core.Transaction{
 		Type:     core.TxCall,
 		From:     alice,
@@ -308,12 +307,12 @@ func TestState_ApplyTransaction_TransferInsufficientBalanceForValue(t *testing.T
 	var alice, bob [crypto.AddressSize]byte
 	alice[0] = 0xAA
 	bob[0] = 0xBB
-	
+
 	st.SetAccount(alice, &Account{Balance: 100000, Nonce: 1})
 
 	// maxCost = 210
 	var amount uint64 = 0xFFFFFFFFFFFFFFFF - 210 + 1
-	
+
 	tx := &core.Transaction{
 		Type:     core.TxTransfer,
 		From:     alice,
@@ -351,7 +350,7 @@ func TestState_ApplyBlock_EmptyTxs(t *testing.T) {
 	st := NewStateDB()
 	var valAddr [crypto.AddressSize]byte
 	valAddr[0] = 0x11
-	
+
 	blk := &core.Block{
 		Header: core.BlockHeader{
 			Height:  1,
@@ -359,7 +358,7 @@ func TestState_ApplyBlock_EmptyTxs(t *testing.T) {
 		},
 		Txs: nil,
 	}
-	
+
 	res, err := ApplyBlock(st, blk, valAddr, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -373,7 +372,7 @@ func TestState_ApplyBlock_EmptyTxs(t *testing.T) {
 	if res.TotalValidatorIncome() != core.InitialBlockReward {
 		t.Errorf("expected income = reward")
 	}
-	
+
 	// Check validator balance
 	vAcct := st.GetAccount(valAddr)
 	if vAcct.Balance != core.InitialBlockReward {
@@ -386,14 +385,14 @@ func TestState_ApplyBlock_EmptyTxs(t *testing.T) {
 	w, _ := crypto.NewWallet()
 	alice = w.Address
 	st.SetAccount(alice, &Account{Balance: 1000000, Nonce: 1})
-	
+
 	// will fail pre-check due to nonce
 	badTx := core.NewTransfer(alice, alice, w.PublicKey, 999, 0, 10)
 	badTx.Sign(w.PrivateKey)
-	
+
 	goodTx := core.NewTransfer(alice, alice, w.PublicKey, 1, 0, 10)
 	goodTx.Sign(w.PrivateKey)
-	
+
 	blk2, err := core.NewBlock(2, [32]byte{}, [32]byte{}, time.Now().UnixNano(), valAddr, []*core.Transaction{badTx, goodTx}, 0, 10, 0)
 	if err != nil {
 		t.Fatalf("failed to create block: %v", err)

@@ -4,15 +4,15 @@
 
 Most modern blockchains (Bitcoin, Ethereum, Solana) rely on elliptic curve cryptography:
 - **ECDSA (secp256k1)** or **Ed25519**.
-- Shor's algorithm running on a quantum computer of sufficient qubits can calculate private keys from public keys in polynomial time:
+- Shor's algorithm running on a quantum computer of sufficient oenexa can calculate private keys from public keys in polynomial time:
   $$\mathcal{O}(n^3)$$
   This completely breaks the signature security of existing networks.
 
-QubitsCoin is built **post-quantum by default**, implementing standard NIST Post-Quantum Cryptography (PQC) standards finalized in August 2024 (FIPS 204 & FIPS 203).
+OENEXA is built **post-quantum by default**, implementing standard NIST Post-Quantum Cryptography (PQC) standards finalized in August 2024 (FIPS 204 & FIPS 203).
 
 ---
 
-## 2. Cryptographic Primitives in QBC
+## 2. Cryptographic Primitives in OEN
 
 | Primitive | Implementation | Standard | Key Size | Security Level |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ QubitsCoin is built **post-quantum by default**, implementing standard NIST Post
 
 ## 3. How Address Derivation Works
 
-Unlike Ethereum (which takes Keccak-256 and trims to 20 bytes), QBC addresses are the full 32-byte SHA-3-256 hash of the ML-DSA-65 public key:
+Unlike Ethereum (which takes Keccak-256 and trims to 20 bytes), OEN addresses are the full 32-byte SHA-3-256 hash of the ML-DSA-65 public key:
 
 $$\text{Address} = \text{SHA-3-256}(\text{PublicKey}_{\text{ML-DSA-65}})$$
 

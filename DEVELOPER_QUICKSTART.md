@@ -1,6 +1,6 @@
-# QubitsCoin Developer Quickstart & Runbook
+# OENEXA Developer Quickstart & Runbook
 
-Welcome to the QubitsCoin core repository. This project comprises a custom blockchain built in Go, featuring a post-quantum cryptographic layer (ML-DSA-65), a WASM smart contract virtual machine (QubitVM), and a comprehensive ecosystem of decentralized applications (Phases 1-32).
+Welcome to the OENEXA core repository. This project comprises a custom blockchain built in Go, featuring a post-quantum cryptographic layer (ML-DSA-65), a WASM smart contract virtual machine (OenexaVM), and a comprehensive ecosystem of decentralized applications (Phases 1-32).
 
 This document outlines the step-by-step process for running the project locally for development, and the strategy for moving to a production server environment.
 
@@ -13,27 +13,27 @@ Local development runs a single-node "devnet" or local testnet. This allows you 
 ### Step 1: Prerequisites
 Ensure you have the following installed on your local machine:
 1. **Go (1.21+)**: The core node is written in Go.
-2. **TinyGo**: Required to compile Go smart contracts into WebAssembly (WASM) for the QubitVM.
+2. **TinyGo**: Required to compile Go smart contracts into WebAssembly (WASM) for the OenexaVM.
 3. **Make** (optional, but recommended for build scripts).
 
 ### Step 2: Build the Core Node
-Compile the main blockchain node executable. Use `qbc-node` as the binary name to avoid collision with Node.js in your terminal:
+Compile the main blockchain node executable. Use `oenexa-node` as the binary name to avoid collision with Node.js in your terminal:
 ```bash
 # In PowerShell / Windows:
-go build -o qbc-node.exe ./cmd/node
+go build -o oenexa-node.exe ./cmd/node
 
 # In Linux / macOS / Git Bash:
-go build -o qbc-node ./cmd/node
+go build -o oenexa-node ./cmd/node
 ```
 
 ### Step 3: Run the Local Node
 Start the node in standalone/dev mode:
 ```bash
 # In Windows PowerShell:
-.\qbc-node.exe start
+.\oenexa-node.exe start
 
 # In Linux / macOS / Git Bash:
-./qbc-node start
+./oenexa-node start
 
 # Or run directly via Go without building an executable:
 go run ./cmd/node start
@@ -41,7 +41,7 @@ go run ./cmd/node start
 *Note: The node produces blocks every 2 seconds, serves JSON-RPC on `http://localhost:8545`, and exposes Prometheus metrics at `http://localhost:9100/metrics`.*
 
 ### Step 4: Run the Test Suites
-The repository contains comprehensive unit tests for all 32 phases (Core, Crypto, QubitVM, Oracles, DeFi, DAOs, etc.) with verified **100% statement coverage**:
+The repository contains comprehensive unit tests for all 32 phases (Core, Crypto, OenexaVM, Oracles, DeFi, DAOs, etc.) with verified **100% statement coverage**:
 ```bash
 # Run all Go tests recursively
 go test ./...
@@ -86,11 +86,11 @@ On a production server, run the node pointing to the seed nodes and using a secu
 ./qbcd \
   --network mainnet \
   --bootnodes "enode://pubkey1@ip1:30303,enode://pubkey2@ip2:30303" \
-  --validator-key /etc/qubitscoin/keys/validator.key \
-  --datadir /var/lib/qubitscoin
+  --validator-key /etc/oenexa/keys/validator.key \
+  --datadir /var/lib/oenexa
 ```
 
 ### 5. Process Management and Monitoring
 - **Systemd/Docker**: Wrap the execution in a Systemd service file or a Docker container ensuring the process auto-restarts on failure.
 - **Telemetry**: Hook the node logs into a monitoring stack (Prometheus + Grafana). Monitor metric endpoints for block propagation times, ML-DSA verification latencies, and memory usage.
-- **Security**: Keep validator private keys secure, ideally utilizing Hardware Security Modules (HSMs) or secure cloud enclaves (e.g., AWS KMS) via QubitsCoin's Phase 21 custody integrations.
+- **Security**: Keep validator private keys secure, ideally utilizing Hardware Security Modules (HSMs) or secure cloud enclaves (e.g., AWS KMS) via OENEXA's Phase 21 custody integrations.

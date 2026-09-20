@@ -59,10 +59,10 @@ func TestApplyBlock_TotalValidatorIncome(t *testing.T) {
 
 func TestApplyBlock_WithTransfer_FeeGoesToValidator(t *testing.T) {
 	st := NewStateDB()
-	st.SetAccount(addrA, &Account{Balance: 10_000_000 * core.OneQBC})
+	st.SetAccount(addrA, &Account{Balance: 10_000_000 * core.OneOEN})
 
 	gasPrice := core.MinGasPrice
-	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 1*core.OneQBC, core.GasTransfer, gasPrice, nil)
+	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 1*core.OneOEN, core.GasTransfer, gasPrice, nil)
 	blk := &core.Block{
 		Header: core.BlockHeader{Height: 1},
 		Txs:    []*core.Transaction{tx},
@@ -106,7 +106,7 @@ func TestApplyBlock_RewardHalves(t *testing.T) {
 
 func TestApplyBlock_TxResultsCount(t *testing.T) {
 	st := NewStateDB()
-	st.SetAccount(addrA, &Account{Balance: 100_000_000 * core.OneQBC})
+	st.SetAccount(addrA, &Account{Balance: 100_000_000 * core.OneOEN})
 
 	txs := make([]*core.Transaction, 3)
 	for i := range txs {
@@ -125,7 +125,7 @@ func TestApplyBlock_TxResultsCount(t *testing.T) {
 
 func TestApplyBlock_GasUsedSummed(t *testing.T) {
 	st := NewStateDB()
-	st.SetAccount(addrA, &Account{Balance: 100_000_000 * core.OneQBC})
+	st.SetAccount(addrA, &Account{Balance: 100_000_000 * core.OneOEN})
 
 	tx1 := makeTx(core.TxTransfer, addrA, addrB, 0, 1, core.GasTransfer, core.MinGasPrice, nil)
 	tx2 := makeTx(core.TxTransfer, addrA, addrB, 1, 1, core.GasTransfer, core.MinGasPrice, nil)

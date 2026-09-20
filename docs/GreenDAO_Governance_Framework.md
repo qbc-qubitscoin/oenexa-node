@@ -4,7 +4,7 @@
 **Phase**: 12 (GreenDAO Launch)
 
 ## 1. Overview
-The QubitsCoin GreenDAO is an on-chain treasury managed by token holders, dedicated exclusively to funding, developing, and tokenizing renewable energy projects (solar, wind, hydropower, green hydrogen, and EV charging infrastructure). 
+The OENEXA GreenDAO is an on-chain treasury managed by token holders, dedicated exclusively to funding, developing, and tokenizing renewable energy projects (solar, wind, hydropower, green hydrogen, and EV charging infrastructure). 
 
 ## 2. Funding Criteria
 To be eligible for GreenDAO treasury disbursement, a project must meet the following criteria:

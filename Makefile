@@ -16,7 +16,7 @@ GOARCH  ?= $(shell go env GOARCH)
 
 all: test build   ## Run tests then build (default)
 
-build:            ## Build the qbc-node binary for the current platform
+build:            ## Build the oenexa-node binary for the current platform
 	@echo "▶ Building $(BINARY) ($(GOOS)/$(GOARCH))…"
 	@mkdir -p bin
 	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) \
@@ -24,13 +24,13 @@ build:            ## Build the qbc-node binary for the current platform
 	@echo "  ✓ $(BINARY)"
 
 build-linux:      ## Cross-compile for linux/amd64
-	GOOS=linux GOARCH=amd64 $(MAKE) build BINARY=bin/qbc-node-linux-amd64
+	GOOS=linux GOARCH=amd64 $(MAKE) build BINARY=bin/oenexa-node-linux-amd64
 
 build-darwin:     ## Cross-compile for darwin/arm64 (Apple Silicon)
-	GOOS=darwin GOARCH=arm64 $(MAKE) build BINARY=bin/qbc-node-darwin-arm64
+	GOOS=darwin GOARCH=arm64 $(MAKE) build BINARY=bin/oenexa-node-darwin-arm64
 
 build-windows:    ## Cross-compile for windows/amd64
-	GOOS=windows GOARCH=amd64 $(MAKE) build BINARY=bin/qbc-node-windows-amd64.exe
+	GOOS=windows GOARCH=amd64 $(MAKE) build BINARY=bin/oenexa-node-windows-amd64.exe
 
 build-all: build-linux build-darwin build-windows  ## Build for all platforms
 
@@ -79,25 +79,25 @@ deadcode:         ## Report unreachable functions (requires golang.org/x/tools/c
 ## ── Docker ───────────────────────────────────────────────────────────────────
 
 docker:           ## Build the Docker image
-	@echo "▶ Building Docker image qbc-node:$(VERSION)…"
+	@echo "▶ Building Docker image oenexa-node:$(VERSION)…"
 	docker build \
 	  --build-arg VERSION=$(VERSION) \
-	  --tag qbc-node:$(VERSION) \
-	  --tag qbc-node:latest \
+	  --tag oenexa-node:$(VERSION) \
+	  --tag oenexa-node:latest \
 	  .
 
 docker-push:      ## Push Docker image to registry (set REGISTRY env var)
 	@[ -n "$(REGISTRY)" ] || (echo "REGISTRY is not set" && exit 1)
-	docker tag qbc-node:$(VERSION) $(REGISTRY)/qbc-node:$(VERSION)
-	docker tag qbc-node:latest     $(REGISTRY)/qbc-node:latest
-	docker push $(REGISTRY)/qbc-node:$(VERSION)
-	docker push $(REGISTRY)/qbc-node:latest
+	docker tag oenexa-node:$(VERSION) $(REGISTRY)/oenexa-node:$(VERSION)
+	docker tag oenexa-node:latest     $(REGISTRY)/oenexa-node:latest
+	docker push $(REGISTRY)/oenexa-node:$(VERSION)
+	docker push $(REGISTRY)/oenexa-node:latest
 
 ## ── Local node ───────────────────────────────────────────────────────────────
 
 run-node: build   ## Build and start a local node (miner, testnet config)
 	@echo "▶ Starting local testnet node…"
-	QBC_PASSWORD=dev $(BINARY) start \
+	OEN_PASSWORD=dev $(BINARY) start \
 	  --config configs/testnet.toml \
 	  --miner \
 	  --rpc-listen 127.0.0.1:8545 \
@@ -116,12 +116,12 @@ testnet-logs:     ## Tail logs from the Docker Compose stack
 
 ## ── Wallet helpers ───────────────────────────────────────────────────────────
 
-wallet-new: build ## Create a new wallet (prompts for password via env QBC_PASSWORD)
-	@[ -n "$(QBC_PASSWORD)" ] || (echo "Set QBC_PASSWORD env var first" && exit 1)
-	$(BINARY) wallet new --datadir ~/.qbc
+wallet-new: build ## Create a new wallet (prompts for password via env OEN_PASSWORD)
+	@[ -n "$(OEN_PASSWORD)" ] || (echo "Set OEN_PASSWORD env var first" && exit 1)
+	$(BINARY) wallet new --datadir ~/.oen
 
 wallet-show: build ## Show the address in the default keystore
-	$(BINARY) wallet show --datadir ~/.qbc
+	$(BINARY) wallet show --datadir ~/.oen
 
 ## ── Release ──────────────────────────────────────────────────────────────────
 

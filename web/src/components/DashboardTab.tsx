@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 import type { ChainInfo } from '../types/rpc'
 
 export interface DashboardTabProps {
-  client: QBCClient
+  client: OENClient
 }
 
 export const DashboardTab: React.FC<DashboardTabProps> = ({ client }) => {
@@ -18,7 +18,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ client }) => {
       const info = await client.getChainInfo()
       setChainInfo(info)
     } catch (err: any) {
-      setError(err.message || 'Failed to connect to QBC Node')
+      setError(err.message || 'Failed to connect to OEN Node')
     } finally {
       setLoading(false)
     }
@@ -33,7 +33,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ client }) => {
       <div className="tab-header">
         <div>
           <h2 className="tab-title">Live Network Dashboard</h2>
-          <p className="tab-subtitle">Real-time status of the quantum-resistant QubitsCoin consensus network</p>
+          <p className="tab-subtitle">Real-time status of the quantum-resistant OENEXA consensus network</p>
         </div>
         <button
           onClick={fetchStatus}
@@ -88,7 +88,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ client }) => {
 
             <div className="metric-card">
               <span className="metric-label">Base Fee (EIP-1559)</span>
-              <span className="metric-value">{(chainInfo.baseFee / 1000000).toFixed(2)} nanoQBC</span>
+              <span className="metric-value">{(chainInfo.baseFee / 1000000).toFixed(2)} nanoOEN</span>
               <span className="metric-foot">Dynamic Gas Elasticity</span>
             </div>
 

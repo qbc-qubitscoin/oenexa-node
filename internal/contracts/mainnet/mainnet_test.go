@@ -6,7 +6,7 @@ func TestMainnetExecution(t *testing.T) {
 	module := NewMainnetModule()
 	result := module.Execute()
 	expected := "Phase 24: Mainnet Launch executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

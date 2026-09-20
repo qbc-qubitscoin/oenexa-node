@@ -1,10 +1,10 @@
-package qubitid
+package oenexaid
 
-// QubitsCoin WASM Host Functions
-//go:wasmimport env qbc_state_read
+// OENEXA WASM Host Functions
+//go:wasmimport env oen_state_read
 func qbcStateRead(keyPtr, keyLen, valPtr, valMaxLen uint32) uint32 { return 0 }
 
-//go:wasmimport env qbc_state_write
+//go:wasmimport env oen_state_write
 func qbcStateWrite(keyPtr, keyLen, valPtr, valLen uint32) {}
 
 // register_did binds a DID document hash to the sender's address.
@@ -50,4 +50,5 @@ var (
 )
 
 type dummyError struct{}
+
 func (e dummyError) Error() string { return "error" }

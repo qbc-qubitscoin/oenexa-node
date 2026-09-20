@@ -21,8 +21,7 @@ const (
 	MaxSupply uint64 = 100_000_000 * OneOEN // 100M OEN = 10^17 nano-OEN (fits uint64)
 
 	// Backwards compatibility aliases
-	Qubit  uint64 = NanoOEN
-	OneQBC uint64 = OneOEN
+	Oenexa uint64 = NanoOEN
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,7 +41,7 @@ const (
 // Chain metadata.
 const (
 	Ticker          = "OEN"
-	LegacyTicker    = "QBC"
+	LegacyTicker    = "OEN"
 	Decimals        = 9
 	ProtocolVersion = 1
 	ChainID         = 1

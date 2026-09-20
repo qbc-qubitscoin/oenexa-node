@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QubitsCoin Web Wallet</title>
+    <title>OENEXA Web Wallet</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -74,7 +74,7 @@
 
 <div class="container">
     <div class="panel">
-        <h1>QubitsCoin Web Wallet</h1>
+        <h1>OENEXA Web Wallet</h1>
         <p>Quantum-Safe (ML-DSA-65) Web Interface</p>
         <div id="status" class="red">Offline (Not connected to Node)</div>
         
@@ -87,14 +87,14 @@
         <p><strong>Address:</strong></p>
         <div class="address-box" id="address-display">Not loaded</div>
         
-        <p><strong>Balance:</strong> <span id="balance-display">0</span> QBC</p>
+        <p><strong>Balance:</strong> <span id="balance-display">0</span> OEN</p>
         <button onclick="refreshBalance()">Refresh Balance</button>
     </div>
 
     <div class="panel" id="transfer-panel" style="display: none;">
-        <h2>Send QBC</h2>
+        <h2>Send OEN</h2>
         <input type="text" id="toAddress" placeholder="To Address (Hex)">
-        <input type="number" id="sendAmount" placeholder="Amount (QBC)" step="0.000000001">
+        <input type="number" id="sendAmount" placeholder="Amount (OEN)" step="0.000000001">
         <button class="btn-success" onclick="sendTransaction()">Sign & Broadcast</button>
         <p id="tx-result"></p>
     </div>
@@ -120,7 +120,7 @@
 
     async function checkConnection() {
         try {
-            const chainInfo = await rpcCall("qbc_chainInfo");
+            const chainInfo = await rpcCall("oen_chainInfo");
             document.getElementById('status').innerText = `Connected (Height: ${chainInfo.height})`;
             document.getElementById('status').className = 'green';
             isConnected = true;
@@ -138,10 +138,10 @@
     async function refreshBalance() {
         if (!isConnected) return;
         try {
-            const result = await rpcCall("qbc_getBalance", [DEMO_ADDRESS]);
-            const qubits = result.balance_qubits || 0;
-            const qbc = qubits / 1000000000;
-            document.getElementById('balance-display').innerText = qbc.toFixed(9);
+            const result = await rpcCall("oen_getBalance", [DEMO_ADDRESS]);
+            const oenexa = result.balance_oenexa || 0;
+            const oen = oenexa / 1000000000;
+            document.getElementById('balance-display').innerText = oen.toFixed(9);
         } catch(e) {
             console.error("Failed to get balance", e);
         }
@@ -160,7 +160,7 @@
             // 1. Fetch nonce and baseFee
             // 2. Construct binary payload
             // 3. Call WASM ml-dsa-65 sign
-            // 4. broadcast via qbc_sendRawTransaction
+            // 4. broadcast via oen_sendRawTransaction
             resEl.innerText = "Transaction Broadcast Failed: WebAssembly Crypto Module Not Loaded in Demo";
             resEl.className = "red";
         }, 1500);

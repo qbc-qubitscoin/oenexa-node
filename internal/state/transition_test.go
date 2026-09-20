@@ -39,8 +39,8 @@ var (
 // ── Transfer ──────────────────────────────────────────────────────────────────
 
 func TestApplyTransaction_Transfer_Success(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
-	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 100*core.OneQBC, core.GasTransfer, core.MinGasPrice, nil)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
+	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 100*core.OneOEN, core.GasTransfer, core.MinGasPrice, nil)
 
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {
@@ -49,8 +49,8 @@ func TestApplyTransaction_Transfer_Success(t *testing.T) {
 	if !res.Success {
 		t.Fatalf("expected success, got error: %v", res.Error)
 	}
-	if st.GetBalance(addrB) != 100*core.OneQBC {
-		t.Errorf("recipient balance: want %d, got %d", 100*core.OneQBC, st.GetBalance(addrB))
+	if st.GetBalance(addrB) != 100*core.OneOEN {
+		t.Errorf("recipient balance: want %d, got %d", 100*core.OneOEN, st.GetBalance(addrB))
 	}
 	if res.GasUsed != core.GasTransfer {
 		t.Errorf("GasUsed: want %d, got %d", core.GasTransfer, res.GasUsed)
@@ -58,7 +58,7 @@ func TestApplyTransaction_Transfer_Success(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_FeeCollected(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	gasPrice := core.MinGasPrice
 	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 0, core.GasTransfer, gasPrice, nil)
 
@@ -73,7 +73,7 @@ func TestApplyTransaction_Transfer_FeeCollected(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_GasRefund(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	// Set gas limit higher than intrinsic cost — sender should be refunded.
 	gasLimit := core.GasTransfer * 2
 	gasPrice := core.MinGasPrice
@@ -93,8 +93,8 @@ func TestApplyTransaction_Transfer_GasRefund(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_InsufficientBalance(t *testing.T) {
-	st := stateWithBalance(addrA, 1*core.OneQBC)
-	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 100*core.OneQBC, core.GasTransfer, core.MinGasPrice, nil)
+	st := stateWithBalance(addrA, 1*core.OneOEN)
+	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 100*core.OneOEN, core.GasTransfer, core.MinGasPrice, nil)
 
 	_, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err == nil {
@@ -103,7 +103,7 @@ func TestApplyTransaction_Transfer_InsufficientBalance(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_NonceMismatch(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	// Account nonce is 0, but tx nonce is 5.
 	tx := makeTx(core.TxTransfer, addrA, addrB, 5, 1, core.GasTransfer, core.MinGasPrice, nil)
 
@@ -114,7 +114,7 @@ func TestApplyTransaction_Transfer_NonceMismatch(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_NonceIncrement(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 1, core.GasTransfer, core.MinGasPrice, nil)
 
 	_, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
@@ -127,7 +127,7 @@ func TestApplyTransaction_Transfer_NonceIncrement(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_GasLimitBelowIntrinsic(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 1, core.GasTransfer-1, core.MinGasPrice, nil)
 
 	_, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
@@ -137,7 +137,7 @@ func TestApplyTransaction_Transfer_GasLimitBelowIntrinsic(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_ExceedsBlockGas(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(core.TxTransfer, addrA, addrB, 0, 1, core.GasTransfer, core.MinGasPrice, nil)
 
 	_, err := ApplyTransaction(st, tx, core.GasTransfer-1, nil, core.MinBaseFee)
@@ -147,7 +147,7 @@ func TestApplyTransaction_Transfer_ExceedsBlockGas(t *testing.T) {
 }
 
 func TestApplyTransaction_Transfer_SequentialNonces(t *testing.T) {
-	st := stateWithBalance(addrA, 10_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 10_000_000*core.OneOEN)
 	for i := uint64(0); i < 5; i++ {
 		tx := makeTx(core.TxTransfer, addrA, addrB, i, 1, core.GasTransfer, core.MinGasPrice, nil)
 		_, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)

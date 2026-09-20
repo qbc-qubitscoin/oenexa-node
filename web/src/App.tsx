@@ -9,13 +9,13 @@ import { GreenDaoTab } from './components/GreenDaoTab'
 import { CarbonXTab } from './components/CarbonXTab'
 import { ShieldedTab } from './components/ShieldedTab'
 import { RpcConsoleTab } from './components/RpcConsoleTab'
-import { QBCClient } from './services/rpcClient'
+import { OENClient } from './services/rpcClient'
 import './App.css'
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard')
   const [isDark, setIsDark] = useState<boolean>(() => {
-    const saved = localStorage.getItem('qbc_theme')
+    const saved = localStorage.getItem('oen_theme')
     if (saved) return saved === 'dark'
     return window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true
   })
@@ -29,7 +29,7 @@ export const App: React.FC = () => {
   }, [])
 
   const [endpoint, setEndpoint] = useState<string>(initialEndpoint)
-  const client = useMemo(() => new QBCClient(endpoint), [endpoint])
+  const client = useMemo(() => new OENClient(endpoint), [endpoint])
 
   const [connected, setConnected] = useState(false)
   const [height, setHeight] = useState(0)
@@ -52,7 +52,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-    localStorage.setItem('qbc_theme', isDark ? 'dark' : 'light')
+    localStorage.setItem('oen_theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
   const toggleTheme = () => setIsDark((prev) => !prev)

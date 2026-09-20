@@ -1,10 +1,10 @@
-# QubitsCoin Bug Bounty Report - Testnet Alpha
+# OENEXA Bug Bounty Report - Testnet Alpha
 
 **Phase**: 7
-**Scope**: Core Client, Consensus Engine, QubitVM
+**Scope**: Core Client, Consensus Engine, OenexaVM
 
 ## Overview
-During the Testnet Alpha phase, a simulated bug bounty program was run targeting the core consensus logic, cryptographic primitives, and the `wazero`-based QubitVM.
+During the Testnet Alpha phase, a simulated bug bounty program was run targeting the core consensus logic, cryptographic primitives, and the `wazero`-based OenexaVM.
 
 ## Findings Summary
 
@@ -19,7 +19,7 @@ During the Testnet Alpha phase, a simulated bug bounty program was run targeting
 
 ### High: RPC Keystore Password Leak via Docker Compose
 **Description**: The `docker-compose.yml` was passing the keystore password via command-line arguments (`--password`), which caused the password to leak into process lists and `docker inspect` outputs.
-**Remediation**: Removed CLI flag usage. The node now strictly reads the `QBC_PASSWORD` environment variable. (Fixed in `v0.5.0` pre-release).
+**Remediation**: Removed CLI flag usage. The node now strictly reads the `OEN_PASSWORD` environment variable. (Fixed in `v0.5.0` pre-release).
 
 ### Medium: Unhandled Panics in Crypto Fuzzing
 **Description**: Improper hex formatting in addresses or hashes could cause parsing panics if not gracefully caught.

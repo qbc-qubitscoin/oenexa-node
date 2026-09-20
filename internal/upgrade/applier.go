@@ -73,4 +73,3 @@ func cleanOldBinary() {
 		_ = os.Remove(old)
 	}
 }
-

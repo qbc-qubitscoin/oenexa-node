@@ -21,7 +21,7 @@ func TestNewSyncer(t *testing.T) {
 
 func TestObservePeerHeight(t *testing.T) {
 	s := New(nil, nil, nil, nil, nil, nil)
-	
+
 	// Returns 0 initially
 	if h := s.BestPeerHeight(); h != 0 {
 		t.Errorf("Expected BestPeerHeight to be 0, got %d", h)
@@ -54,7 +54,7 @@ func TestApplyBlocks_Empty(t *testing.T) {
 func TestApplyBlocks_WrongHeight(t *testing.T) {
 	eng := consensus.NewEngine([crypto.AddressSize]byte{}, nil, nil, nil, nil, nil, nil, nil, nil)
 	s := New(eng, nil, nil, nil, nil, nil)
-	
+
 	blk := &core.Block{
 		Header: core.BlockHeader{
 			Height: 999,
@@ -70,7 +70,7 @@ func TestApplyBlocks_BadSignature(t *testing.T) {
 
 	blk := &core.Block{
 		Header: core.BlockHeader{
-			Height: eng.Height(), 
+			Height: eng.Height(),
 		},
 	}
 	s.ApplyBlocks([]*core.Block{blk})
@@ -87,14 +87,14 @@ func TestTrySync_UpToDate(t *testing.T) {
 	eng := consensus.NewEngine([crypto.AddressSize]byte{}, nil, nil, nil, nil, nil, nil, nil, nil)
 	s := New(eng, nil, nil, nil, nil, nil)
 	// Local height is 1, best peer is 0 -> up to date
-	s.trySync() 
+	s.trySync()
 }
 
 func TestTrySync_Behind(t *testing.T) {
 	eng := consensus.NewEngine([crypto.AddressSize]byte{}, nil, nil, nil, nil, nil, nil, nil, nil)
 	s := New(eng, nil, nil, &p2p.Node{}, nil, nil)
 	s.ObservePeerHeight("peer1", 70) // Needs two batches (batch size 64)
-	
+
 	// Because node is &p2p.Node{}, BroadcastRaw won't panic and does nothing.
 	s.trySync()
 }
@@ -118,7 +118,7 @@ func TestApplyBlocks_ValidAndError(t *testing.T) {
 
 	eng := consensus.NewEngine([crypto.AddressSize]byte{}, nil, nil, nil, nil, nil, genesis, nil, nil)
 	st := state.NewStateDB()
-	
+
 	db, err := storage.Open(t.TempDir())
 	if err != nil {
 		t.Fatalf("failed to open storage: %v", err)

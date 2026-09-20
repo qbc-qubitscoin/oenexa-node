@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 import type { BlockInfo } from '../types/rpc'
 
 export interface ExplorerTabProps {
-  client: QBCClient
+  client: OENClient
 }
 
 export const ExplorerTab: React.FC<ExplorerTabProps> = ({ client }) => {
@@ -108,7 +108,7 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ client }) => {
             </div>
             <div className="detail-row">
               <span className="detail-key">Base Fee</span>
-              <span className="detail-val">{(block.baseFee / 1000000).toFixed(4)} nanoQBC</span>
+              <span className="detail-val">{(block.baseFee / 1000000).toFixed(4)} nanoOEN</span>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ export const ExplorerTab: React.FC<ExplorerTabProps> = ({ client }) => {
                     <th>Type</th>
                     <th>From</th>
                     <th>To</th>
-                    <th>Value (QBC)</th>
+                    <th>Value (OEN)</th>
                     <th>Nonce</th>
                     <th>Gas Limit</th>
                   </tr>

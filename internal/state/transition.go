@@ -30,7 +30,7 @@ type TxResult struct {
 
 // ApplyTransaction executes a transaction against the state.
 //
-//   - baseFee is the current block's base fee per gas (qubits).
+//   - baseFee is the current block's base fee per gas (oenexa).
 //     Transactions whose GasPrice < baseFee are rejected.
 //   - execVM may be nil for transfer-only operation.
 func ApplyTransaction(

@@ -1,7 +1,7 @@
 package core
 
 // ─────────────────────────────────────────────────────────────────────────────
-// QBC Fee Model — World's Cheapest On-Chain Fees
+// OEN Fee Model — World's Cheapest On-Chain Fees
 //
 // EIP-1559 style two-component fee:
 //
@@ -21,12 +21,12 @@ package core
 // ─────────────────────────────────────────────────────────────────────────────
 
 const (
-	// InitialBaseFee is the base fee at genesis (qubits per gas).
-	// Transfer fee at genesis = GasTransfer × InitialBaseFee = 21 × 10 = 210 qubits.
+	// InitialBaseFee is the base fee at genesis (oenexa per gas).
+	// Transfer fee at genesis = GasTransfer × InitialBaseFee = 21 × 10 = 210 oenexa.
 	InitialBaseFee uint64 = 10
 
 	// MinBaseFee is the lowest the base fee can ever fall.
-	// At 1 qubit/gas a transfer costs 21 qubits = 0.000000021 QBC.
+	// At 1 oenexa/gas a transfer costs 21 oenexa = 0.000000021 OEN.
 	MinBaseFee uint64 = 1
 
 	// MaxBaseFeeChangeDenom is the denominator for the ±12.5% cap per block.
@@ -117,10 +117,10 @@ func FeeEstimate(baseFee uint64, tier FeeTier) (maxFeePerGas, priorityTip uint64
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TransferCostQubits returns the total qubit cost of a simple transfer
+// TransferCostOenexa returns the total oenexa cost of a simple transfer
 // at the given base fee and priority tip per gas.
 // ─────────────────────────────────────────────────────────────────────────────
-func TransferCostQubits(baseFee, priorityTip uint64) uint64 {
+func TransferCostOenexa(baseFee, priorityTip uint64) uint64 {
 	return GasTransfer * (baseFee + priorityTip)
 }
 
@@ -134,11 +134,11 @@ type FeeComparison struct {
 }
 
 // FeeComparisonTable returns a list of chains for comparison.
-// QBC figures assume InitialBaseFee and a token price of $1.00.
+// OEN figures assume InitialBaseFee and a token price of $1.00.
 func FeeComparisonTable() []FeeComparison {
-	// QBC transfer fee at genesis base fee, assuming $1/QBC:
-	//   21 gas × 10 qubits/gas = 210 qubits = 0.00000021 QBC = $0.00000021
-	qbcFeeUSD := float64(TransferCostQubits(InitialBaseFee, 0)) / float64(OneQBC)
+	// OEN transfer fee at genesis base fee, assuming $1/OEN:
+	//   21 gas × 10 oenexa/gas = 210 oenexa = 0.00000021 OEN = $0.00000021
+	qbcFeeUSD := float64(TransferCostOenexa(InitialBaseFee, 0)) / float64(OneOEN)
 
 	return []FeeComparison{
 		{Chain: "Ethereum (L1)", TransferUSD: 1.50, TPSLimit: 15},
@@ -147,6 +147,6 @@ func FeeComparisonTable() []FeeComparison {
 		{Chain: "Polygon", TransferUSD: 0.002, TPSLimit: 7_000},
 		{Chain: "Solana", TransferUSD: 0.00025, TPSLimit: 65_000},
 		{Chain: "Sui", TransferUSD: 0.00002, TPSLimit: 120_000},
-		{Chain: "QBC (genesis base fee, $1/QBC)", TransferUSD: qbcFeeUSD, TPSLimit: 23_000_000},
+		{Chain: "OEN (genesis base fee, $1/OEN)", TransferUSD: qbcFeeUSD, TPSLimit: 23_000_000},
 	}
 }

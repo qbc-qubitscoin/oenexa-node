@@ -1,12 +1,12 @@
-# QubitsCoin Development Process
+# OENEXA Development Process
 
-This document outlines the step-by-step development process used to implement the 32 Phases of the QubitsCoin ecosystem.
+This document outlines the step-by-step development process used to implement the 32 Phases of the OENEXA ecosystem.
 
 ## Stage 1: Core Foundation (Phases 1 - 5)
 1. **Cryptography & Primitives**: Implementation of ML-DSA-65 (FIPS 204) and ML-KEM-768 (FIPS 203) for post-quantum security.
 2. **State & Mempool**: Development of the account model, state transitions, and gas accounting.
 3. **Consensus & P2P**: BFT consensus engine and ML-KEM-768 secured peer-to-peer gossip network.
-4. **QubitVM**: Integration of pure-Go WebAssembly (WASM) smart contract runtime.
+4. **OenexaVM**: Integration of pure-Go WebAssembly (WASM) smart contract runtime.
 5. **Tokenomics**: EIP-1559 base fee burning, tipping, and block emission halving schedules.
 
 ## Stage 2: Tooling & Utilities (Phases 6 - 8)
@@ -15,9 +15,9 @@ This document outlines the step-by-step development process used to implement th
 3. **Wallet Architecture**: Multi-signature wallet functionality utilizing WASM smart contracts.
 
 ## Stage 3: Decentralized Applications (Phases 9 - 13)
-1. **QubitID (Phase 9)**: WASM Decentralized Identifier (DID) registry for KYC/AML compliance.
+1. **OenexaID (Phase 9)**: WASM Decentralized Identifier (DID) registry for KYC/AML compliance.
 2. **Oracle Network (Phase 10)**: On-chain median-aggregator to securely import real-world data feeds.
-3. **DeFi Hub (Phase 11)**: QubitSwap AMM and an over-collateralized lending protocol.
+3. **DeFi Hub (Phase 11)**: OenexaSwap AMM and an over-collateralized lending protocol.
 4. **GreenDAO (Phase 12)**: Automated treasury disbursement for funding green energy projects.
 5. **CarbonX (Phase 13)**: Carbon credit tokenization and on-chain retirement mechanism.
 

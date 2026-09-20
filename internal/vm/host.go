@@ -21,7 +21,7 @@ const (
 //   func(ctx context.Context, mod api.Module, stack []uint64)
 // Params are in stack[0...n-1]; return values are written back into stack[0...m-1].
 
-// hostGet implements env.qbc_get(slot i32) -> i64
+// hostGet implements env.oen_get(slot i32) -> i64
 func hostGet(storage *ContractStorage) api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
@@ -37,7 +37,7 @@ func hostGet(storage *ContractStorage) api.GoModuleFunc {
 	}
 }
 
-// hostSet implements env.qbc_set(slot i32, value i64)
+// hostSet implements env.oen_set(slot i32, value i64)
 func hostSet(storage *ContractStorage) api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
@@ -56,7 +56,7 @@ func hostSet(storage *ContractStorage) api.GoModuleFunc {
 	}
 }
 
-// hostLog implements env.qbc_log(ptr i32, len i32)
+// hostLog implements env.oen_log(ptr i32, len i32)
 func hostLog() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
@@ -78,7 +78,7 @@ func hostLog() api.GoModuleFunc {
 	}
 }
 
-// hostCaller implements env.qbc_caller() -> i64
+// hostCaller implements env.oen_caller() -> i64
 func hostCaller() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
@@ -97,7 +97,7 @@ func hostCaller() api.GoModuleFunc {
 	}
 }
 
-// hostBlockHeight implements env.qbc_block_height() -> i64
+// hostBlockHeight implements env.oen_block_height() -> i64
 func hostBlockHeight() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
@@ -112,7 +112,7 @@ func hostBlockHeight() api.GoModuleFunc {
 	}
 }
 
-// hostValue implements env.qbc_value() -> i64
+// hostValue implements env.oen_value() -> i64
 func hostValue() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)

@@ -4,7 +4,7 @@
 **Phase**: 13 (CarbonX Marketplace)
 
 ## 1. Source of Truth
-QubitsCoin **does not** perform novel carbon accounting or attempt to independently verify the scientific validity of a carbon offset project (e.g., measuring tree girth via satellites).
+OENEXA **does not** perform novel carbon accounting or attempt to independently verify the scientific validity of a carbon offset project (e.g., measuring tree girth via satellites).
 
 The sole source of truth for the physical existence and validity of a carbon credit relies on **Accredited Carbon Registries** (e.g., Verra, Gold Standard, American Carbon Registry).
 
@@ -16,7 +16,7 @@ The bridging of assets relies heavily on the **Phase 10 QESG Oracle**.
 3. **Smart Contract Minting**: The `CarbonX` tokenization smart contract requires this cryptographic proof from the Oracle Aggregator before it will mint the corresponding on-chain tokens.
 
 ## 3. Data Schema Mapping
-Each tokenized carbon credit on QubitsCoin contains metadata inherently mapping it back to the source:
+Each tokenized carbon credit on OENEXA contains metadata inherently mapping it back to the source:
 - `RegistryName` (e.g., "Verra")
 - `ProjectID` (e.g., "VCS-105")
 - `VintageYear` (e.g., 2021)

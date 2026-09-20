@@ -5,8 +5,6 @@ import (
 	"encoding/binary"
 )
 
-
-
 // State Keys
 var (
 	KeyThreshold = []byte("m_threshold")
@@ -88,10 +86,10 @@ func ExecuteTransfer(payloadPtr, payloadLen uint32) int32 {
 	// Verify signatures against owner public keys
 	validSigs := uint32(0)
 	sigOffset := uint32(44)
-	
+
 	for s := uint32(0); s < numSigs; s++ {
 		sig := payload[sigOffset : sigOffset+3309]
-		
+
 		for o := uint32(0); o < ownerCount; o++ {
 			keyName := append([]byte("owner_"), byte(o))
 			pubKey, err := ReadState(keyName, 1952)
@@ -120,7 +118,7 @@ func ExecuteTransfer(payloadPtr, payloadLen uint32) int32 {
 // --- Helper Functions ---
 
 var PtrToBytes = func(ptr, len uint32) []byte {
-	return make([]byte, len) 
+	return make([]byte, len)
 }
 
 var WriteState = func(key, val []byte) {
@@ -136,7 +134,8 @@ var VerifySig = func(pubKey, msg, sig []byte) bool {
 }
 
 var DoTransfer = func(to []byte, amount uint64) bool {
-	if amount == 0 { return false }
+	if amount == 0 {
+		return false
+	}
 	return true
 }
-

@@ -26,7 +26,7 @@ const TABS: TabDefinition[] = [
   { key: 'explorer', label: 'Explorer', icon: '🔍' },
   { key: 'wallet', label: 'Quantum Wallet', icon: '🔑' },
   { key: 'shielded', label: 'Shielded Privacy', icon: '🛡️' },
-  { key: 'dex', label: 'QubitSwap', icon: '🔄' },
+  { key: 'dex', label: 'OenexaSwap', icon: '🔄' },
   { key: 'greendao', label: 'GreenDAO', icon: '🌱' },
   { key: 'carbonx', label: 'CarbonX', icon: '🌍' },
   { key: 'rpc-console', label: 'RPC Console', icon: '⚡' },

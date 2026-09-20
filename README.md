@@ -84,7 +84,7 @@ oenexa/
 │   ├── node/          # Full node entry point (CLI: oenexa-node start / wallet / tx / query)
 │   ├── loadtest/      # High-throughput load testing and benchmarking tool
 │   ├── multisig/      # Standalone CLI tool for quantum-safe M-of-N multisig operations
-│   └── qubitid/       # CLI utility for decentralized identity credentials (DID/VC)
+│   └── oenexaid/       # CLI utility for decentralized identity credentials (DID/VC)
 ├── configs/           # Network configurations (mainnet.toml, testnet.toml, oenexa-node.service)
 ├── docs/              # Comprehensive architectural designs, whitepapers, and phase specifications
 ├── internal/
@@ -112,8 +112,8 @@ oenexa/
 │   │   ├── mainnet/   # Mainnet deployment parameters, staking rules & genesis allocations
 │   │   ├── multisig/  # Quantum-resistant M-of-N multi-signature smart contract
 │   │   ├── oracle/    # Decentralized price feeds, cross-chain attestation & quorum feeds
-│   │   ├── quantumnet/# Quantum network simulation, qubit teleportation & entanglement
-│   │   ├── qubitid/   # Decentralized Identity (DID) & Verifiable Credentials (VC)
+│   │   ├── quantumnet/# Quantum network simulation, oenexa teleportation & entanglement
+│   │   ├── oenexaid/   # Decentralized Identity (DID) & Verifiable Credentials (VC)
 │   │   ├── rollups/   # Layer-2 optimistic & validity rollup state anchors
 │   │   ├── sovereign/ # Sovereign wealth fund reserves & allocation management
 │   │   ├── storage/   # Decentralized storage contracts with storage proofs

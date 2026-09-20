@@ -49,7 +49,7 @@ func TestNewWallet_UniqueEachCall(t *testing.T) {
 
 func TestSign_Verify_Roundtrip(t *testing.T) {
 	w := sharedWallet
-	msg := []byte("QubitsCoin test message")
+	msg := []byte("OENEXA test message")
 	sig, err := Sign(w.PrivateKey, msg)
 	if err != nil {
 		t.Fatalf("Sign: %v", err)

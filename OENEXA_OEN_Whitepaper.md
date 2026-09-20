@@ -1,4 +1,4 @@
-# QubitCoin (QBC)
+# OENEXA (OEN)
 ### *Powering the Future Through Quantum-Safe Clean Energy Finance*
 
 **Version 1.0 — Conceptual Architecture & Vision Document**
@@ -16,18 +16,18 @@
 2. [Vision & Mission](#2-vision--mission)
 3. [Problem Statement & Market Context](#3-problem-statement--market-context)
 4. [Ecosystem Architecture Overview](#4-ecosystem-architecture-overview)
-5. [Layer-1 Protocol — QBC Chain](#5-layer-1-protocol--qbc-chain)
+5. [Layer-1 Protocol — OEN Chain](#5-layer-1-protocol--oen-chain)
 6. [Consensus Mechanism — QPoS+](#6-consensus-mechanism--qpos)
 7. [Post-Quantum Security Framework](#7-post-quantum-security-framework)
-8. [Quantum Random Number Generator — QubitQRNG](#8-quantum-random-number-generator--qubitqrng)
-9. [Smart Contract Platform — QubitVM](#9-smart-contract-platform--qubitvm)
+8. [Quantum Random Number Generator — OenexaQRNG](#8-quantum-random-number-generator--oenexaqrng)
+9. [Smart Contract Platform — OenexaVM](#9-smart-contract-platform--oenexavm)
 10. [Privacy Layer — QPrivacy](#10-privacy-layer--qprivacy)
-11. [Layer-2 Scaling — QubitRollups](#11-layer-2-scaling--qubitrollups)
-12. [AI Layer — QubitAI](#12-ai-layer--qubitai)
-13. [DeFi Ecosystem — QubitSwap](#13-defi-ecosystem--qubitswap)
+11. [Layer-2 Scaling — OenexaRollups](#11-layer-2-scaling--oenexarollups)
+12. [AI Layer — OenexaAI](#12-ai-layer--oenexaai)
+13. [DeFi Ecosystem — OenexaSwap](#13-defi-ecosystem--oenexawap)
 14. [Asset Tokenization — QToken Engine](#14-asset-tokenization--qtoken-engine)
 15. [Green Energy & ESG Modules](#15-green-energy--esg-modules)
-16. [Real World Asset Platform — QubitRWA](#16-real-world-asset-platform--qubitrwa)
+16. [Real World Asset Platform — OenexaRWA](#16-real-world-asset-platform--oenexarwa)
 17. [Identity, Wallets & Custody](#17-identity-wallets--custody)
 18. [CBDC & Banking Integration](#18-cbdc--banking-integration)
 19. [Oracle Networks](#19-oracle-networks)
@@ -48,9 +48,9 @@
 
 ## 1. Executive Summary
 
-QubitCoin (QBC) is conceived as a Generation-6, Layer-1 blockchain ecosystem that unifies six domains that are normally built and financed separately: **post-quantum cryptography**, **artificial intelligence**, **renewable-energy finance**, **decentralized finance (DeFi)**, **real-world asset (RWA) tokenization**, and **regulated institutional/government rails (CBDC, ISO 20022, compliance)**.
+OENEXA (OEN) is conceived as a Generation-6, Layer-1 blockchain ecosystem that unifies six domains that are normally built and financed separately: **post-quantum cryptography**, **artificial intelligence**, **renewable-energy finance**, **decentralized finance (DeFi)**, **real-world asset (RWA) tokenization**, and **regulated institutional/government rails (CBDC, ISO 20022, compliance)**.
 
-The thesis is that the next decade will bring two disruptive forces to global finance simultaneously — practical quantum computing (which threatens today's cryptography) and the trillion-dollar financing gap in renewable energy and climate infrastructure. QBC is designed as infrastructure that is *quantum-safe from genesis* and *purpose-built to route capital into verifiable clean-energy and ESG assets*, while remaining compatible with the institutions (banks, regulators, central banks) that control the majority of global capital today.
+The thesis is that the next decade will bring two disruptive forces to global finance simultaneously — practical quantum computing (which threatens today's cryptography) and the trillion-dollar financing gap in renewable energy and climate infrastructure. OEN is designed as infrastructure that is *quantum-safe from genesis* and *purpose-built to route capital into verifiable clean-energy and ESG assets*, while remaining compatible with the institutions (banks, regulators, central banks) that control the majority of global capital today.
 
 This document lays out the target architecture, cryptographic foundations, tokenomics, governance model, and a 32-phase delivery roadmap for the ecosystem, along with the full deliverables register expected of a program at this scale.
 
@@ -73,7 +73,7 @@ This document lays out the target architecture, cryptographic foundations, token
 
 ## 3. Problem Statement & Market Context
 
-| Problem | Current State | QBC's Proposed Response |
+| Problem | Current State | OEN's Proposed Response |
 |---|---|---|
 | Cryptographic obsolescence | Most chains rely on ECDSA/EdDSA, vulnerable to Shor's algorithm once cryptographically-relevant quantum computers exist | Post-quantum signatures and key exchange from genesis, with crypto-agility for future algorithm upgrades |
 | Renewable energy financing gap | Multi-trillion-dollar annual shortfall in clean energy and grid infrastructure investment (IEA/IRENA estimates) | Tokenized project financing, on-chain revenue distribution, and a dedicated Green Energy DAO |
@@ -87,7 +87,7 @@ This document lays out the target architecture, cryptographic foundations, token
 
 ## 4. Ecosystem Architecture Overview
 
-QBC is organized as a layered ecosystem:
+OEN is organized as a layered ecosystem:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -95,20 +95,20 @@ QBC is organized as a layered ecosystem:
 │  Super App · Wallets · Web/Mobile Dashboards · AI Agent Market   │
 ├─────────────────────────────────────────────────────────────────┤
 │  FINANCIAL & ESG SERVICES LAYER                                  │
-│  QubitSwap (DeFi) · QToken Engine · GreenDAO · HydroChain        │
+│  OenexaSwap (DeFi) · QToken Engine · GreenDAO · HydroChain        │
 │  CarbonX · REC Exchange · Green Bonds · Energy Exchange · RWA    │
 ├─────────────────────────────────────────────────────────────────┤
 │  INSTITUTIONAL & GOVERNMENT LAYER                                │
-│  CBDC Gateway · ISO 20022 Network · Custody · QubitID/KYC        │
+│  CBDC Gateway · ISO 20022 Network · Custody · OenexaID/KYC        │
 ├─────────────────────────────────────────────────────────────────┤
 │  INTELLIGENCE & DATA LAYER                                       │
-│  QubitAI · QubitOracle · QESG Oracle · QClimate                 │
+│  OenexaAI · OenexaOracle · QESG Oracle · QClimate                 │
 ├─────────────────────────────────────────────────────────────────┤
 │  PROGRAMMABILITY LAYER                                           │
-│  QubitVM (Smart Contracts) · QPrivacy (ZK) · QubitRollups (L2)  │
+│  OenexaVM (Smart Contracts) · QPrivacy (ZK) · OenexaRollups (L2)  │
 ├─────────────────────────────────────────────────────────────────┤
 │  PROTOCOL / CONSENSUS LAYER                                      │
-│  QBC Chain (L1) · QPoS+ Consensus · QubitQRNG                   │
+│  OEN Chain (L1) · QPoS+ Consensus · OenexaQRNG                   │
 ├─────────────────────────────────────────────────────────────────┤
 │  CRYPTOGRAPHIC FOUNDATION                                        │
 │  Post-Quantum Security Framework · Crypto-Agility Module         │
@@ -119,12 +119,12 @@ This top-to-bottom structure means every application-layer product (wallets, the
 
 ---
 
-## 5. Layer-1 Protocol — QBC Chain
+## 5. Layer-1 Protocol — OEN Chain
 
 | Property | Target Specification |
 |---|---|
 | Consensus | QPoS+ (Quantum Proof-of-Stake Plus) |
-| Virtual Machines | QubitVM (native) + EVM-compatible + WASM-compatible execution environments |
+| Virtual Machines | OenexaVM (native) + EVM-compatible + WASM-compatible execution environments |
 | Signature scheme | Post-quantum (CRYSTALS-Dilithium / Falcon), with crypto-agility for algorithm rotation |
 | Block time | Target: 0.5 seconds |
 | Finality | Target: ~1 second (single-slot or fast-BFT finality) |
@@ -154,7 +154,7 @@ This top-to-bottom structure means every application-layer product (wallets, the
 
 ## 7. Post-Quantum Security Framework
 
-QBC's cryptographic foundation targets full alignment with **NIST Post-Quantum Cryptography standards**:
+OEN's cryptographic foundation targets full alignment with **NIST Post-Quantum Cryptography standards**:
 
 | Algorithm | Purpose | NIST Status |
 |---|---|---|
@@ -168,11 +168,11 @@ QBC's cryptographic foundation targets full alignment with **NIST Post-Quantum C
 - Grover's-algorithm-based brute-force weakening of symmetric primitives (mitigated via increased key/hash sizes)
 - Long-term "harvest now, decrypt later" attacks on archived transaction data
 
-**Crypto-Agility Framework:** rather than hard-coding one signature scheme, QBC's protocol treats cryptographic primitives as upgradeable modules behind a versioned interface, allowing validators to migrate to new NIST-approved algorithms via governance vote without a full chain restart.
+**Crypto-Agility Framework:** rather than hard-coding one signature scheme, OEN's protocol treats cryptographic primitives as upgradeable modules behind a versioned interface, allowing validators to migrate to new NIST-approved algorithms via governance vote without a full chain restart.
 
 ---
 
-## 8. Quantum Random Number Generator — QubitQRNG
+## 8. Quantum Random Number Generator — OenexaQRNG
 
 A quantum-entropy-sourced randomness beacon feeding:
 
@@ -185,7 +185,7 @@ A quantum-entropy-sourced randomness beacon feeding:
 
 ---
 
-## 9. Smart Contract Platform — QubitVM
+## 9. Smart Contract Platform — OenexaVM
 
 - **Language support:** Solidity (via EVM compatibility), Rust, Move, Go, TypeScript
 - **AI-assisted contract auditing** as a pre-deployment advisory scan (static analysis + ML pattern-matching against known vulnerability classes) — **not** a substitute for professional third-party security audits and formal verification
@@ -205,7 +205,7 @@ A quantum-entropy-sourced randomness beacon feeding:
 
 ---
 
-## 11. Layer-2 Scaling — QubitRollups
+## 11. Layer-2 Scaling — OenexaRollups
 
 | Rollup Type | Use Case |
 |---|---|
@@ -219,7 +219,7 @@ Target aggregate throughput: 1,000,000+ TPS system-wide once Layer-2 is fully de
 
 ---
 
-## 12. AI Layer — QubitAI
+## 12. AI Layer — OenexaAI
 
 Modules embedded across the ecosystem:
 
@@ -235,7 +235,7 @@ Modules embedded across the ecosystem:
 
 ---
 
-## 13. DeFi Ecosystem — QubitSwap
+## 13. DeFi Ecosystem — OenexaSwap
 
 - Decentralized exchange (AMM + order-book hybrid)
 - Staking and yield farming
@@ -269,14 +269,14 @@ Core features: fractional ownership, automated yield/dividend distribution, and 
 | **HydroChain** | Dedicated hydropower tokenization network: production tracking, revenue distribution, investor dashboards |
 | **CarbonX** | Carbon credit tokenization, trading, retirement, and verification marketplace |
 | **REC Exchange** | Renewable Energy Certificate issuance, verification, trading, and reporting |
-| **Qubit Green Bonds** | Fractional green-bond issuance and marketplace with automated yield and ESG tracking |
-| **Qubit Energy Exchange** | P2P electricity trading, tokenized electricity units, smart-meter and grid integration |
+| **Oenexa Green Bonds** | Fractional green-bond issuance and marketplace with automated yield and ESG tracking |
+| **Oenexa Energy Exchange** | P2P electricity trading, tokenized electricity units, smart-meter and grid integration |
 
 *Compliance note:* carbon credit and REC tokenization require accredited third-party registries (e.g., Verra, Gold Standard, I-REC) as the source of truth to avoid double-counting; on-chain tokens should represent verified claims on an underlying registry entry, not create new carbon accounting standards unilaterally.
 
 ---
 
-## 16. Real World Asset Platform — QubitRWA
+## 16. Real World Asset Platform — OenexaRWA
 
 A unified framework for bringing real estate, energy assets, infrastructure, agriculture, commodities, and bonds on-chain, with standardized legal wrapper templates, custody arrangements, and jurisdiction-specific compliance modules.
 
@@ -284,9 +284,9 @@ A unified framework for bringing real estate, energy assets, infrastructure, agr
 
 ## 17. Identity, Wallets & Custody
 
-- **QubitID:** decentralized identity (DID), self-sovereign identity, KYC/AML credentialing, verifiable credentials, passkeys, biometrics, WebAuthn
+- **OenexaID:** decentralized identity (DID), self-sovereign identity, KYC/AML credentialing, verifiable credentials, passkeys, biometrics, WebAuthn
 - **QWallet:** mobile, web, desktop, and hardware wallets with MPC (multi-party computation), multi-sig, quantum-safe key storage, and biometric/passkey login
-- **Qubit Custody:** institutional-grade custody with MPC, cold storage, HSM integration, and insurance-readiness for regulated custodians
+- **Oenexa Custody:** institutional-grade custody with MPC, cold storage, HSM integration, and insurance-readiness for regulated custodians
 
 ---
 
@@ -301,23 +301,23 @@ A unified framework for bringing real estate, energy assets, infrastructure, agr
 
 ## 19. Oracle Networks
 
-- **QubitOracle:** general-purpose data feeds (financial markets, weather, energy production, commodities, government data) with staked oracle nodes and AI-assisted reputation scoring
+- **OenexaOracle:** general-purpose data feeds (financial markets, weather, energy production, commodities, government data) with staked oracle nodes and AI-assisted reputation scoring
 - **QESG Oracle:** specialized ESG scoring, sustainability verification, carbon impact tracking, and climate risk scoring feeds
 
 ---
 
 ## 20. Infrastructure Layer
 
-- **QubitStorage:** decentralized, encrypted storage and immutable archival
-- **QubitCompute:** distributed compute, GPU marketplace, AI training infrastructure, serverless functions
-- **QubitMessenger:** quantum-safe, end-to-end encrypted messaging for individuals, DAOs, and enterprises
+- **OenexaStorage:** decentralized, encrypted storage and immutable archival
+- **OenexaCompute:** distributed compute, GPU marketplace, AI training infrastructure, serverless functions
+- **OenexaMessenger:** quantum-safe, end-to-end encrypted messaging for individuals, DAOs, and enterprises
 
 ---
 
 ## 21. AI Agent Marketplace & Super App
 
-- **QubitAI Market:** marketplace for specialized AI agents (trading, customer support, security, research, energy forecasting, compliance)
-- **Qubit Super App:** unified consumer entry point bundling wallet, banking rails, staking, carbon trading, energy investment, RWA marketplace, messaging, governance, NFTs, and payments across Android, iOS, web, and desktop
+- **OenexaAI Market:** marketplace for specialized AI agents (trading, customer support, security, research, energy forecasting, compliance)
+- **Oenexa Super App:** unified consumer entry point bundling wallet, banking rails, staking, carbon trading, energy investment, RWA marketplace, messaging, governance, NFTs, and payments across Android, iOS, web, and desktop
 
 ---
 
@@ -351,7 +351,7 @@ Built-in compliance tooling: transaction monitoring, AML screening, audit loggin
 
 ## 25. UN SDG Alignment
 
-QBC's design intent maps to:
+OEN's design intent maps to:
 
 - **SDG 7** — Affordable and Clean Energy
 - **SDG 9** — Industry, Innovation and Infrastructure
@@ -368,7 +368,7 @@ A **Global Sustainability Dashboard** would publish aggregated, oracle-verified 
 
 | Parameter | Value |
 |---|---|
-| Symbol | QBC |
+| Symbol | OEN |
 | Total Supply | 10,000,000,000 |
 
 **Distribution:**
@@ -416,7 +416,7 @@ A **Global Sustainability Dashboard** would publish aggregated, oracle-verified 
 
 A three-tier governance structure is recommended:
 
-1. **Protocol Governance** — QBC token-holder voting (stake-weighted, with anti-plutocracy safeguards such as quadratic or conviction voting under consideration) for core protocol parameters
+1. **Protocol Governance** — OEN token-holder voting (stake-weighted, with anti-plutocracy safeguards such as quadratic or conviction voting under consideration) for core protocol parameters
 2. **Domain DAOs** — GreenDAO, QResearchDAO, and similar bodies with delegated treasuries and scoped mandates for their specific domains
 3. **Foundation/Steering Council** — a transitional body (transparent, term-limited) responsible for security-critical emergency actions (e.g., pausing a compromised contract), with actions subject to retroactive community ratification
 
@@ -427,8 +427,8 @@ A three-tier governance structure is recommended:
 | Phase Group | Phases | Focus |
 |---|---|---|
 | **Foundation** | 0–2 | Vision & research → Whitepaper & tokenomics → Protocol design |
-| **Core Protocol** | 3–7 | Blockchain core → Consensus → Quantum security → QubitVM → Testnet Alpha |
-| **Identity & Access** | 8–10 | Wallet development → QubitID → Oracle network |
+| **Core Protocol** | 3–7 | Blockchain core → Consensus → Quantum security → OenexaVM → Testnet Alpha |
+| **Identity & Access** | 8–10 | Wallet development → OenexaID → Oracle network |
 | **Financial Primitives** | 11–14 | DEX → GreenDAO → CarbonX → HydroChain |
 | **Real-World Integration** | 15–18 | RWA platform → Storage → Compute → AI marketplace |
 | **Institutional Rails** | 19–21 | CBDC gateway → ISO 20022 → Institutional custody |
@@ -483,4 +483,4 @@ A credible program of this scope must document, at minimum:
 
 ## Closing Note
 
-This document consolidates and structures the QubitCoin (QBC) concept into a coherent, professionally organized architecture paper. Turning it into a real, safe, and legally viable system would require, at minimum: independent cryptographic and smart-contract security audits, jurisdiction-by-jurisdiction legal review (securities, money-transmission, and commodities law), formal economic modeling and stress-testing of the tokenomics, and a funded, credentialed team executing the roadmap above in stages — with each phase gated on successful audit and testnet results before proceeding to the next.
+This document consolidates and structures the OENEXA (OEN) concept into a coherent, professionally organized architecture paper. Turning it into a real, safe, and legally viable system would require, at minimum: independent cryptographic and smart-contract security audits, jurisdiction-by-jurisdiction legal review (securities, money-transmission, and commodities law), formal economic modeling and stress-testing of the tokenomics, and a funded, credentialed team executing the roadmap above in stages — with each phase gated on successful audit and testnet results before proceeding to the next.

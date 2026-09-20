@@ -173,14 +173,14 @@ func (e *Engine) commit(blk *core.Block, snap *state.DB) error {
 	e.chain = append(e.chain, blk)
 
 	reward := core.BlockReward(blk.Header.Height)
-	log.Printf("[consensus] block height=%d hash=%s txs=%d gas=%d baseFee=%d burned=%d qubits reward=%d QBC",
+	log.Printf("[consensus] block height=%d hash=%s txs=%d gas=%d baseFee=%d burned=%d oenexa reward=%d OEN",
 		blk.Header.Height,
 		crypto.ToHex(blk.Hash)[:16]+"…",
 		len(blk.Txs),
 		blk.Header.GasUsed,
 		blk.Header.BaseFee,
 		blk.Header.BurnedFees,
-		reward/core.OneQBC,
+		reward/core.OneOEN,
 	)
 
 	select {

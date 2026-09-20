@@ -35,7 +35,7 @@ func TestOracle_FinalizeEpoch_EvenOdd(t *testing.T) {
 	if med1 != 25 { // (20+30)/2
 		t.Errorf("expected 25, got %d", med1)
 	}
-	
+
 	// Odd number of submissions
 	a2 := NewAggregator()
 	a2.SubmitData("n1", 10)

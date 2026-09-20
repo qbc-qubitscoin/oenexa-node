@@ -2,16 +2,16 @@ package state
 
 import (
 	"context"
-	"testing"
 	"github.com/oenexa/oenexa/internal/core"
 	"github.com/oenexa/oenexa/internal/crypto"
 	"github.com/oenexa/oenexa/internal/vm"
+	"testing"
 )
 
 // ── Deploy ────────────────────────────────────────────────────────────────────
 
 func TestApplyTransaction_Deploy_NoData(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(core.TxDeploy, addrA, addrB, 0, 0, core.GasDeploy, core.MinGasPrice, nil)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {
@@ -26,9 +26,9 @@ func TestApplyTransaction_Deploy_NoData(t *testing.T) {
 }
 
 func TestApplyTransaction_Deploy_Success_NoVM(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	data := []byte{0x01, 0x02}
-	tx := makeTx(core.TxDeploy, addrA, addrB, 0, 100, core.GasDeploy + 68*2, core.MinGasPrice, data)
+	tx := makeTx(core.TxDeploy, addrA, addrB, 0, 100, core.GasDeploy+68*2, core.MinGasPrice, data)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -48,15 +48,15 @@ func TestApplyTransaction_Deploy_Success_NoVM(t *testing.T) {
 }
 
 func TestApplyTransaction_Deploy_WithVM(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
-	
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
+
 	ctx := context.Background()
 	execVM, err := vm.NewVM(ctx)
 	if err != nil {
 		t.Fatalf("failed to create VM: %v", err)
 	}
 	defer execVM.Close(ctx)
-	
+
 	// Create a dummy WASM module that exports _init
 	wasmCode := []byte{
 		0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, // Magic + version
@@ -65,8 +65,8 @@ func TestApplyTransaction_Deploy_WithVM(t *testing.T) {
 		0x07, 0x09, 0x01, 0x05, 0x5f, 0x69, 0x6e, 0x69, 0x74, 0x00, 0x00, // Export section "_init"
 		0x0a, 0x04, 0x01, 0x02, 0x00, 0x0b, // Code section
 	}
-	
-	tx := makeTx(core.TxDeploy, addrA, addrB, 0, 100, core.GasDeploy + 68*uint64(len(wasmCode)) + 10000, core.MinGasPrice, wasmCode)
+
+	tx := makeTx(core.TxDeploy, addrA, addrB, 0, 100, core.GasDeploy+68*uint64(len(wasmCode))+10000, core.MinGasPrice, wasmCode)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, execVM, core.MinBaseFee)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -79,7 +79,7 @@ func TestApplyTransaction_Deploy_WithVM(t *testing.T) {
 // ── Call ──────────────────────────────────────────────────────────────────────
 
 func TestApplyTransaction_Call_NotContract(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(core.TxCall, addrA, addrB, 0, 0, core.GasCall, core.MinGasPrice, nil)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {
@@ -94,11 +94,11 @@ func TestApplyTransaction_Call_NotContract(t *testing.T) {
 }
 
 func TestApplyTransaction_Call_Success_NoVM(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	contractAddr := addrB
 	contractAcct := &Account{CodeHash: [32]byte{1}}
 	st.SetAccount(contractAddr, contractAcct)
-	
+
 	tx := makeTx(core.TxCall, addrA, contractAddr, 0, 100, core.GasCall, core.MinGasPrice, nil)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {
@@ -113,8 +113,8 @@ func TestApplyTransaction_Call_Success_NoVM(t *testing.T) {
 }
 
 func TestApplyTransaction_Call_WithVM(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
-	
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
+
 	ctx := context.Background()
 	execVM, err := vm.NewVM(ctx)
 	if err != nil {
@@ -122,27 +122,27 @@ func TestApplyTransaction_Call_WithVM(t *testing.T) {
 	}
 	defer execVM.Close(ctx)
 	wasmCode := []byte{
-		0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 
+		0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
 		0x01, 0x06, 0x01, 0x60, 0x01, 0x7e, 0x01, 0x7e, // Type: func(i64) -> i64
-		0x03, 0x02, 0x01, 0x00, 
+		0x03, 0x02, 0x01, 0x00,
 		0x07, 0x08, 0x01, 0x04, 0x63, 0x61, 0x6c, 0x6c, 0x00, 0x00, // Export "call"
-		0x0a, 0x06, 0x01, 0x04, 0x00, 0x42, 0x2a, 0x0b, 
+		0x0a, 0x06, 0x01, 0x04, 0x00, 0x42, 0x2a, 0x0b,
 	}
 	codeHash := crypto.Hash256(wasmCode)
-	
+
 	contractAddr := addrB
 	contractAcct := &Account{CodeHash: codeHash}
 	st.SetAccount(contractAddr, contractAcct)
-	
+
 	err = execVM.Deploy(ctx, contractAddr, wasmCode)
 	if err != nil {
 		t.Fatalf("failed to deploy to VM: %v", err)
 	}
-	
+
 	// Create tx data calling "call" with 1 parameter
 	data := []byte{4, 'c', 'a', 'l', 'l', 0, 0, 0, 0, 0, 0, 0, 42} // len=4, "call", param=42
-	
-	tx := makeTx(core.TxCall, addrA, contractAddr, 0, 100, core.GasCall + 16*13 + 10000, core.MinGasPrice, data)
+
+	tx := makeTx(core.TxCall, addrA, contractAddr, 0, 100, core.GasCall+16*13+10000, core.MinGasPrice, data)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, execVM, core.MinBaseFee)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -150,44 +150,44 @@ func TestApplyTransaction_Call_WithVM(t *testing.T) {
 	if !res.Success {
 		t.Fatalf("expected success")
 	}
-	
+
 	// Test fallback funcName with length < 1+nameLen
-	txFallback := makeTx(core.TxCall, addrA, contractAddr, 1, 0, core.GasCall + 16*1 + 10000, core.MinGasPrice, []byte{100})
+	txFallback := makeTx(core.TxCall, addrA, contractAddr, 1, 0, core.GasCall+16*1+10000, core.MinGasPrice, []byte{100})
 	ApplyTransaction(st, txFallback, core.BlockGasLimit, execVM, core.MinBaseFee)
 }
 
 func TestApplyTransaction_Call_Revert(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
-	
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
+
 	ctx := context.Background()
 	execVM, err := vm.NewVM(ctx)
 	if err != nil {
 		t.Fatalf("failed to create VM: %v", err)
 	}
 	defer execVM.Close(ctx)
-	
+
 	// Create a contract that will fail (e.g. traps)
 	wasmCode := []byte{
-		0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 
-		0x01, 0x04, 0x01, 0x60, 0x00, 0x00, 
-		0x03, 0x02, 0x01, 0x00, 
-		0x07, 0x08, 0x01, 0x04, 0x63, 0x61, 0x6c, 0x6c, 0x00, 0x00, 
+		0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+		0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+		0x03, 0x02, 0x01, 0x00,
+		0x07, 0x08, 0x01, 0x04, 0x63, 0x61, 0x6c, 0x6c, 0x00, 0x00,
 		0x0a, 0x05, 0x01, 0x03, 0x00, 0x00, 0x0b, // unreachable instruction (0x00)
 	}
 	codeHash := crypto.Hash256(wasmCode)
-	
+
 	contractAddr := addrB
 	contractAcct := &Account{CodeHash: codeHash}
 	st.SetAccount(contractAddr, contractAcct)
-	
+
 	err = execVM.Deploy(ctx, contractAddr, wasmCode)
 	if err != nil {
 		t.Fatalf("failed to deploy to VM: %v", err)
 	}
-	
+
 	data := []byte{4, 'c', 'a', 'l', 'l'}
-	
-	tx := makeTx(core.TxCall, addrA, contractAddr, 0, 100, core.GasCall + 16*5 + 10000, core.MinGasPrice, data)
+
+	tx := makeTx(core.TxCall, addrA, contractAddr, 0, 100, core.GasCall+16*5+10000, core.MinGasPrice, data)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, execVM, core.MinBaseFee)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -198,7 +198,7 @@ func TestApplyTransaction_Call_Revert(t *testing.T) {
 }
 
 func TestApplyTransaction_UnknownType(t *testing.T) {
-	st := stateWithBalance(addrA, 1_000_000*core.OneQBC)
+	st := stateWithBalance(addrA, 1_000_000*core.OneOEN)
 	tx := makeTx(255, addrA, addrB, 0, 0, core.GasTransfer, core.MinGasPrice, nil)
 	res, err := ApplyTransaction(st, tx, core.BlockGasLimit, nil, core.MinBaseFee)
 	if err != nil {

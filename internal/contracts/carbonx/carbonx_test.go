@@ -1,8 +1,8 @@
 package carbonx
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 // TestPilotIssuanceToRetirementCycle simulates the Phase 13 Exit Criteria:
@@ -20,7 +20,7 @@ func TestPilotIssuanceToRetirementCycle(t *testing.T) {
 	}
 
 	// 2. Trading
-	// Developer sells the credit to MegaCorp on the QubitSwap DEX.
+	// Developer sells the credit to MegaCorp on the OenexaSwap DEX.
 	err := market.TransferCredit(tokenID, "project_developer", "mega_corp")
 	if err != nil {
 		t.Fatalf("Failed to trade credit: %v", err)
@@ -45,7 +45,7 @@ func TestPilotIssuanceToRetirementCycle(t *testing.T) {
 	if market.OwnerBalance["mega_corp"] != 0 {
 		t.Fatalf("MegaCorp balance should be 0 after retirement")
 	}
-	
+
 	// Attempting to trade a retired credit must fail to prevent double-counting
 	err = market.TransferCredit(tokenID, "mega_corp", "scammer_corp")
 	if err == nil {

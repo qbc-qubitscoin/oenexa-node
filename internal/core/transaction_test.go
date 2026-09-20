@@ -33,15 +33,15 @@ func newSignedTransfer(t *testing.T, from *crypto.Wallet, to [crypto.AddressSize
 }
 
 func TestTransaction_SignVerify(t *testing.T) {
-	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 0, 100*OneQBC)
+	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 0, 100*OneOEN)
 	if err := tx.Verify(); err != nil {
 		t.Fatalf("Verify: %v", err)
 	}
 }
 
 func TestTransaction_TamperedAmountFails(t *testing.T) {
-	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 0, 100*OneQBC)
-	tx.Amount = 999 * OneQBC // tamper after signing
+	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 0, 100*OneOEN)
+	tx.Amount = 999 * OneOEN // tamper after signing
 	if err := tx.Verify(); err == nil {
 		t.Fatal("tampered tx should fail Verify")
 	}
@@ -56,7 +56,7 @@ func TestTransaction_WrongPublicKeyFails(t *testing.T) {
 }
 
 func TestTransaction_ComputeHash_Deterministic(t *testing.T) {
-	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 1, 50*OneQBC)
+	tx := newSignedTransfer(t, testWallet, testWallet2.Address, 1, 50*OneOEN)
 	h1 := tx.ComputeHash()
 	h2 := tx.ComputeHash()
 	if h1 != h2 {
@@ -163,4 +163,3 @@ func TestNewUnshield_Fields(t *testing.T) {
 		t.Errorf("GasLimit: want %d, got %d", GasUnshield, tx.GasLimit)
 	}
 }
-

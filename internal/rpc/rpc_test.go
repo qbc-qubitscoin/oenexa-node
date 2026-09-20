@@ -178,7 +178,7 @@ func rpcCall(t *testing.T, ts *httptest.Server, method string, params interface{
 func TestRPC_BlockHeight(t *testing.T) {
 	ts, _ := buildTestHandler(t)
 	body, _ := json.Marshal(map[string]interface{}{
-		"jsonrpc": "2.0", "id": 1, "method": "qbc_blockHeight", "params": nil,
+		"jsonrpc": "2.0", "id": 1, "method": "oen_blockHeight", "params": nil,
 	})
 	resp, err := http.Post(ts.URL, "application/json", bytes.NewReader(body))
 	if err != nil {
@@ -202,10 +202,10 @@ func TestRPC_BlockHeight(t *testing.T) {
 
 func TestRPC_GetBalance(t *testing.T) {
 	ts, w := buildTestHandler(t)
-	result := rpcCall(t, ts, "qbc_getBalance", []string{crypto.AddressToHex(w.Address)})
-	bal, ok := result["balance_qubits"].(float64)
+	result := rpcCall(t, ts, "oen_getBalance", []string{crypto.AddressToHex(w.Address)})
+	bal, ok := result["balance_oenexa"].(float64)
 	if !ok {
-		t.Fatalf("missing balance_qubits in %v", result)
+		t.Fatalf("missing balance_oenexa in %v", result)
 	}
 	if bal <= 0 {
 		t.Errorf("expected positive balance, got %v", bal)
@@ -214,7 +214,7 @@ func TestRPC_GetBalance(t *testing.T) {
 
 func TestRPC_GetTransactionCount(t *testing.T) {
 	ts, w := buildTestHandler(t)
-	result := rpcCall(t, ts, "qbc_getTransactionCount", []string{crypto.AddressToHex(w.Address)})
+	result := rpcCall(t, ts, "oen_getTransactionCount", []string{crypto.AddressToHex(w.Address)})
 	_, ok := result["nonce"]
 	if !ok {
 		t.Fatalf("missing nonce in %v", result)
@@ -223,7 +223,7 @@ func TestRPC_GetTransactionCount(t *testing.T) {
 
 func TestRPC_ChainInfo(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	result := rpcCall(t, ts, "qbc_chainInfo", nil)
+	result := rpcCall(t, ts, "oen_chainInfo", nil)
 	if _, ok := result["height"]; !ok {
 		t.Errorf("missing height in chain info: %v", result)
 	}
@@ -234,7 +234,7 @@ func TestRPC_ChainInfo(t *testing.T) {
 
 func TestRPC_BlockByHeight(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	result := rpcCall(t, ts, "qbc_blockByHeight", []uint64{0})
+	result := rpcCall(t, ts, "oen_blockByHeight", []uint64{0})
 	if _, ok := result["hash"]; !ok {
 		t.Errorf("missing hash in block: %v", result)
 	}
@@ -242,7 +242,7 @@ func TestRPC_BlockByHeight(t *testing.T) {
 
 func TestRPC_GasPrice(t *testing.T) {
 	ts, _ := buildTestHandler(t)
-	result := rpcCall(t, ts, "qbc_gasPrice", nil)
+	result := rpcCall(t, ts, "oen_gasPrice", nil)
 	if _, ok := result["base_fee"]; !ok {
 		t.Errorf("missing base_fee in gas price: %v", result)
 	}
@@ -251,7 +251,7 @@ func TestRPC_GasPrice(t *testing.T) {
 func TestRPC_MethodNotFound(t *testing.T) {
 	ts, _ := buildTestHandler(t)
 	body, _ := json.Marshal(map[string]interface{}{
-		"jsonrpc": "2.0", "id": 1, "method": "qbc_nonExistent", "params": nil,
+		"jsonrpc": "2.0", "id": 1, "method": "oen_nonExistent", "params": nil,
 	})
 	resp, err := http.Post(ts.URL, "application/json", bytes.NewReader(body))
 	if err != nil {

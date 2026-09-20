@@ -1,8 +1,8 @@
 # Developer Note 01: Test-Driven Development (TDD) & Testing Methodology
 
-## 1. Why TDD is Mandatory in QubitsCoin
+## 1. Why TDD is Mandatory in OENEXA
 
-In financial and blockchain systems, bugs cannot be "patched in production" without catastrophic risk, hard forks, or financial loss. QubitsCoin enforces **Test-Driven Development (TDD)** as a core engineering invariant:
+In financial and blockchain systems, bugs cannot be "patched in production" without catastrophic risk, hard forks, or financial loss. OENEXA enforces **Test-Driven Development (TDD)** as a core engineering invariant:
 
 1. **Bug Prevention Over Detection**: Writing tests first forces the developer to define clear, unambiguous boundaries, error states, and mathematical limits before writing code.
 2. **Deterministic State Guarantees**: A blockchain state machine must be 100% deterministic. If two nodes produce differing state roots for the same transaction, the chain forks. TDD ensures every branch is tested for determinism.
@@ -35,7 +35,7 @@ Before touching any `.go` file in `internal/`, create or open `[file]_test.go`:
 
 ---
 
-## 3. Testing Tiers in QubitsCoin
+## 3. Testing Tiers in OENEXA
 
 ### 1. Unit Tests (Table-Driven)
 Located directly alongside packages (`internal/core/*_test.go`, `internal/state/*_test.go`).

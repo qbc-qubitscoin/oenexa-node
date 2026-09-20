@@ -20,7 +20,7 @@ type VM struct {
 
 var newRuntime = wazero.NewRuntime
 
-// NewVM creates a new VM and registers the QBC host module.
+// NewVM creates a new VM and registers the OEN host module.
 func NewVM(ctx context.Context) (*VM, error) {
 	rt := newRuntime(ctx)
 	v := &VM{
@@ -35,27 +35,27 @@ func NewVM(ctx context.Context) (*VM, error) {
 	return v, nil
 }
 
-// registerHostModule installs all QBC host functions under the "env" module.
+// registerHostModule installs all OEN host functions under the "env" module.
 func (v *VM) registerHostModule(ctx context.Context) error {
 	_, err := v.rt.NewHostModuleBuilder("env").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostGet(v.storage), []api.ValueType{api.ValueTypeI32}, []api.ValueType{api.ValueTypeI64}).
-		Export("qbc_get").
+		Export("oen_get").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostSet(v.storage), []api.ValueType{api.ValueTypeI32, api.ValueTypeI64}, []api.ValueType{}).
-		Export("qbc_set").
+		Export("oen_set").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostLog(), []api.ValueType{api.ValueTypeI32, api.ValueTypeI32}, []api.ValueType{}).
-		Export("qbc_log").
+		Export("oen_log").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostCaller(), []api.ValueType{}, []api.ValueType{api.ValueTypeI64}).
-		Export("qbc_caller").
+		Export("oen_caller").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostBlockHeight(), []api.ValueType{}, []api.ValueType{api.ValueTypeI64}).
-		Export("qbc_block_height").
+		Export("oen_block_height").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostValue(), []api.ValueType{}, []api.ValueType{api.ValueTypeI64}).
-		Export("qbc_value").
+		Export("oen_value").
 		Instantiate(ctx)
 	return err
 }

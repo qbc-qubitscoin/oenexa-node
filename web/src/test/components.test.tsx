@@ -9,13 +9,13 @@ import { DexTab } from '../components/DexTab'
 import { GreenDaoTab } from '../components/GreenDaoTab'
 import { CarbonXTab } from '../components/CarbonXTab'
 import { RpcConsoleTab } from '../components/RpcConsoleTab'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 import type { ChainInfo, BlockInfo, FeeEstimate } from '../types/rpc'
 
 // Mock client factory
-const createMockClient = (overrides = {}): QBCClient => {
+const createMockClient = (overrides = {}): OENClient => {
   const mockInfo: ChainInfo = {
-    chainId: 'qubitscoin-mainnet',
+    chainId: 'oenexa-mainnet',
     height: 105,
     tipHash: 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90',
     validators: 4,
@@ -31,14 +31,14 @@ const createMockClient = (overrides = {}): QBCClient => {
     hash: '0000abcd12345678901234567890123456789012345678901234567890abcdef',
     parentHash: '0000000000000000000000000000000000000000000000000000000000000000',
     timestamp: 1725890000,
-    proposer: 'QBC1A2B3C4D5E6F7890123456789012345678901',
+    proposer: 'OEN1A2B3C4D5E6F7890123456789012345678901',
     txCount: 1,
     transactions: [
       {
         hash: 'txhash123',
         type: 'transfer',
-        from: 'QBC1A2B3C4D5E6F7890123456789012345678901',
-        to: 'QBC9Z8Y7X6W5V4U3210987654321098765432109',
+        from: 'OEN1A2B3C4D5E6F7890123456789012345678901',
+        to: 'OEN9Z8Y7X6W5V4U3210987654321098765432109',
         value: '5000000000000000000',
         nonce: 1,
         gasLimit: 21000,
@@ -70,7 +70,7 @@ const createMockClient = (overrides = {}): QBCClient => {
     dispatch: vi.fn().mockResolvedValue({ status: 'ok' }),
     dispatchBatch: vi.fn().mockResolvedValue([]),
     ...overrides,
-  } as unknown as QBCClient
+  } as unknown as OENClient
 }
 
 describe('React Component Suite (TDD)', () => {
@@ -87,7 +87,7 @@ describe('React Component Suite (TDD)', () => {
       />
     )
 
-    expect(screen.getByText(/QubitsCoin/i)).toBeInTheDocument()
+    expect(screen.getByText(/OENEXA/i)).toBeInTheDocument()
     expect(screen.getByText(/Block #105/i)).toBeInTheDocument()
     expect(screen.getByText(/Online/i)).toBeInTheDocument()
 
@@ -104,7 +104,7 @@ describe('React Component Suite (TDD)', () => {
     expect(screen.getByText('Explorer')).toBeInTheDocument()
     expect(screen.getByText('Quantum Wallet')).toBeInTheDocument()
     expect(screen.getByText('Shielded Privacy')).toBeInTheDocument()
-    expect(screen.getByText('QubitSwap')).toBeInTheDocument()
+    expect(screen.getByText('OenexaSwap')).toBeInTheDocument()
     expect(screen.getByText('GreenDAO')).toBeInTheDocument()
     expect(screen.getByText('CarbonX')).toBeInTheDocument()
     expect(screen.getByText('RPC Console')).toBeInTheDocument()
@@ -120,7 +120,7 @@ describe('React Component Suite (TDD)', () => {
     expect(screen.getByText(/Loading node status/i)).toBeInTheDocument()
 
     await waitFor(() => {
-      expect(screen.getByText('qubitscoin-mainnet')).toBeInTheDocument()
+      expect(screen.getByText('oenexa-mainnet')).toBeInTheDocument()
     })
 
     expect(screen.getByText('105')).toBeInTheDocument()
@@ -147,7 +147,7 @@ describe('React Component Suite (TDD)', () => {
       expect(screen.getByText(/Block #105 Details/i)).toBeInTheDocument()
     })
 
-    expect(screen.getByText(/QBC1A2B3C4D5E6F7890123456789012345678901/i)).toBeInTheDocument()
+    expect(screen.getByText(/OEN1A2B3C4D5E6F7890123456789012345678901/i)).toBeInTheDocument()
     expect(screen.getByText(/txhash123/i)).toBeInTheDocument()
   })
 
@@ -164,7 +164,7 @@ describe('React Component Suite (TDD)', () => {
     fireEvent.click(checkBalBtn)
 
     await waitFor(() => {
-      expect(screen.getByText(/50.0000 QBC/i)).toBeInTheDocument()
+      expect(screen.getByText(/50.0000 OEN/i)).toBeInTheDocument()
     })
   })
 

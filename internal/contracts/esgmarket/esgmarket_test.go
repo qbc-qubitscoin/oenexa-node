@@ -6,7 +6,7 @@ func TestEsgmarketExecution(t *testing.T) {
 	module := NewEsgmarketModule()
 	result := module.Execute()
 	expected := "Phase 26: ESG Marketplace executed successfully"
-	
+
 	if result != expected {
 		t.Fatalf("Expected %s, got %s", expected, result)
 	}

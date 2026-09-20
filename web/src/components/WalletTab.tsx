@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 
 export interface WalletTabProps {
-  client: QBCClient
+  client: OENClient
 }
 
 export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
@@ -20,7 +20,7 @@ export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
   const handleGenerateKeypair = () => {
     // Generate simulated NIST ML-DSA-65 address and keypair for client-side demo
     const hex = Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('').toUpperCase()
-    const derivedAddr = `QBC${hex}`
+    const derivedAddr = `OEN${hex}`
     const fakePk = `04${Array.from({ length: 120 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}... [1952 bytes ML-DSA-65]`
     const fakeSk = `sk_${Array.from({ length: 120 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}... [4032 bytes ML-DSA-65]`
 
@@ -36,7 +36,7 @@ export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
   const handleCheckBalance = async () => {
     const trimmed = address.trim()
     if (!trimmed) {
-      setError('Please enter or generate a QBC address')
+      setError('Please enter or generate a OEN address')
       return
     }
 
@@ -45,7 +45,7 @@ export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
     try {
       const bal = await client.getBalance(trimmed)
       const balQbc = (Number(BigInt(bal || '0')) / 1e18).toFixed(4)
-      setBalance(`${balQbc} QBC`)
+      setBalance(`${balQbc} OEN`)
 
       const n = await client.getTransactionCount(trimmed)
       setNonce(n)
@@ -128,7 +128,7 @@ export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
       )}
 
       <div className="card mt-4">
-        <h3 className="card-title">Send Quantum QBC Transaction</h3>
+        <h3 className="card-title">Send Quantum OEN Transaction</h3>
         {error && (
           <div className="alert-box error mb-3" role="alert">
             <span>⚠️ {error}</span>
@@ -142,19 +142,19 @@ export const WalletTab: React.FC<WalletTabProps> = ({ client }) => {
 
         <form onSubmit={handleSendTx} className="form-grid">
           <div className="form-group">
-            <label htmlFor="tx-recipient">Recipient QBC Address</label>
+            <label htmlFor="tx-recipient">Recipient OEN Address</label>
             <input
               id="tx-recipient"
               type="text"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              placeholder="QBC..."
+              placeholder="OEN..."
               className="form-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="tx-amount">Amount (QBC)</label>
+            <label htmlFor="tx-amount">Amount (OEN)</label>
             <input
               id="tx-amount"
               type="number"

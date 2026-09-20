@@ -1,8 +1,8 @@
-# docker-compose.yml — QubitsCoin node + optional monitoring stack
+# docker-compose.yml — OENEXA node + optional monitoring stack
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Quick start:
-#   cp .env.example .env   # set QBC_PASSWORD
+#   cp .env.example .env   # set OEN_PASSWORD
 #   docker compose up -d
 #
 # With Prometheus + Grafana:
@@ -11,24 +11,24 @@
 
 services:
 
-  # ── QBC full node ───────────────────────────────────────────────────────────
-  qbc-node:
+  # ── OEN full node ───────────────────────────────────────────────────────────
+  oenexa-node:
     build:
       context: .
       dockerfile: Dockerfile
-    image: qbc-node:latest
-    container_name: qbc-node
+    image: oenexa-node:latest
+    container_name: oenexa-node
     restart: unless-stopped
     environment:
-      # Password is read from QBC_PASSWORD env var inside the container.
+      # Password is read from OEN_PASSWORD env var inside the container.
       # Never pass it as a CLI flag — it would appear in `docker inspect`.
-      QBC_PASSWORD: "${QBC_PASSWORD:?QBC_PASSWORD must be set in .env}"
+      OEN_PASSWORD: "${OEN_PASSWORD:?OEN_PASSWORD must be set in .env}"
     ports:
       - "8765:8765/tcp"            # P2P — must be open to the internet
       - "127.0.0.1:8545:8545/tcp" # RPC — localhost only; use a reverse proxy for public access
       - "9090:9090/tcp"            # Prometheus metrics — restrict to internal network
     volumes:
-      - qbc-data:/data
+      - oen-data:/data
       - ./configs/mainnet.toml:/data/config.toml:ro
     command: >
       start
@@ -39,7 +39,7 @@ services:
       test:
         - "CMD-SHELL"
         - >
-          wget -qO- --post-data='{"jsonrpc":"2.0","id":1,"method":"qbc_blockHeight","params":null}'
+          wget -qO- --post-data='{"jsonrpc":"2.0","id":1,"method":"oen_blockHeight","params":null}'
           --header='Content-Type: application/json'
           http://localhost:8545/ | grep -q 'result'
       interval: 30s
@@ -51,7 +51,7 @@ services:
   prometheus:
     profiles: ["monitoring"]
     image: prom/prometheus:v2.53.0
-    container_name: qbc-prometheus
+    container_name: oen-prometheus
     restart: unless-stopped
     ports:
       - "9091:9090/tcp"
@@ -67,7 +67,7 @@ services:
   grafana:
     profiles: ["monitoring"]
     image: grafana/grafana:11.2.0
-    container_name: qbc-grafana
+    container_name: oen-grafana
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PASSWORD:-admin}"
@@ -77,6 +77,6 @@ services:
       - grafana-data:/var/lib/grafana
 
 volumes:
-  qbc-data:
+  oen-data:
   prometheus-data:
   grafana-data:

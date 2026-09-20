@@ -34,7 +34,7 @@ func TestInitMultisig(t *testing.T) {
 	// Payload length mismatch
 	payload := make([]byte, 12)
 	binary.BigEndian.PutUint32(payload[4:8], 2) // ownerCount = 2, expected 8 + 2*1952 = 3912
-	
+
 	PtrToBytes = func(ptr, l uint32) []byte {
 		return payload
 	}
@@ -46,11 +46,11 @@ func TestInitMultisig(t *testing.T) {
 	validPayload := make([]byte, 8+2*1952)
 	binary.BigEndian.PutUint32(validPayload[0:4], 2) // threshold
 	binary.BigEndian.PutUint32(validPayload[4:8], 2) // ownerCount
-	
+
 	PtrToBytes = func(ptr, l uint32) []byte {
 		return validPayload
 	}
-	
+
 	written := make(map[string][]byte)
 	WriteState = func(key, val []byte) {
 		written[string(key)] = append([]byte(nil), val...)
@@ -59,7 +59,7 @@ func TestInitMultisig(t *testing.T) {
 	if res := InitMultisig(0, uint32(len(validPayload))); res != 0 {
 		t.Errorf("expected 0, got %d", res)
 	}
-	
+
 	if len(written) != 4 {
 		t.Errorf("expected 4 states written (threshold, owners, owner_0, owner_1), got %d", len(written))
 	}
@@ -90,7 +90,7 @@ func TestExecuteTransfer(t *testing.T) {
 	validPayload := make([]byte, 44+3309)
 	binary.BigEndian.PutUint32(validPayload[40:44], 1)
 	PtrToBytes = func(ptr, l uint32) []byte { return validPayload }
-	
+
 	ReadState = func(key []byte, maxLen uint32) ([]byte, error) {
 		return nil, errors.New("read err")
 	}
@@ -166,7 +166,7 @@ func TestExecuteTransfer(t *testing.T) {
 	if res := ExecuteTransfer(0, uint32(len(validPayload))); res != -6 {
 		t.Errorf("expected -6, got %d", res)
 	}
-	
+
 	// Valid signature, but transfer fails
 	ReadState = func(key []byte, maxLen uint32) ([]byte, error) {
 		if bytes.Equal(key, KeyThreshold) {
@@ -183,7 +183,7 @@ func TestExecuteTransfer(t *testing.T) {
 	}
 	VerifySig = func(pubKey, msg, sig []byte) bool { return true }
 	DoTransfer = func(to []byte, amount uint64) bool { return false }
-	
+
 	if res := ExecuteTransfer(0, uint32(len(validPayload))); res != -7 {
 		t.Errorf("expected -7, got %d", res)
 	}

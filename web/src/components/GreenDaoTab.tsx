@@ -5,8 +5,8 @@ const INITIAL_PROPOSALS: Proposal[] = [
   {
     id: 1,
     title: 'Renewable Validator Subsidy',
-    description: 'Allocate 50,000 QBC monthly block reward bonus to validators operating 100% on certified renewable energy.',
-    proposer: 'QBC_GREEN_FOUNDATION',
+    description: 'Allocate 50,000 OEN monthly block reward bonus to validators operating 100% on certified renewable energy.',
+    proposer: 'OEN_GREEN_FOUNDATION',
     votesFor: 1250000,
     votesAgainst: 120000,
     quorum: 1000000,

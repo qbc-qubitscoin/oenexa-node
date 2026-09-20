@@ -14,7 +14,7 @@ import (
 const (
 	// DefaultReleaseURL is the GitHub Releases API endpoint.
 	// Override via Config.ReleaseURL.
-	DefaultReleaseURL = "https://api.github.com/repos/qubitscoin/node/releases/latest"
+	DefaultReleaseURL = "https://api.github.com/repos/oenexa/node/releases/latest"
 
 	httpTimeout = 30 * time.Second
 )
@@ -54,7 +54,7 @@ func FetchLatestRelease(ctx context.Context, apiURL string) (*Release, error) {
 		return nil, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("User-Agent", "QubitsCoin-node/"+Current().String())
+	req.Header.Set("User-Agent", "OENEXA-node/"+Current().String())
 
 	resp, err := client.Do(req)
 	if err != nil {

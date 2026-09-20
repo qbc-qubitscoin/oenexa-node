@@ -23,8 +23,8 @@ func TestIssueKYCCredential_ReturnsCredential(t *testing.T) {
 	w := testWallet(t)
 	vc, err := IssueKYCCredential(
 		w.PrivateKey,
-		"did:qbc:issuer1",
-		"did:qbc:subject1",
+		"did:oen:issuer1",
+		"did:oen:subject1",
 		"approved",
 		"low",
 		"EU",
@@ -39,7 +39,7 @@ func TestIssueKYCCredential_ReturnsCredential(t *testing.T) {
 
 func TestIssueKYCCredential_ContextFields(t *testing.T) {
 	w := testWallet(t)
-	vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:issuer", "did:qbc:subject", "approved", "low", "US")
+	vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:issuer", "did:oen:subject", "approved", "low", "US")
 	if err != nil {
 		t.Fatalf("IssueKYCCredential: %v", err)
 	}
@@ -60,7 +60,7 @@ func TestIssueKYCCredential_ContextFields(t *testing.T) {
 
 func TestIssueKYCCredential_TypeFields(t *testing.T) {
 	w := testWallet(t)
-	vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:issuer", "did:qbc:subject", "approved", "low", "US")
+	vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:issuer", "did:oen:subject", "approved", "low", "US")
 	if err != nil {
 		t.Fatalf("IssueKYCCredential: %v", err)
 	}
@@ -85,8 +85,8 @@ func TestIssueKYCCredential_TypeFields(t *testing.T) {
 
 func TestIssueKYCCredential_IssuerAndSubject(t *testing.T) {
 	w := testWallet(t)
-	issuer := "did:qbc:issuer-abc"
-	subject := "did:qbc:subject-xyz"
+	issuer := "did:oen:issuer-abc"
+	subject := "did:oen:subject-xyz"
 
 	vc, err := IssueKYCCredential(w.PrivateKey, issuer, subject, "approved", "low", "SG")
 	if err != nil {
@@ -103,7 +103,7 @@ func TestIssueKYCCredential_IssuerAndSubject(t *testing.T) {
 
 func TestIssueKYCCredential_CredentialSubjectFields(t *testing.T) {
 	w := testWallet(t)
-	vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", "medium", "JP")
+	vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", "medium", "JP")
 	if err != nil {
 		t.Fatalf("IssueKYCCredential: %v", err)
 	}
@@ -121,7 +121,7 @@ func TestIssueKYCCredential_CredentialSubjectFields(t *testing.T) {
 
 func TestIssueKYCCredential_HasProof(t *testing.T) {
 	w := testWallet(t)
-	vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", "low", "UK")
+	vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", "low", "UK")
 	if err != nil {
 		t.Fatalf("IssueKYCCredential: %v", err)
 	}
@@ -137,14 +137,14 @@ func TestIssueKYCCredential_HasProof(t *testing.T) {
 	if vc.Proof.JWS == "" {
 		t.Error("Proof.JWS (signature) must not be empty")
 	}
-	if !strings.Contains(vc.Proof.VerificationMethod, "did:qbc:i") {
+	if !strings.Contains(vc.Proof.VerificationMethod, "did:oen:i") {
 		t.Errorf("VerificationMethod should reference the issuer DID, got: %s", vc.Proof.VerificationMethod)
 	}
 }
 
 func TestIssueKYCCredential_HasIssuanceDate(t *testing.T) {
 	w := testWallet(t)
-	vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", "low", "DE")
+	vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", "low", "DE")
 	if err != nil {
 		t.Fatalf("IssueKYCCredential: %v", err)
 	}
@@ -155,11 +155,11 @@ func TestIssueKYCCredential_HasIssuanceDate(t *testing.T) {
 
 func TestIssueKYCCredential_UniqueIDs(t *testing.T) {
 	w := testWallet(t)
-	vc1, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", "low", "FR")
+	vc1, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", "low", "FR")
 	if err != nil {
 		t.Fatalf("first IssueKYCCredential: %v", err)
 	}
-	vc2, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", "low", "FR")
+	vc2, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", "low", "FR")
 	if err != nil {
 		t.Fatalf("second IssueKYCCredential: %v", err)
 	}
@@ -175,7 +175,7 @@ func TestIssueKYCCredential_DifferentRiskLevels(t *testing.T) {
 	levels := []string{"low", "medium", "high"}
 	for _, lvl := range levels {
 		t.Run(lvl, func(t *testing.T) {
-			vc, err := IssueKYCCredential(w.PrivateKey, "did:qbc:i", "did:qbc:s", "approved", lvl, "US")
+			vc, err := IssueKYCCredential(w.PrivateKey, "did:oen:i", "did:oen:s", "approved", lvl, "US")
 			if err != nil {
 				t.Fatalf("IssueKYCCredential(%s): %v", lvl, err)
 			}

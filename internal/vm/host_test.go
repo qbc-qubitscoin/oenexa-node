@@ -2,9 +2,9 @@ package vm
 
 import (
 	"context"
-	"testing"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
+	"testing"
 )
 
 func TestHostFunctions(t *testing.T) {
@@ -81,14 +81,14 @@ func TestHostFunctions(t *testing.T) {
 	// ec == nil, mem != nil (panics if mem access invalid but stack[0] is 0, stack[1] is 0)
 	stack[0] = 0
 	stack[1] = 0
-	fLog(ctxBg, mod, stack) 
+	fLog(ctxBg, mod, stack)
 
 	// ec != nil, OutOfGas
 	func() {
 		defer func() { recover() }()
 		fLog(WithExecCtx(ctxBg, &ExecutionContext{GasLimit: 0}), mod, stack)
 	}()
-	
+
 	// valid mem access
 	stack[0] = 0
 	stack[1] = 4 // memory has some bytes
@@ -112,7 +112,7 @@ func TestHostLog_NoMemory(t *testing.T) {
 	ctxBg := context.Background()
 	fLog := hostLog()
 	stack := make([]uint64, 2)
-	
+
 	mod := mockModule{}
 	fLog(ctxBg, mod, stack)
 }

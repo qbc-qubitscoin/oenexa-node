@@ -8,10 +8,10 @@ import (
 
 // TestBorrowQUSD_ExactlyAtRatio verifies borrowing at exactly 150% CR is allowed.
 func TestBorrowQUSD_ExactlyAtRatio(t *testing.T) {
-	market := NewQubitLend()
-	market.UpdateOraclePrice(100) // 1 QBC = $100
+	market := NewOenexaLend()
+	market.UpdateOraclePrice(100) // 1 OEN = $100
 
-	// Deposit 15 QBC → $1500 value
+	// Deposit 15 OEN → $1500 value
 	// At 150% CR: max borrow = $1500 / 1.5 = $1000
 	market.DepositCollateral("alice", 15)
 
@@ -22,7 +22,7 @@ func TestBorrowQUSD_ExactlyAtRatio(t *testing.T) {
 
 // TestBorrowQUSD_OneOverRatioFails verifies borrowing one unit above the limit fails.
 func TestBorrowQUSD_OneOverRatioFails(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("alice", 15) // $1500 value → max $1000
 
@@ -33,7 +33,7 @@ func TestBorrowQUSD_OneOverRatioFails(t *testing.T) {
 
 // TestBorrowQUSD_NoPosition fails without a deposit.
 func TestBorrowQUSD_NoPosition(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	if market.BorrowQUSD("ghost", 100) {
 		t.Fatal("BorrowQUSD with no position should return false")
 	}
@@ -41,7 +41,7 @@ func TestBorrowQUSD_NoPosition(t *testing.T) {
 
 // TestBorrowQUSD_ZeroAmount — test zero borrow does not change state.
 func TestBorrowQUSD_ZeroAmount(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("alice", 10) // $1000 value
 
@@ -56,7 +56,7 @@ func TestBorrowQUSD_ZeroAmount(t *testing.T) {
 
 // TestBorrowQUSD_CumulativeDebt tests sequential borrows accumulate debt.
 func TestBorrowQUSD_CumulativeDebt(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("alice", 10) // $1000 → max $666
 
@@ -76,7 +76,7 @@ func TestBorrowQUSD_CumulativeDebt(t *testing.T) {
 
 // TestLiquidate_ExactlyAt150_Protected ensures healthy positions cannot be liquidated.
 func TestLiquidate_ExactlyAt150_Protected(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("bob", 15) // $1500
 	market.BorrowQUSD("bob", 1000)      // exactly 150% CR
@@ -90,7 +90,7 @@ func TestLiquidate_ExactlyAt150_Protected(t *testing.T) {
 
 // TestLiquidate_NoDebt returns false for no-debt position.
 func TestLiquidate_NoDebt(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("charlie", 10)
 
@@ -101,7 +101,7 @@ func TestLiquidate_NoDebt(t *testing.T) {
 
 // TestLiquidate_NonExistentPosition returns false.
 func TestLiquidate_NonExistentPosition(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	if market.Liquidate("nonexistent") {
 		t.Fatal("liquidating non-existent user should return false")
 	}
@@ -109,7 +109,7 @@ func TestLiquidate_NonExistentPosition(t *testing.T) {
 
 // TestLiquidate_ClearsPosition verifies collateral and debt are wiped after liquidation.
 func TestLiquidate_ClearsPosition(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.UpdateOraclePrice(100)
 	market.DepositCollateral("dave", 10) // $1000
 	market.BorrowQUSD("dave", 600)       // 166% CR — healthy
@@ -120,8 +120,8 @@ func TestLiquidate_ClearsPosition(t *testing.T) {
 	}
 
 	pos := market.Positions["dave"]
-	if pos.CollateralQBC != 0 {
-		t.Errorf("after liquidation, CollateralQBC should be 0, got %d", pos.CollateralQBC)
+	if pos.CollateralOEN != 0 {
+		t.Errorf("after liquidation, CollateralOEN should be 0, got %d", pos.CollateralOEN)
 	}
 	if pos.DebtQUSD != 0 {
 		t.Errorf("after liquidation, DebtQUSD should be 0, got %d", pos.DebtQUSD)
@@ -130,8 +130,8 @@ func TestLiquidate_ClearsPosition(t *testing.T) {
 
 // TestUpdateOraclePrice_AffectsLiquidation tests that price oracle drives liquidations.
 func TestUpdateOraclePrice_AffectsLiquidation(t *testing.T) {
-	market := NewQubitLend()
-	market.UpdateOraclePrice(200) // 1 QBC = $200
+	market := NewOenexaLend()
+	market.UpdateOraclePrice(200)      // 1 OEN = $200
 	market.DepositCollateral("eve", 5) // $1000
 	market.BorrowQUSD("eve", 600)      // 166% CR — healthy
 
@@ -146,25 +146,25 @@ func TestUpdateOraclePrice_AffectsLiquidation(t *testing.T) {
 // ── DepositCollateral tests ───────────────────────────────────────────────────
 
 func TestDepositCollateral_CreatesNewPosition(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.DepositCollateral("frank", 50)
 
 	pos := market.Positions["frank"]
 	if pos == nil {
 		t.Fatal("DepositCollateral should create a new position")
 	}
-	if pos.CollateralQBC != 50 {
-		t.Errorf("CollateralQBC: want 50, got %d", pos.CollateralQBC)
+	if pos.CollateralOEN != 50 {
+		t.Errorf("CollateralOEN: want 50, got %d", pos.CollateralOEN)
 	}
 }
 
 func TestDepositCollateral_Cumulative(t *testing.T) {
-	market := NewQubitLend()
+	market := NewOenexaLend()
 	market.DepositCollateral("grace", 30)
 	market.DepositCollateral("grace", 20)
 
-	if market.Positions["grace"].CollateralQBC != 50 {
-		t.Errorf("cumulative deposit: want 50, got %d", market.Positions["grace"].CollateralQBC)
+	if market.Positions["grace"].CollateralOEN != 50 {
+		t.Errorf("cumulative deposit: want 50, got %d", market.Positions["grace"].CollateralOEN)
 	}
 }
 
@@ -182,13 +182,13 @@ func TestBorrowQUSD_Table(t *testing.T) {
 		{"exactly_150pct", 15, 100, 1000, true},
 		{"under_150pct", 10, 100, 700, false},
 		{"zero_collateral", 0, 100, 100, false},
-		{"high_price_healthy", 5, 400, 1000, true},  // $2000 value → max $1333
-		{"low_price_fails", 5, 50, 200, false},       // $250 value → max $166
+		{"high_price_healthy", 5, 400, 1000, true}, // $2000 value → max $1333
+		{"low_price_fails", 5, 50, 200, false},     // $250 value → max $166
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			market := NewQubitLend()
+			market := NewOenexaLend()
 			market.UpdateOraclePrice(tc.oraclePrice)
 			if tc.collateral > 0 {
 				market.DepositCollateral("user", tc.collateral)

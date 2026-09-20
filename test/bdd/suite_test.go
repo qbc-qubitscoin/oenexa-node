@@ -10,5 +10,5 @@ import (
 // TestBDDSuite is the entry point for all Ginkgo BDD specs in this package.
 func TestBDDSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "QubitsCoin BDD Suite")
+	RunSpecs(t, "OENEXA BDD Suite")
 }

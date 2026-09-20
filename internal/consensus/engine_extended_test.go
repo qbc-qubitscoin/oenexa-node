@@ -16,9 +16,9 @@ func newTestGenesis(valAddr [crypto.AddressSize]byte) (*core.Block, *state.DB) {
 	st := state.NewStateDB()
 	cfg := core.DefaultGenesisConfig(valAddr)
 	cfg.Allocations = map[[crypto.AddressSize]byte]uint64{
-		valAddr: 1_000_000 * core.OneQBC,
+		valAddr: 1_000_000 * core.OneOEN,
 	}
-	st.SetAccount(valAddr, &state.Account{Balance: 1_000_000 * core.OneQBC})
+	st.SetAccount(valAddr, &state.Account{Balance: 1_000_000 * core.OneOEN})
 	blk := cfg.Build()
 	return blk, st
 }

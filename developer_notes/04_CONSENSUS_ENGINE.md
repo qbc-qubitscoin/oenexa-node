@@ -4,7 +4,7 @@
 
 Blockchains require consensus to order transactions and prevent double-spending. Proof-of-Work (PoW) is energy-intensive and slow, while complex multi-round PBFT protocols often suffer from communication overhead ($\mathcal{O}(n^2)$ network messages per block).
 
-QubitsCoin uses a **Deterministic Round-Robin Single-Proposer with BFT Quorum Voting** model:
+OENEXA uses a **Deterministic Round-Robin Single-Proposer with BFT Quorum Voting** model:
 - Fixed **2-second block intervals** (`BlockInterval = 2 * time.Second`).
 - Deterministic proposer selection for round-robin fairness.
 - Supermajority quorum requirement for multi-validator networks:

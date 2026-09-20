@@ -1,14 +1,14 @@
-// cmd/node is the QubitsCoin node binary.
+// cmd/node is the OENEXA node binary.
 //
 // Usage:
 //
-//	qbc-node start # run a full node
-//	qbc-node wallet new # generate a new wallet
-//	qbc-node wallet show # display the address in the keystore
-//	qbc-node tx send --to <addr> --amount X # broadcast a signed transfer
-//	qbc-node query balance --address <addr> # query an address balance via RPC
-//	qbc-node query chain # query chain status via RPC
-//	qbc-node version # print version information
+//	oenexa-node start # run a full node
+//	oenexa-node wallet new # generate a new wallet
+//	oenexa-node wallet show # display the address in the keystore
+//	oenexa-node tx send --to <addr> --amount X # broadcast a signed transfer
+//	oenexa-node query balance --address <addr> # query an address balance via RPC
+//	oenexa-node query chain # query chain status via RPC
+//	oenexa-node version # print version information
 package main
 
 import (
@@ -43,7 +43,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:     "oenexa-node",
-	Aliases: []string{"qbc-node"},
+	Aliases: []string{"oenexa-node"},
 	Short:   "OENEXA (OEN) full node — quantum-resistant, privacy-preserving Layer-1 blockchain",
 	Long: `OENEXA (OEN) — Open Economy, Next Generation Exchange & Assets.
 A quantum-resistant, privacy-preserving Layer-1 blockchain with native Dual-Pool architecture.
@@ -69,8 +69,8 @@ var (
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&flagConfig, "config", "", "path to a TOML config file")
-	rootCmd.PersistentFlags().StringVar(&flagDataDir, "datadir", "", "override data directory (default: ~/.qbc)")
-	rootCmd.PersistentFlags().StringVar(&flagPassword, "password", "", "keystore password (avoid using on CLI; prefer QBC_PASSWORD env var)")
+	rootCmd.PersistentFlags().StringVar(&flagDataDir, "datadir", "", "override data directory (default: ~/.oen)")
+	rootCmd.PersistentFlags().StringVar(&flagPassword, "password", "", "keystore password (avoid using on CLI; prefer OEN_PASSWORD env var)")
 	rootCmd.PersistentFlags().StringVar(&flagRPCAddr, "rpc", "http://127.0.0.1:8545", "RPC endpoint for query/tx commands")
 
 	rootCmd.AddCommand(startCmd)
@@ -81,13 +81,13 @@ func init() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// qbc-node start
+// oenexa-node start
 // ─────────────────────────────────────────────────────────────────────────────
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the full node",
-	Long: `Start a QubitsCoin full node.
+	Long: `Start a OENEXA full node.
 
 The node will:
   • Connect to bootstrap peers and sync the chain
@@ -157,7 +157,7 @@ func runStart(_ *cobra.Command, _ []string) error {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// qbc-node wallet
+// oenexa-node wallet
 // ─────────────────────────────────────────────────────────────────────────────
 
 var walletCmd = &cobra.Command{
@@ -179,7 +179,7 @@ var walletNewCmd = &cobra.Command{
 
 		password := resolvePassword()
 		if password == "" {
-			return fmt.Errorf("password required (--password or QBC_PASSWORD env var)")
+			return fmt.Errorf("password required (--password or OEN_PASSWORD env var)")
 		}
 
 		ksPath := resolvePath(cfg.Node.DataDir, cfg.Node.KeystoreFile)
@@ -273,7 +273,7 @@ var walletExportVKCmd = &cobra.Command{
 		}
 		password := resolvePassword()
 		if password == "" {
-			return fmt.Errorf("password required (--password or QBC_PASSWORD env var)")
+			return fmt.Errorf("password required (--password or OEN_PASSWORD env var)")
 		}
 		ksPath := resolvePath(cfg.Node.DataDir, cfg.Node.KeystoreFile)
 		w, err := keystore.Decrypt(ksPath, password)
@@ -301,7 +301,7 @@ func init() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// qbc-node tx send
+// oenexa-node tx send
 // ─────────────────────────────────────────────────────────────────────────────
 
 var txCmd = &cobra.Command{
@@ -317,13 +317,13 @@ var (
 
 var txSendCmd = &cobra.Command{
 	Use:   "send",
-	Short: "Sign and broadcast a QBC transfer",
+	Short: "Sign and broadcast a OEN transfer",
 	RunE: func(_ *cobra.Command, _ []string) error {
 		if flagTxTo == "" {
 			return fmt.Errorf("--to address required")
 		}
 		if flagTxAmount == 0 {
-			return fmt.Errorf("--amount must be > 0 (in qubits)")
+			return fmt.Errorf("--amount must be > 0 (in oenexa)")
 		}
 
 		cfg, err := loadConfig()
@@ -336,7 +336,7 @@ var txSendCmd = &cobra.Command{
 
 		password := resolvePassword()
 		if password == "" {
-			return fmt.Errorf("password required (--password or QBC_PASSWORD env var)")
+			return fmt.Errorf("password required (--password or OEN_PASSWORD env var)")
 		}
 
 		ksPath := resolvePath(cfg.Node.DataDir, cfg.Node.KeystoreFile)
@@ -368,7 +368,7 @@ var txSendCmd = &cobra.Command{
 		}
 		rawHex := hex.EncodeToString(raw)
 
-		result, err := rpcCall(flagRPCAddr, "qbc_sendRawTransaction", []string{rawHex})
+		result, err := rpcCall(flagRPCAddr, "oen_sendRawTransaction", []string{rawHex})
 		if err != nil {
 			return fmt.Errorf("broadcast: %w", err)
 		}
@@ -377,20 +377,20 @@ var txSendCmd = &cobra.Command{
 		fmt.Printf("  Hash : %s\n", extractString(result, "tx_hash"))
 		fmt.Printf("  From : %s\n", crypto.AddressToHex(w.Address))
 		fmt.Printf("  To   : %s\n", flagTxTo)
-		fmt.Printf("  Amt  : %d qubits (%g QBC)\n", flagTxAmount, float64(flagTxAmount)/float64(core.OneQBC))
+		fmt.Printf("  Amt  : %d oenexa (%g OEN)\n", flagTxAmount, float64(flagTxAmount)/float64(core.OneOEN))
 		return nil
 	},
 }
 
 func init() {
 	txSendCmd.Flags().StringVar(&flagTxTo, "to", "", "destination address (hex)")
-	txSendCmd.Flags().Uint64Var(&flagTxAmount, "amount", 0, "amount in qubits (1 QBC = 1 000 000 000 qubits)")
-	txSendCmd.Flags().Uint64Var(&flagTxNonce, "nonce", 0, "sender nonce (use qbc-node query nonce to get the current value)")
+	txSendCmd.Flags().Uint64Var(&flagTxAmount, "amount", 0, "amount in oenexa (1 OEN = 1 000 000 000 oenexa)")
+	txSendCmd.Flags().Uint64Var(&flagTxNonce, "nonce", 0, "sender nonce (use oenexa-node query nonce to get the current value)")
 	txCmd.AddCommand(txSendCmd)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// qbc-node query
+// oenexa-node query
 // ─────────────────────────────────────────────────────────────────────────────
 
 var queryCmd = &cobra.Command{
@@ -409,13 +409,13 @@ var queryBalanceCmd = &cobra.Command{
 		if addr == "" {
 			return fmt.Errorf("address required (--address or positional arg)")
 		}
-		result, err := rpcCall(flagRPCAddr, "qbc_getBalance", []string{addr})
+		result, err := rpcCall(flagRPCAddr, "oen_getBalance", []string{addr})
 		if err != nil {
 			return err
 		}
-		qubits := extractUint64(result, "balance_qubits")
+		oenexa := extractUint64(result, "balance_oenexa")
 		fmt.Printf("Address : %s\n", addr)
-		fmt.Printf("Balance : %d qubits  (%g QBC)\n", qubits, float64(qubits)/float64(core.OneQBC))
+		fmt.Printf("Balance : %d oenexa  (%g OEN)\n", oenexa, float64(oenexa)/float64(core.OneOEN))
 		return nil
 	},
 }
@@ -424,7 +424,7 @@ var queryChainCmd = &cobra.Command{
 	Use:   "chain",
 	Short: "Display current chain status",
 	RunE: func(_ *cobra.Command, _ []string) error {
-		result, err := rpcCall(flagRPCAddr, "qbc_chainInfo", nil)
+		result, err := rpcCall(flagRPCAddr, "oen_chainInfo", nil)
 		if err != nil {
 			return err
 		}
@@ -440,7 +440,7 @@ var queryBlockCmd = &cobra.Command{
 		if flagQueryHeight == 0 && !flagQueryHeightSet {
 			return fmt.Errorf("--height required")
 		}
-		result, err := rpcCall(flagRPCAddr, "qbc_blockByHeight", []uint64{flagQueryHeight})
+		result, err := rpcCall(flagRPCAddr, "oen_blockByHeight", []uint64{flagQueryHeight})
 		if err != nil {
 			return err
 		}
@@ -453,7 +453,7 @@ var queryFeeCmd = &cobra.Command{
 	Use:   "fee",
 	Short: "Display current fee estimate for all tiers",
 	RunE: func(_ *cobra.Command, _ []string) error {
-		result, err := rpcCall(flagRPCAddr, "qbc_feeEstimate", nil)
+		result, err := rpcCall(flagRPCAddr, "oen_feeEstimate", nil)
 		if err != nil {
 			return err
 		}
@@ -542,7 +542,7 @@ func resolvePassword() string {
 	if flagPassword != "" {
 		return flagPassword
 	}
-	return os.Getenv("QBC_PASSWORD")
+	return os.Getenv("OEN_PASSWORD")
 }
 
 func resolvePath(dataDir, rel string) string {
@@ -558,7 +558,7 @@ func resolvePath(dataDir, rel string) string {
 
 func printBanner() {
 	fmt.Println("╔══════════════════════════════════════════════════════════════════╗")
-	fmt.Printf(" ║  QubitsCoin (QBC) %-47s 										    ║"+"\n", upgrade.Current())
+	fmt.Printf(" ║  OENEXA (OEN) %-47s 										    ║"+"\n", upgrade.Current())
 	fmt.Println("║  ML-DSA-65 / ML-KEM-768 / SHA-3-256 | EIP-1559 Ultra-Low Fees    ║")
 	fmt.Println("╚══════════════════════════════════════════════════════════════════╝")
 }
@@ -621,14 +621,14 @@ func rpcCall(endpoint, method string, params interface{}) (map[string]interface{
 	}
 	var result map[string]interface{}
 	if err := json.Unmarshal(resp.Result, &result); err != nil {
-		// Might be a scalar (e.g. qbc_blockHeight returns uint64).
+		// Might be a scalar (e.g. oen_blockHeight returns uint64).
 		return map[string]interface{}{"value": string(resp.Result)}, nil
 	}
 	return result, nil
 }
 
 func fetchBaseFee(endpoint string) (uint64, error) {
-	result, err := rpcCall(endpoint, "qbc_gasPrice", nil)
+	result, err := rpcCall(endpoint, "oen_gasPrice", nil)
 	if err != nil {
 		return 0, err
 	}

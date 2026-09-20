@@ -7,31 +7,31 @@ import (
 type ProposalStatus string
 
 const (
-	StatusActive    ProposalStatus = "ACTIVE"
-	StatusPassed    ProposalStatus = "PASSED"
-	StatusRejected  ProposalStatus = "REJECTED"
-	StatusExecuted  ProposalStatus = "EXECUTED"
+	StatusActive   ProposalStatus = "ACTIVE"
+	StatusPassed   ProposalStatus = "PASSED"
+	StatusRejected ProposalStatus = "REJECTED"
+	StatusExecuted ProposalStatus = "EXECUTED"
 )
 
 // Proposal represents a request for funding a renewable energy project.
 type Proposal struct {
-	ID             uint64
-	Proposer       string
-	Recipient      string
+	ID              uint64
+	Proposer        string
+	Recipient       string
 	AmountRequested uint64
-	Description    string
-	VotesFor       uint64
-	VotesAgainst   uint64
-	Status         ProposalStatus
+	Description     string
+	VotesFor        uint64
+	VotesAgainst    uint64
+	Status          ProposalStatus
 }
 
 // GreenDAO manages proposals and treasury funds.
 type GreenDAO struct {
-	TreasuryBalance uint64
-	Proposals       map[uint64]*Proposal
-	NextProposalID  uint64
-	HasVoted        map[uint64]map[string]bool // ProposalID -> User -> true
-	TotalVotingPower uint64 // Mock of total circulating supply
+	TreasuryBalance  uint64
+	Proposals        map[uint64]*Proposal
+	NextProposalID   uint64
+	HasVoted         map[uint64]map[string]bool // ProposalID -> User -> true
+	TotalVotingPower uint64                     // Mock of total circulating supply
 }
 
 func NewGreenDAO(initialTreasury, totalPower uint64) *GreenDAO {
@@ -88,13 +88,13 @@ func (dao *GreenDAO) Vote(proposalID uint64, voter string, votingPower uint64, s
 	// Check if quorum (20%) and supermajority (60%) are met
 	totalVotes := p.VotesFor + p.VotesAgainst
 	quorum := dao.TotalVotingPower / 5 // 20%
-	
+
 	if totalVotes >= quorum {
 		// Calculate percentage of passing votes
 		passingThreshold := (totalVotes * 60) / 100
 		if p.VotesFor >= passingThreshold {
 			p.Status = StatusPassed
-		} else if p.VotesAgainst > (totalVotes * 40) / 100 {
+		} else if p.VotesAgainst > (totalVotes*40)/100 {
 			// If enough against to mathematically prevent 60%
 			p.Status = StatusRejected
 		}
@@ -119,7 +119,7 @@ func (dao *GreenDAO) ExecuteProposal(proposalID uint64) error {
 	dao.TreasuryBalance -= p.AmountRequested
 	p.Status = StatusExecuted
 
-	// In a real system, we invoke the WASM host function qbc_transfer here
+	// In a real system, we invoke the WASM host function oen_transfer here
 	// qbcTransfer(p.Recipient, p.AmountRequested)
 
 	return nil

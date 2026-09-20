@@ -7,14 +7,14 @@ import (
 // TestMarketStressLiquidation verifies the Phase 11 Exit Criteria:
 // "liquidation logic verified under simulated market-stress scenarios"
 func TestMarketStressLiquidation(t *testing.T) {
-	market := NewQubitLend()
-	
-	// Set initial healthy oracle price: 1 QBC = $100
+	market := NewOenexaLend()
+
+	// Set initial healthy oracle price: 1 OEN = $100
 	market.UpdateOraclePrice(100)
 
-	// User deposits 10 QBC ($1000 value)
+	// User deposits 10 OEN ($1000 value)
 	market.DepositCollateral("user_bob", 10)
-	
+
 	// Max borrow at 150% ratio is $1000 / 1.5 = $666.66
 	// User borrows $600 (Healthy, CR = 166%)
 	if !market.BorrowQUSD("user_bob", 600) {
@@ -27,7 +27,7 @@ func TestMarketStressLiquidation(t *testing.T) {
 	}
 
 	// --- MARKET STRESS EVENT ---
-	// Oracle reports price drop: 1 QBC = $80
+	// Oracle reports price drop: 1 OEN = $80
 	// Collateral value drops to $800.
 	// Required for $600 debt is $900.
 	// Position is now under-collateralized (CR = 133%).
@@ -40,8 +40,8 @@ func TestMarketStressLiquidation(t *testing.T) {
 
 	// Verify position is wiped
 	pos := market.Positions["user_bob"]
-	if pos.CollateralQBC != 0 || pos.DebtQUSD != 0 {
-		t.Fatalf("Liquidation did not clear the position. Collateral: %d, Debt: %d", pos.CollateralQBC, pos.DebtQUSD)
+	if pos.CollateralOEN != 0 || pos.DebtQUSD != 0 {
+		t.Fatalf("Liquidation did not clear the position. Collateral: %d, Debt: %d", pos.CollateralOEN, pos.DebtQUSD)
 	}
 
 	t.Log("Passed: Liquidation logic successfully triggered and resolved bad debt during simulated oracle price crash.")

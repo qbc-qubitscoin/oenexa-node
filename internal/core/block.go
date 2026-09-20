@@ -18,8 +18,8 @@ type BlockHeader struct {
 	ValidatorAddr [crypto.AddressSize]byte
 	GasUsed       uint64
 	GasLimit      uint64
-	BaseFee       uint64 // qubits per gas — burned portion of the fee
-	BurnedFees    uint64 // total qubits burned in this block (BaseFee × GasUsed)
+	BaseFee       uint64 // oenexa per gas — burned portion of the fee
+	BurnedFees    uint64 // total oenexa burned in this block (BaseFee × GasUsed)
 }
 
 // Block is a header plus its transactions and validator signature.
@@ -87,7 +87,7 @@ func (b *Block) VerifyValidatorSig(pubKeyBytes []byte) error {
 
 // NewBlock constructs a block, validates all transactions, and computes the Merkle root.
 // stateRoot must be computed by the caller after applying transactions.
-// baseFee is the current block's base fee (qubits per gas).
+// baseFee is the current block's base fee (oenexa per gas).
 // burnedFees is the total base fee burned across all transactions.
 func NewBlock(
 	height uint64,

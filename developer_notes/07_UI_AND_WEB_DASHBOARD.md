@@ -2,10 +2,10 @@
 
 ## 1. Why a Universal React + TypeScript Architecture
 
-As the QubitsCoin ecosystem scales with post-quantum cryptography, Wazero smart contracts, and real-time node telemetry, the web interface requires enterprise-grade modularity, type safety, and automated component verification.
+As the OENEXA ecosystem scales with post-quantum cryptography, Wazero smart contracts, and real-time node telemetry, the web interface requires enterprise-grade modularity, type safety, and automated component verification.
 
 ### Key Architectural Pillars
-- **Strict TypeScript 5 & React 18**: Complete type coverage mirroring QBC core Go structures (`ChainInfo`, `BlockInfo`, `TransactionInfo`, `FeeEstimate`).
+- **Strict TypeScript 5 & React 18**: Complete type coverage mirroring OEN core Go structures (`ChainInfo`, `BlockInfo`, `TransactionInfo`, `FeeEstimate`).
 - **Test-Driven Development (TDD)**: Every client method and UI component is backed by Vitest and React Testing Library unit tests before implementation.
 - **Embedded Zero-Configuration Delivery**: Vite compiles production bundles directly into `internal/web/static/`, allowing the Go node binary to bundle and serve the entire SPA via pure Go `embed.FS` with zero runtime dependencies.
 - **Universal Development**: Can be developed standalone (`npm run dev` with hot module reloading) or accessed directly through any active node at `http://127.0.0.1:8545/ui/` and `/dashboard`.
@@ -27,14 +27,14 @@ web/
     ├── types/
     │   └── rpc.ts             # TypeScript interfaces for JSON-RPC 2.0 requests & data models
     ├── services/
-    │   └── rpcClient.ts       # Typed QBCClient with single & batch dispatch, RPCError
+    │   └── rpcClient.ts       # Typed OENClient with single & batch dispatch, RPCError
     ├── components/
     │   ├── Header.tsx         # Node liveness indicator, height pill, theme toggle
     │   ├── Tabs.tsx           # Tab navigation (Dashboard, Explorer, Wallet, AMM, DAO, ESG, RPC)
     │   ├── DashboardTab.tsx   # Live node metrics (Height, Validators, BaseFee, Gas target)
     │   ├── ExplorerTab.tsx    # Search blocks by height/hash, inspect transactions
     │   ├── WalletTab.tsx      # NIST ML-DSA-65 post-quantum address generator & transfers
-    │   ├── DexTab.tsx         # QubitSwap constant product AMM ($x \cdot y = k$) calculator
+    │   ├── DexTab.tsx         # OenexaSwap constant product AMM ($x \cdot y = k$) calculator
     │   ├── GreenDaoTab.tsx    # Environmental quadratic governance voting
     │   ├── CarbonXTab.tsx     # ESG carbon offset credit registry & permanent retirement
     │   └── RpcConsoleTab.tsx  # Interactive JSON-RPC 2.0 console with pre-filled templates
@@ -48,10 +48,10 @@ web/
 
 ## 3. Typed JSON-RPC 2.0 Client (`services/rpcClient.ts`)
 
-The `QBCClient` class provides type-safe methods over the node's JSON-RPC 2.0 engine:
+The `OENClient` class provides type-safe methods over the node's JSON-RPC 2.0 engine:
 
 ```typescript
-export class QBCClient {
+export class OENClient {
   constructor(endpoint: string = 'http://localhost:8545')
   async getChainInfo(): Promise<ChainInfo>
   async getBlockByHeight(height: number): Promise<BlockInfo>

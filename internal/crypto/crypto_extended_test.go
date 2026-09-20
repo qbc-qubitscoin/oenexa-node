@@ -34,7 +34,7 @@ func TestHashMany(t *testing.T) {
 func TestToHex_HexToHash(t *testing.T) {
 	h := crypto.Hash256([]byte("test"))
 	hexStr := crypto.ToHex(h)
-	
+
 	h2, err := crypto.HexToHash(hexStr)
 	if err != nil {
 		t.Fatalf("HexToHash failed: %v", err)
@@ -63,7 +63,7 @@ func TestHexToAddress_AddressToHex(t *testing.T) {
 	copy(addr[:], addrBytes[:])
 
 	hexStr := crypto.AddressToHex(addr)
-	
+
 	addr2, err := crypto.HexToAddress(hexStr)
 	if err != nil {
 		t.Fatalf("HexToAddress failed: %v", err)
@@ -129,6 +129,7 @@ func TestVerify_BadSigLength(t *testing.T) {
 }
 
 type failReader struct{}
+
 func (f failReader) Read(p []byte) (n int, err error) {
 	return 0, errors.New("failed")
 }
@@ -146,4 +147,3 @@ func TestNewWallet_Fail(t *testing.T) {
 		t.Errorf("expected error when rand.Reader fails")
 	}
 }
-

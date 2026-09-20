@@ -1,4 +1,4 @@
-package qubitid
+package oenexaid
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ func TestRegisterDid(t *testing.T) {
 	// Test invalid payload length
 	originalPtrToBytes := ptrToBytes
 	defer func() { ptrToBytes = originalPtrToBytes }()
-	
+
 	ptrToBytes = func(ptr, len uint32) []byte {
 		return make([]byte, len)
 	}
@@ -71,9 +71,9 @@ func TestDefaultMocks(t *testing.T) {
 	if len(b) != 5 {
 		t.Fatal("expected length 5")
 	}
-	
+
 	writeState(nil, nil) // just ensure it doesn't panic
-	
+
 	r, err := readState(nil, 5)
 	if err != nil {
 		t.Fatal(err)

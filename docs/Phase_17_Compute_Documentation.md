@@ -1,10 +1,10 @@
-# Qubit Compute (Phase 17)
+# Oenexa Compute (Phase 17)
 
 **Version**: v1.0
 **Phase**: 17
 
 ## Overview
-This document outlines the architecture and deliverables for the Qubit Compute.
+This document outlines the architecture and deliverables for the Oenexa Compute.
 
 ## Implementation Details
 The core logic is implemented in the `internal/contracts/compute` module.

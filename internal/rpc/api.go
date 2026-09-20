@@ -49,31 +49,31 @@ func (a *API) Dispatch(req *Request) *Response {
 		return a.getTurnstileStatus(req)
 
 	// ── Chain ──────────────────────────────────────────────────────────────
-	case "qbc_chainInfo", "oen_chainInfo":
+	case "oen_chainInfo":
 		return a.chainInfo(req)
 
 	// ── Blocks ─────────────────────────────────────────────────────────────
-	case "qbc_blockByHeight", "oen_blockByHeight":
+	case "oen_blockByHeight":
 		return a.blockByHeight(req)
-	case "qbc_blockByHash", "oen_blockByHash":
+	case "oen_blockByHash":
 		return a.blockByHash(req)
-	case "qbc_blockHeight", "oen_blockHeight":
+	case "oen_blockHeight":
 		return okResponse(req.ID, a.engine.Height())
 
 	// ── Accounts ───────────────────────────────────────────────────────────
-	case "qbc_getBalance", "oen_getBalance":
+	case "oen_getBalance":
 		return a.getBalance(req)
-	case "qbc_getTransactionCount", "oen_getTransactionCount":
+	case "oen_getTransactionCount":
 		return a.getTransactionCount(req)
 
 	// ── Transactions ───────────────────────────────────────────────────────
-	case "qbc_sendRawTransaction", "oen_sendRawTransaction":
+	case "oen_sendRawTransaction":
 		return a.sendRawTransaction(req)
 
 	// ── Fees ───────────────────────────────────────────────────────────────
-	case "qbc_feeEstimate", "oen_feeEstimate":
+	case "oen_feeEstimate":
 		return a.feeEstimate(req)
-	case "qbc_gasPrice", "oen_gasPrice":
+	case "oen_gasPrice":
 		return a.gasPrice(req)
 
 	default:
@@ -146,7 +146,7 @@ func (a *API) getBalance(req *Request) *Response {
 	}
 	bal := a.st.GetBalance(addr)
 	return okResponse(req.ID, map[string]uint64{
-		"balance_qubits":   bal,
+		"balance_oenexa":   bal,
 		"balance_nano_oen": bal,
 	})
 }
@@ -222,9 +222,9 @@ func (a *API) feeEstimate(req *Request) *Response {
 		UltraLowTip:      ulTip,
 		StandardTip:      stdTip,
 		FastTip:          fastTip,
-		TransferUltraLow: core.TransferCostQubits(baseFee, ulTip),
-		TransferStandard: core.TransferCostQubits(baseFee, stdTip),
-		TransferFast:     core.TransferCostQubits(baseFee, fastTip),
+		TransferUltraLow: core.TransferCostOenexa(baseFee, ulTip),
+		TransferStandard: core.TransferCostOenexa(baseFee, stdTip),
+		TransferFast:     core.TransferCostOenexa(baseFee, fastTip),
 	})
 }
 

@@ -1,8 +1,8 @@
-# QubitsCoin (QBC) — Production Deployment Guide
+# OENEXA (OEN) — Production Deployment Guide
 
 > **Version**: v0.5.0
 > **Last updated**: 2026-05-21
-> **Binary**: `qbc-node`
+> **Binary**: `oenexa-node`
 > **Module**: `github.com/oenexa/oenexa`
 
 ---
@@ -78,7 +78,7 @@ Honest assessment of every subsystem.
 
 **Short answer: Yes, for production. No, for development/testing.**
 
-`qbc-node` is a single static binary with no external runtime dependencies — no JVM, no Python, no external database process. LevelDB is embedded entirely in-process.
+`oenexa-node` is a single static binary with no external runtime dependencies — no JVM, no Python, no external database process. LevelDB is embedded entirely in-process.
 
 | Use Case                      | Server needed?            | Minimum setup                            |
 |-------------------------------|---------------------------|------------------------------------------|
@@ -136,30 +136,30 @@ Honest assessment of every subsystem.
 ```bash
 # 1. Clone the repository
 git clone https://github.com/oenexa/oenexa.git
-cd qubitscoin
+cd oenexa
 
 # 2. Build the release binary
 make build
 
-# The binary is now at bin/qbc-node
-./bin/qbc-node version
+# The binary is now at bin/oenexa-node
+./bin/oenexa-node version
 ```
 
 **Cross-compile for other platforms**:
 
 ```bash
-make build-linux      # → bin/qbc-node-linux-amd64
-make build-darwin     # → bin/qbc-node-darwin-arm64
-make build-windows    # → bin/qbc-node-windows-amd64.exe
+make build-linux      # → bin/oenexa-node-linux-amd64
+make build-darwin     # → bin/oenexa-node-darwin-arm64
+make build-windows    # → bin/oenexa-node-windows-amd64.exe
 make build-all        # all three platforms at once
 ```
 
 **Install system-wide (Linux)**:
 
 ```bash
-sudo cp bin/qbc-node-linux-amd64 /usr/local/bin/qbc-node
-sudo chmod +x /usr/local/bin/qbc-node
-qbc-node version
+sudo cp bin/oenexa-node-linux-amd64 /usr/local/bin/oenexa-node
+sudo chmod +x /usr/local/bin/oenexa-node
+oenexa-node version
 ```
 
 ---
@@ -168,10 +168,10 @@ qbc-node version
 
 ```bash
 # Build the image locally
-docker build -t qbc-node:v0.5.0 .
+docker build -t oenexa-node:v0.5.0 .
 
 # Or pull from registry (when published)
-docker pull ghcr.io/qbc-qubitscoin/qbc-node:v0.5.0
+docker pull ghcr.io/oen-oenexa/oenexa-node:v0.5.0
 ```
 
 ---
@@ -180,12 +180,12 @@ docker pull ghcr.io/qbc-qubitscoin/qbc-node:v0.5.0
 
 ```bash
 # Linux amd64
-curl -LO https://github.com/oenexa/oenexa/releases/download/v0.5.0/qbc-node-linux-amd64
-chmod +x qbc-node-linux-amd64
-sudo mv qbc-node-linux-amd64 /usr/local/bin/qbc-node
+curl -LO https://github.com/oenexa/oenexa/releases/download/v0.5.0/oenexa-node-linux-amd64
+chmod +x oenexa-node-linux-amd64
+sudo mv oenexa-node-linux-amd64 /usr/local/bin/oenexa-node
 
 # Verify the SHA-3-256 checksum published on the release page
-qbc-node version
+oenexa-node version
 ```
 
 ---
@@ -197,24 +197,24 @@ Run these steps **once** before starting the node for the first time.
 ### Step 1 — Create the data directory
 
 ```bash
-mkdir -p ~/.qbc
+mkdir -p ~/.oen
 ```
 
 ### Step 2 — Copy the config file
 
 ```bash
 # Mainnet
-cp configs/mainnet.toml ~/.qbc/config.toml
+cp configs/mainnet.toml ~/.oen/config.toml
 
 # Or for testnet
-cp configs/testnet.toml ~/.qbc/config.toml
+cp configs/testnet.toml ~/.oen/config.toml
 ```
 
-Edit `~/.qbc/config.toml` — at minimum set:
+Edit `~/.oen/config.toml` — at minimum set:
 
 ```toml
 [node]
-data_dir      = "/home/YOUR_USER/.qbc"
+data_dir      = "/home/YOUR_USER/.oen"
 miner_enabled = false          # true only for validators
 keystore_file = "keystore.json"
 ```
@@ -223,9 +223,9 @@ keystore_file = "keystore.json"
 
 ```bash
 # Always pass the password via env var — never via --password on the CLI
-export QBC_PASSWORD="your-strong-password-here"
+export OEN_PASSWORD="your-strong-password-here"
 
-qbc-node wallet new --config ~/.qbc/config.toml
+oenexa-node wallet new --config ~/.oen/config.toml
 ```
 
 Expected output:
@@ -233,26 +233,26 @@ Expected output:
 ```
 ✓ New wallet created
   Address  : 3f4a8b2c1d...
-  Keystore : /home/user/.qbc/keystore.json
+  Keystore : /home/user/.oen/keystore.json
 
 ⚠  Back up your keystore file and remember your password.
    There is NO recovery mechanism — lost keys = lost funds.
 ```
 
-> ⚠️ **CRITICAL**: Back up `~/.qbc/keystore.json` to an offline location immediately
+> ⚠️ **CRITICAL**: Back up `~/.oen/keystore.json` to an offline location immediately
 > (USB drive, encrypted cloud storage). If you lose this file or forget the password,
 > your funds are permanently inaccessible.
 
 ### Step 4 — Verify the wallet address
 
 ```bash
-qbc-node wallet show --config ~/.qbc/config.toml
+oenexa-node wallet show --config ~/.oen/config.toml
 ```
 
 ### Step 5 — Start the node (sync only — no mining)
 
 ```bash
-qbc-node start --config ~/.qbc/config.toml
+oenexa-node start --config ~/.oen/config.toml
 ```
 
 The node will:
@@ -267,17 +267,17 @@ The node will:
 
 ## 6. Configuration Reference
 
-Full annotated config (`~/.qbc/config.toml`):
+Full annotated config (`~/.oen/config.toml`):
 
 ```toml
 # ── Chain identity ────────────────────────────────────────────────────────────
 [chain]
 network_id = 1          # 1 = mainnet, 2 = testnet
-name       = "QubitsCoin Mainnet"
+name       = "OENEXA Mainnet"
 
 # ── Node behaviour ────────────────────────────────────────────────────────────
 [node]
-data_dir      = "~/.qbc"          # all data stored here
+data_dir      = "~/.oen"          # all data stored here
 keystore_file = "keystore.json"   # relative to data_dir
 miner_enabled = false             # true = produce blocks (validators only)
 log_level     = "info"            # debug | info | warn | error
@@ -288,8 +288,8 @@ listen_addr   = "0.0.0.0:8765"   # bind all interfaces
 external_addr = "1.2.3.4:8765"   # your public IP:port (leave empty to auto-detect)
 max_peers     = 25
 bootstrap_peers = [
-  "qbc-seed1.qubitscoin.io:8765",
-  "qbc-seed2.qubitscoin.io:8765",
+  "oenexa-seed1.oenexa.io:8765",
+  "oenexa-seed2.oenexa.io:8765",
 ]
 
 # ── JSON-RPC API ──────────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ listen_addr = "0.0.0.0:9090"     # restrict to internal network in production
 
 # ── Auto-upgrade ──────────────────────────────────────────────────────────────
 [upgrade]
-release_url    = "https://api.github.com/repos/qbc-qubitscoin/qubitscoin/releases/latest"
+release_url    = "https://api.github.com/repos/oen-oenexa/oenexa-node/releases/latest"
 check_interval = "1h"
 auto_apply     = false            # NEVER set true on mainnet validators
 ```
@@ -321,11 +321,11 @@ auto_apply     = false            # NEVER set true on mainnet validators
 
 | Variable           | Description                          | Example                            |
 |--------------------|--------------------------------------|------------------------------------|
-| `QBC_PASSWORD`     | Keystore decryption password         | `export QBC_PASSWORD="hunter2"`    |
+| `OEN_PASSWORD`     | Keystore decryption password         | `export OEN_PASSWORD="hunter2"`    |
 | `GRAFANA_PASSWORD` | Grafana admin password (Docker only) | `export GRAFANA_PASSWORD="secret"` |
 
 > **Security rule**: never pass `--password` on the command line in production.
-> It appears in `ps aux` and shell history. Always use `QBC_PASSWORD`.
+> It appears in `ps aux` and shell history. Always use `OEN_PASSWORD`.
 
 ---
 
@@ -338,53 +338,53 @@ auto_apply     = false            # NEVER set true on mainnet validators
 **Install the binary**:
 
 ```bash
-sudo cp bin/qbc-node-linux-amd64 /usr/local/bin/qbc-node
-sudo chmod +x /usr/local/bin/qbc-node
+sudo cp bin/oenexa-node-linux-amd64 /usr/local/bin/oenexa-node
+sudo chmod +x /usr/local/bin/oenexa-node
 ```
 
 **Create the service user** (never run as root):
 
 ```bash
-sudo useradd --system --no-create-home --shell /usr/sbin/nologin qbc
-sudo mkdir -p /var/lib/qbc /etc/qbc
-sudo chown qbc:qbc /var/lib/qbc
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin oen
+sudo mkdir -p /var/lib/oen /etc/oen
+sudo chown oen:oen /var/lib/oen
 ```
 
 **Install config and keystore**:
 
 ```bash
-sudo cp configs/mainnet.toml /etc/qbc/config.toml
-# Edit /etc/qbc/config.toml — set data_dir = "/var/lib/qbc"
+sudo cp configs/mainnet.toml /etc/oen/config.toml
+# Edit /etc/oen/config.toml — set data_dir = "/var/lib/oen"
 
 # Create the keystore as the service user
-sudo -u qbc QBC_PASSWORD="$YOUR_PASSWORD" qbc-node wallet new \
-  --config /etc/qbc/config.toml
+sudo -u oen OEN_PASSWORD="$YOUR_PASSWORD" oenexa-node wallet new \
+  --config /etc/oen/config.toml
 ```
 
 **Store the password securely**:
 
 ```bash
-# Write the env file, readable only by the qbc user
-sudo bash -c 'echo "QBC_PASSWORD=your-strong-password" > /etc/qbc/environment'
-sudo chown qbc:qbc /etc/qbc/environment
-sudo chmod 400 /etc/qbc/environment
+# Write the env file, readable only by the oen user
+sudo bash -c 'echo "OEN_PASSWORD=your-strong-password" > /etc/oen/environment'
+sudo chown oen:oen /etc/oen/environment
+sudo chmod 400 /etc/oen/environment
 ```
 
 **Install and enable the systemd unit**:
 
 ```bash
-sudo cp configs/qbc-node.service /etc/systemd/system/
+sudo cp configs/oenexa-node.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable qbc-node
-sudo systemctl start qbc-node
+sudo systemctl enable oenexa-node
+sudo systemctl start oenexa-node
 ```
 
 **Check status**:
 
 ```bash
-sudo systemctl status qbc-node
-journalctl -u qbc-node -f                   # follow live logs
-journalctl -u qbc-node --since "1h ago"     # last hour of logs
+sudo systemctl status oenexa-node
+journalctl -u oenexa-node -f                   # follow live logs
+journalctl -u oenexa-node --since "1h ago"     # last hour of logs
 ```
 
 ---
@@ -396,7 +396,7 @@ journalctl -u qbc-node --since "1h ago"     # last hour of logs
 ```bash
 # 1. Copy and fill in the environment file
 cp .env.example .env
-nano .env          # set QBC_PASSWORD at minimum
+nano .env          # set OEN_PASSWORD at minimum
 
 # 2. Create the data directory and config
 mkdir -p data
@@ -407,12 +407,12 @@ cp configs/mainnet.toml data/config.toml
 docker compose up -d
 
 # 4. Follow logs
-docker compose logs -f qbc-node
+docker compose logs -f oenexa-node
 
 # 5. Verify the node is live
 curl -s http://localhost:8545/ \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"qbc_chainInfo","params":null}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"oen_chainInfo","params":null}'
 ```
 
 **With Prometheus + Grafana monitoring**:
@@ -430,7 +430,7 @@ docker compose --profile monitoring up -d
 ```bash
 docker compose down            # stop containers (data preserved on disk)
 docker compose down -v         # stop AND delete all volumes (DESTRUCTIVE)
-docker compose restart qbc-node
+docker compose restart oenexa-node
 ```
 
 ---
@@ -439,15 +439,15 @@ docker compose restart qbc-node
 
 ```bash
 docker run -d \
-  --name qbc-node \
+  --name oenexa-node \
   --restart unless-stopped \
   -p 8765:8765 \
   -p 127.0.0.1:8545:8545 \
   -p 9090:9090 \
   -v /path/to/data:/data \
   -v /path/to/config.toml:/data/config.toml:ro \
-  -e QBC_PASSWORD="your-password" \
-  qbc-node:v0.5.0 \
+  -e OEN_PASSWORD="your-password" \
+  oenexa-node:v0.5.0 \
   start --config /data/config.toml --datadir /data --metrics
 ```
 
@@ -472,28 +472,28 @@ miner_enabled = true
 Or via the CLI flag:
 
 ```bash
-qbc-node start --config ~/.qbc/config.toml --miner
+oenexa-node start --config ~/.oen/config.toml --miner
 ```
 
 ### Block reward schedule
 
 | Era             | Block range           | Reward/block           | Era total           |
 |-----------------|-----------------------|------------------------|---------------------|
-| 0               | 1 – 1,000,000         | 45 QBC                 | 45,000,000 QBC      |
-| 1               | 1,000,001 – 2,000,000 | 22.5 QBC               | 22,500,000 QBC      |
-| 2               | 2,000,001 – 3,000,000 | 11.25 QBC              | 11,250,000 QBC      |
-| 3               | 3,000,001 – 4,000,000 | 5.625 QBC              | 5,625,000 QBC       |
-| 4               | 4,000,001 – 5,000,000 | 2.8125 QBC             | 2,812,500 QBC       |
+| 0               | 1 – 1,000,000         | 45 OEN                 | 45,000,000 OEN      |
+| 1               | 1,000,001 – 2,000,000 | 22.5 OEN               | 22,500,000 OEN      |
+| 2               | 2,000,001 – 3,000,000 | 11.25 OEN              | 11,250,000 OEN      |
+| 3               | 3,000,001 – 4,000,000 | 5.625 OEN              | 5,625,000 OEN       |
+| 4               | 4,000,001 – 5,000,000 | 2.8125 OEN             | 2,812,500 OEN       |
 | 5+              | …                     | Halves every 1M blocks | …                   |
-| **Mined total** |                       |                        | **90,000,000 QBC**  |
-| **Pre-mine**    |                       |                        | 10,000,000 QBC      |
-| **Hard cap**    |                       |                        | **100,000,000 QBC** |
+| **Mined total** |                       |                        | **90,000,000 OEN**  |
+| **Pre-mine**    |                       |                        | 10,000,000 OEN      |
+| **Hard cap**    |                       |                        | **100,000,000 OEN** |
 
 ### Check validator earnings
 
 ```bash
-ADDR=$(qbc-node wallet show --config ~/.qbc/config.toml | grep Address | awk '{print $2}')
-qbc-node query balance --address "$ADDR" --rpc http://127.0.0.1:8545
+ADDR=$(oenexa-node wallet show --config ~/.oen/config.toml | grep Address | awk '{print $2}')
+oenexa-node query balance --address "$ADDR" --rpc http://127.0.0.1:8545
 ```
 
 ---
@@ -506,22 +506,22 @@ The node exposes a **JSON-RPC 2.0** HTTP API. All requests are `POST` to the roo
 
 | Method                    | Description                          | Parameters          |
 |---------------------------|--------------------------------------|---------------------|
-| `qbc_chainInfo`           | Node status, height, peer count      | none                |
-| `qbc_blockHeight`         | Current chain height (integer)       | none                |
-| `qbc_blockByHeight`       | Block by height                      | `[height: uint64]`  |
-| `qbc_blockByHash`         | Block by hash                        | `["<hex-hash>"]`    |
-| `qbc_getBalance`          | Account balance in qubits            | `["<hex-address>"]` |
-| `qbc_getTransactionCount` | Account nonce                        | `["<hex-address>"]` |
-| `qbc_sendRawTransaction`  | Broadcast a signed transaction       | `["<hex-gob-tx>"]`  |
-| `qbc_feeEstimate`         | Fee estimates for all priority tiers | none                |
-| `qbc_gasPrice`            | Current base fee                     | none                |
+| `oen_chainInfo`           | Node status, height, peer count      | none                |
+| `oen_blockHeight`         | Current chain height (integer)       | none                |
+| `oen_blockByHeight`       | Block by height                      | `[height: uint64]`  |
+| `oen_blockByHash`         | Block by hash                        | `["<hex-hash>"]`    |
+| `oen_getBalance`          | Account balance in oenexa            | `["<hex-address>"]` |
+| `oen_getTransactionCount` | Account nonce                        | `["<hex-address>"]` |
+| `oen_sendRawTransaction`  | Broadcast a signed transaction       | `["<hex-gob-tx>"]`  |
+| `oen_feeEstimate`         | Fee estimates for all priority tiers | none                |
+| `oen_gasPrice`            | Current base fee                     | none                |
 
 ### Example: chain info
 
 ```bash
 curl -s http://127.0.0.1:8545/ \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"qbc_chainInfo","params":null}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"oen_chainInfo","params":null}'
 ```
 
 ```json
@@ -545,19 +545,19 @@ curl -s http://127.0.0.1:8545/ \
 ```bash
 curl -s http://127.0.0.1:8545/ \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"qbc_getBalance","params":["3f4a8b2c..."]}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"oen_getBalance","params":["3f4a8b2c..."]}'
 ```
 
 ### Example: send a transaction (CLI)
 
 ```bash
-export QBC_PASSWORD="your-password"
+export OEN_PASSWORD="your-password"
 
-qbc-node tx send \
+oenexa-node tx send \
   --to     3f4a8b2c1d... \
   --amount 1000000000 \
   --nonce  0 \
-  --config ~/.qbc/config.toml \
+  --config ~/.oen/config.toml \
   --rpc    http://127.0.0.1:8545
 ```
 
@@ -566,7 +566,7 @@ qbc-node tx send \
 ```bash
 curl -s http://127.0.0.1:8545/ \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"qbc_feeEstimate","params":null}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"oen_feeEstimate","params":null}'
 ```
 
 ```json
@@ -578,9 +578,9 @@ curl -s http://127.0.0.1:8545/ \
     "ultra_low_tip": 0,
     "standard_tip": 1,
     "fast_tip": 5,
-    "transfer_ultra_low_qubits": 210,
-    "transfer_standard_qubits": 231,
-    "transfer_fast_qubits": 315
+    "transfer_ultra_low_oenexa": 210,
+    "transfer_standard_oenexa": 231,
+    "transfer_fast_oenexa": 315
   }
 }
 ```
@@ -591,8 +591,8 @@ curl -s http://127.0.0.1:8545/ \
 curl -s http://127.0.0.1:8545/ \
   -H "Content-Type: application/json" \
   -d '[
-    {"jsonrpc":"2.0","id":1,"method":"qbc_blockHeight","params":null},
-    {"jsonrpc":"2.0","id":2,"method":"qbc_gasPrice","params":null}
+    {"jsonrpc":"2.0","id":1,"method":"oen_blockHeight","params":null},
+    {"jsonrpc":"2.0","id":2,"method":"oen_gasPrice","params":null}
   ]'
 ```
 
@@ -602,20 +602,20 @@ curl -s http://127.0.0.1:8545/ \
 
 ### Available metrics
 
-All metrics are prefixed with `qbc_`.
+All metrics are prefixed with `oen_`.
 
 | Metric                                  | Type      | Description                     |
 |-----------------------------------------|-----------|---------------------------------|
-| `qbc_chain_height`                      | Gauge     | Current confirmed block height  |
-| `qbc_peer_count`                        | Gauge     | Connected P2P peers             |
-| `qbc_mempool_size`                      | Gauge     | Pending transactions in mempool |
-| `qbc_base_fee_qubits`                   | Gauge     | Current block base fee          |
-| `qbc_blocks_produced_total`             | Counter   | Blocks produced since startup   |
-| `qbc_transactions_processed_total`      | Counter   | Transactions included in blocks |
-| `qbc_fee_burned_qubits_total`           | Counter   | Cumulative qubits burned        |
-| `qbc_block_production_duration_seconds` | Histogram | Block build latency             |
-| `qbc_rpc_requests_total{method}`        | Counter   | RPC requests by method          |
-| `qbc_rpc_errors_total{method}`          | Counter   | RPC errors by method            |
+| `oen_chain_height`                      | Gauge     | Current confirmed block height  |
+| `oen_peer_count`                        | Gauge     | Connected P2P peers             |
+| `oen_mempool_size`                      | Gauge     | Pending transactions in mempool |
+| `oen_base_fee_oenexa`                   | Gauge     | Current block base fee          |
+| `oen_blocks_produced_total`             | Counter   | Blocks produced since startup   |
+| `oen_transactions_processed_total`      | Counter   | Transactions included in blocks |
+| `oen_fee_burned_oenexa_total`           | Counter   | Cumulative oenexa burned        |
+| `oen_block_production_duration_seconds` | Histogram | Block build latency             |
+| `oen_rpc_requests_total{method}`        | Counter   | RPC requests by method          |
+| `oen_rpc_errors_total{method}`          | Counter   | RPC errors by method            |
 
 ### Enable metrics
 
@@ -629,7 +629,7 @@ listen_addr = "0.0.0.0:9090"
 Or via flag:
 
 ```bash
-qbc-node start --metrics --metrics-addr 0.0.0.0:9090
+oenexa-node start --metrics --metrics-addr 0.0.0.0:9090
 ```
 
 ### Start Prometheus + Grafana (Docker)
@@ -643,7 +643,7 @@ docker compose --profile monitoring up -d
 ```
 
 In Grafana, add a Prometheus data source (`http://prometheus:9090`) and build
-dashboards using the `qbc_*` metric names above.
+dashboards using the `oen_*` metric names above.
 
 ### Health check endpoint
 
@@ -672,7 +672,7 @@ rpc.yourdomain.com {
 }
 ```
 
-**nginx** (`/etc/nginx/sites-available/qbc-rpc`):
+**nginx** (`/etc/nginx/sites-available/oen-rpc`):
 
 ```nginx
 server {
@@ -696,7 +696,7 @@ server {
 ### 11.2 Firewall rules (UFW)
 
 ```bash
-sudo ufw allow 8765/tcp comment "QBC P2P"     # P2P must be open to the internet
+sudo ufw allow 8765/tcp comment "OEN P2P"     # P2P must be open to the internet
 sudo ufw deny  8545/tcp                        # RPC — reverse proxy handles external access
 sudo ufw deny  9090/tcp                        # Metrics — internal network only
 sudo ufw allow 22/tcp                          # SSH
@@ -708,16 +708,16 @@ sudo ufw enable
 ```bash
 # Use a password of at least 24 random characters
 # Back up to OFFLINE storage immediately after creation
-cp ~/.qbc/keystore.json /mnt/usb/qbc-keystore-$(date +%Y%m%d).json
+cp ~/.oen/keystore.json /mnt/usb/oen-keystore-$(date +%Y%m%d).json
 
 # Prevent the password from appearing in shell history
 unset HISTFILE
-export QBC_PASSWORD="your-password"
-qbc-node start ...
+export OEN_PASSWORD="your-password"
+oenexa-node start ...
 
 # In systemd, store the password in an EnvironmentFile with 400 permissions
-sudo chmod 400 /etc/qbc/environment
-sudo chown qbc:qbc /etc/qbc/environment
+sudo chmod 400 /etc/oen/environment
+sudo chown oen:oen /etc/oen/environment
 ```
 
 ### 11.4 System hardening
@@ -727,13 +727,13 @@ sudo chown qbc:qbc /etc/qbc/environment
 echo "* hard core 0" | sudo tee -a /etc/security/limits.conf
 
 # Lock down the data directory
-sudo chmod 700 /var/lib/qbc
-sudo chown -R qbc:qbc /var/lib/qbc
+sudo chmod 700 /var/lib/oen
+sudo chown -R oen:oen /var/lib/oen
 ```
 
 ### 11.5 Cryptography summary
 
-QBC uses **exclusively NIST PQC algorithms**. No legacy asymmetric crypto exists anywhere in the codebase.
+OEN uses **exclusively NIST PQC algorithms**. No legacy asymmetric crypto exists anywhere in the codebase.
 
 | Algorithm   | Standard        | Purpose                                     |
 |-------------|-----------------|---------------------------------------------|
@@ -753,10 +753,10 @@ QBC uses **exclusively NIST PQC algorithms**. No legacy asymmetric crypto exists
 
 | Path                   | Criticality     | Contents                                            |
 |------------------------|-----------------|-----------------------------------------------------|
-| `~/.qbc/keystore.json` | 🔴 **CRITICAL** | Encrypted private key — cannot recover without this |
-| `~/.qbc/config.toml`   | 🟡 Important    | Node config — easy to recreate from template        |
-| `~/.qbc/blocks/`       | 🟢 Optional     | Block database — re-syncs from network peers        |
-| `~/.qbc/state/`        | 🟢 Optional     | State database — rebuilt from block history         |
+| `~/.oen/keystore.json` | 🔴 **CRITICAL** | Encrypted private key — cannot recover without this |
+| `~/.oen/config.toml`   | 🟡 Important    | Node config — easy to recreate from template        |
+| `~/.oen/blocks/`       | 🟢 Optional     | Block database — re-syncs from network peers        |
+| `~/.oen/state/`        | 🟢 Optional     | State database — rebuilt from block history         |
 
 > **Rule**: back up only `keystore.json`. Everything else re-syncs from the network automatically.
 
@@ -764,25 +764,25 @@ QBC uses **exclusively NIST PQC algorithms**. No legacy asymmetric crypto exists
 
 ```bash
 # Back up keystore (do this FIRST, before anything else)
-cp ~/.qbc/keystore.json ~/keystore-backup-$(date +%Y%m%d-%H%M%S).json
+cp ~/.oen/keystore.json ~/keystore-backup-$(date +%Y%m%d-%H%M%S).json
 # Move the file to offline storage immediately
 
 # Full data backup (stop the node first for a consistent snapshot)
-sudo systemctl stop qbc-node
-tar -czf qbc-backup-$(date +%Y%m%d).tar.gz ~/.qbc/
-sudo systemctl start qbc-node
+sudo systemctl stop oenexa-node
+tar -czf oen-backup-$(date +%Y%m%d).tar.gz ~/.oen/
+sudo systemctl start oenexa-node
 ```
 
 ### Recovery
 
 ```bash
 # If you have your keystore, recovery is simple
-mkdir -p ~/.qbc
-cp /path/to/keystore-backup.json ~/.qbc/keystore.json
-cp configs/mainnet.toml ~/.qbc/config.toml
+mkdir -p ~/.oen
+cp /path/to/keystore-backup.json ~/.oen/keystore.json
+cp configs/mainnet.toml ~/.oen/config.toml
 
 # Start the node — it re-syncs the full chain from peers automatically
-qbc-node start --config ~/.qbc/config.toml
+oenexa-node start --config ~/.oen/config.toml
 ```
 
 ---
@@ -793,33 +793,33 @@ qbc-node start --config ~/.qbc/config.toml
 
 ```bash
 # 1. Download the new binary
-curl -LO https://github.com/oenexa/oenexa/releases/download/v0.6.0/qbc-node-linux-amd64
+curl -LO https://github.com/oenexa/oenexa/releases/download/v0.6.0/oenexa-node-linux-amd64
 
 # 2. Verify the SHA-3-256 checksum published on the release page
-# sha3sum qbc-node-linux-amd64
+# sha3sum oenexa-node-linux-amd64
 
 # 3. Stop the running node
-sudo systemctl stop qbc-node
+sudo systemctl stop oenexa-node
 
 # 4. Swap the binary (keep the old one as a rollback target)
-sudo mv /usr/local/bin/qbc-node /usr/local/bin/qbc-node.bak
-sudo mv qbc-node-linux-amd64 /usr/local/bin/qbc-node
-sudo chmod +x /usr/local/bin/qbc-node
+sudo mv /usr/local/bin/oenexa-node /usr/local/bin/oenexa-node.bak
+sudo mv oenexa-node-linux-amd64 /usr/local/bin/oenexa-node
+sudo chmod +x /usr/local/bin/oenexa-node
 
 # 5. Confirm the version
-qbc-node version
+oenexa-node version
 
 # 6. Start and monitor
-sudo systemctl start qbc-node
-journalctl -u qbc-node -f
+sudo systemctl start oenexa-node
+journalctl -u oenexa-node -f
 ```
 
 ### Rollback
 
 ```bash
-sudo systemctl stop qbc-node
-sudo mv /usr/local/bin/qbc-node.bak /usr/local/bin/qbc-node
-sudo systemctl start qbc-node
+sudo systemctl stop oenexa-node
+sudo mv /usr/local/bin/oenexa-node.bak /usr/local/bin/oenexa-node
+sudo systemctl start oenexa-node
 ```
 
 ### Auto-upgrade (testnet only)
@@ -837,7 +837,7 @@ check_interval = "1h"
 
 ```bash
 docker compose down
-docker pull qbc-node:v0.6.0   # or: make docker VERSION=v0.6.0
+docker pull oenexa-node:v0.6.0   # or: make docker VERSION=v0.6.0
 docker compose up -d
 ```
 
@@ -868,17 +868,17 @@ docker compose up -d
 ### "keystore file exists but no password supplied"
 
 ```bash
-export QBC_PASSWORD="your-password"
-qbc-node start --config ~/.qbc/config.toml
+export OEN_PASSWORD="your-password"
+oenexa-node start --config ~/.oen/config.toml
 ```
 
 ### "open leveldb: …/blocks: resource temporarily unavailable"
 
-Another `qbc-node` process already holds the database lock. Stop it first:
+Another `oenexa-node` process already holds the database lock. Stop it first:
 
 ```bash
-sudo systemctl stop qbc-node
-pkill qbc-node
+sudo systemctl stop oenexa-node
+pkill oenexa-node
 ```
 
 ### Stuck at zero peers
@@ -887,10 +887,10 @@ pkill qbc-node
 2. Check that `external_addr` in config matches your real public IP.
 3. Test bootstrap peer reachability:
    ```bash
-   nc -zv qbc-seed1.qubitscoin.io 8765
+   nc -zv oenexa-seed1.oenexa.io 8765
    ```
 
-### `qbc_blockByHeight` returns "block not found" for height 0
+### `oen_blockByHeight` returns "block not found" for height 0
 
 The node is still initializing. Wait a few seconds for the genesis block to load and retry.
 
@@ -902,14 +902,14 @@ A pruning cache will replace the slice approach in v0.6.0.
 
 ### "baseFee dropped to minimum" in logs
 
-Expected when the mempool is empty. The floor is 1 qubit/gas (`MinBaseFee`).
+Expected when the mempool is empty. The floor is 1 oenexa/gas (`MinBaseFee`).
 The fee rises automatically as transactions arrive.
 
 ### Syncing slowly
 
 ```bash
 # Check peer count
-qbc-node query chain --rpc http://127.0.0.1:8545
+oenexa-node query chain --rpc http://127.0.0.1:8545
 
 # Increase max_peers in config (up to ~50)
 # Check disk I/O on Linux
@@ -978,50 +978,50 @@ v1.0.0  — Mainnet launch
 
 ```bash
 # ── Build & install ───────────────────────────────────────────────────────────
-git clone https://github.com/oenexa/oenexa.git && cd qubitscoin
-make build                                   # → bin/qbc-node
-sudo cp bin/qbc-node-linux-amd64 /usr/local/bin/qbc-node
+git clone https://github.com/oenexa/oenexa.git && cd oenexa
+make build                                   # → bin/oenexa-node
+sudo cp bin/oenexa-node-linux-amd64 /usr/local/bin/oenexa-node
 
 # ── First-time setup ──────────────────────────────────────────────────────────
-mkdir -p ~/.qbc
-cp configs/mainnet.toml ~/.qbc/config.toml
-export QBC_PASSWORD="strong-password"
-qbc-node wallet new  --config ~/.qbc/config.toml
-qbc-node wallet show --config ~/.qbc/config.toml
+mkdir -p ~/.oen
+cp configs/mainnet.toml ~/.oen/config.toml
+export OEN_PASSWORD="strong-password"
+oenexa-node wallet new  --config ~/.oen/config.toml
+oenexa-node wallet show --config ~/.oen/config.toml
 
 # ── Start node ────────────────────────────────────────────────────────────────
-qbc-node start --config ~/.qbc/config.toml                    # sync only
-qbc-node start --config ~/.qbc/config.toml --miner            # + produce blocks
-qbc-node start --config ~/.qbc/config.toml --metrics          # + Prometheus
-qbc-node start --testnet                                       # testnet defaults
+oenexa-node start --config ~/.oen/config.toml                    # sync only
+oenexa-node start --config ~/.oen/config.toml --miner            # + produce blocks
+oenexa-node start --config ~/.oen/config.toml --metrics          # + Prometheus
+oenexa-node start --testnet                                       # testnet defaults
 
 # ── Query ─────────────────────────────────────────────────────────────────────
-qbc-node query chain                         # chain status + peer count
-qbc-node query balance --address <hex>       # account balance
-qbc-node query block   --height 100          # block at height 100
-qbc-node query fee                           # current fee tiers
-qbc-node version                             # node version
+oenexa-node query chain                         # chain status + peer count
+oenexa-node query balance --address <hex>       # account balance
+oenexa-node query block   --height 100          # block at height 100
+oenexa-node query fee                           # current fee tiers
+oenexa-node version                             # node version
 
 # ── Send a transaction ────────────────────────────────────────────────────────
-qbc-node tx send --to <hex> --amount 1000000000 --nonce 0
+oenexa-node tx send --to <hex> --amount 1000000000 --nonce 0
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 docker compose up -d                         # start node
 docker compose --profile monitoring up -d   # + Prometheus + Grafana
-docker compose logs -f qbc-node             # follow logs
+docker compose logs -f oenexa-node             # follow logs
 docker compose down                          # stop (data preserved)
 
 # ── systemd ───────────────────────────────────────────────────────────────────
-sudo systemctl start   qbc-node
-sudo systemctl stop    qbc-node
-sudo systemctl restart qbc-node
-sudo systemctl status  qbc-node
-journalctl -u qbc-node -f                   # follow live logs
+sudo systemctl start   oenexa-node
+sudo systemctl stop    oenexa-node
+sudo systemctl restart oenexa-node
+sudo systemctl status  oenexa-node
+journalctl -u oenexa-node -f                   # follow live logs
 
 # ── RPC via curl ──────────────────────────────────────────────────────────────
 curl -s http://127.0.0.1:8545/ \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"qbc_chainInfo","params":null}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"oen_chainInfo","params":null}'
 
 # ── Makefile targets ──────────────────────────────────────────────────────────
 make build           # build for current platform
@@ -1038,6 +1038,6 @@ make help            # list all targets
 
 ---
 
-*QubitsCoin is quantum-resistant by design. All cryptography is NIST PQC:
+*OENEXA is quantum-resistant by design. All cryptography is NIST PQC:
 ML-DSA-65 (FIPS 204) · ML-KEM-768 (FIPS 203) · SHA-3-256 (FIPS 202) · AES-256-GCM.
 No RSA, no ECDSA, no secp256k1 anywhere in the codebase.*

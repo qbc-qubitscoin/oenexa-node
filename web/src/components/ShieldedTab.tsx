@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 
 export interface ShieldedTabProps {
-  client: QBCClient
+  client: OENClient
 }
 
 export const ShieldedTab: React.FC<ShieldedTabProps> = ({ client }) => {

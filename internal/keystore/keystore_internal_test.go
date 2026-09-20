@@ -13,6 +13,7 @@ import (
 )
 
 type badReader struct{}
+
 func (r *badReader) Read(p []byte) (n int, err error) {
 	return 0, errors.New("rand error")
 }
@@ -20,10 +21,13 @@ func (r *badReader) Read(p []byte) (n int, err error) {
 type partialReader struct {
 	calls int
 }
+
 func (r *partialReader) Read(p []byte) (n int, err error) {
 	if r.calls == 0 {
 		r.calls++
-		for i := range p { p[i] = 0 }
+		for i := range p {
+			p[i] = 0
+		}
 		return len(p), nil
 	}
 	return 0, errors.New("rand error 2")
@@ -47,7 +51,7 @@ func TestEncrypt_Errors(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "generate IV") {
 		t.Errorf("expected generate IV error, got %v", err)
 	}
-	
+
 	rand.Reader = origRand
 }
 
@@ -131,7 +135,7 @@ func TestEncrypt_ExtendedErrors(t *testing.T) {
 	_ = Encrypt(filepath.Join(tmp, "e6b.json"), "pw", w)
 	osFileClose = origFileClose
 	osRemove = origRemove
-	
+
 	// osRename fails
 	osRename = func(oldpath, newpath string) error { return errors.New("err") }
 	_ = Encrypt(filepath.Join(tmp, "e7.json"), "pw", w)
@@ -149,14 +153,18 @@ func TestInternalAESGCM_Errors(t *testing.T) {
 	if err == nil {
 		t.Error("expected aesgcmOpen error")
 	}
-	
+
 	cipherNewGCM = func(cipherBlock cipher.Block) (cipher.AEAD, error) {
 		return nil, errors.New("err")
 	}
 	goodKey := make([]byte, 32)
 	_, err = aesgcmSeal(goodKey, nil, nil)
-	if err == nil { t.Error("expected aesgcmSeal cipherNewGCM error") }
+	if err == nil {
+		t.Error("expected aesgcmSeal cipherNewGCM error")
+	}
 	_, err = aesgcmOpen(goodKey, nil, nil)
-	if err == nil { t.Error("expected aesgcmOpen cipherNewGCM error") }
+	if err == nil {
+		t.Error("expected aesgcmOpen cipherNewGCM error")
+	}
 	cipherNewGCM = cipher.NewGCM
 }

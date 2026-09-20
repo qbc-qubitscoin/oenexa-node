@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import type { QBCClient } from '../services/rpcClient'
+import type { OENClient } from '../services/rpcClient'
 
 export interface RpcConsoleTabProps {
-  client: QBCClient
+  client: OENClient
 }
 
 interface MethodTemplate {
@@ -11,16 +11,16 @@ interface MethodTemplate {
 }
 
 const TEMPLATES: Record<string, MethodTemplate> = {
-  chainInfo: { method: 'qbc_chainInfo', params: [] },
-  feeEstimate: { method: 'qbc_feeEstimate', params: [] },
-  gasPrice: { method: 'qbc_gasPrice', params: [] },
-  blockByHeight: { method: 'qbc_blockByHeight', params: [1] },
-  getBalance: { method: 'qbc_getBalance', params: ['QBC0000000000000000000000000000000000000000'] },
+  chainInfo: { method: 'oen_chainInfo', params: [] },
+  feeEstimate: { method: 'oen_feeEstimate', params: [] },
+  gasPrice: { method: 'oen_gasPrice', params: [] },
+  blockByHeight: { method: 'oen_blockByHeight', params: [1] },
+  getBalance: { method: 'oen_getBalance', params: ['OEN0000000000000000000000000000000000000000'] },
 }
 
 export const RpcConsoleTab: React.FC<RpcConsoleTabProps> = ({ client }) => {
   const [selectedTemplate, setSelectedTemplate] = useState('chainInfo')
-  const [method, setMethod] = useState('qbc_chainInfo')
+  const [method, setMethod] = useState('oen_chainInfo')
   const [paramsJson, setParamsJson] = useState('[]')
   const [responseOutput, setResponseOutput] = useState<string | null>(null)
   const [executing, setExecuting] = useState(false)

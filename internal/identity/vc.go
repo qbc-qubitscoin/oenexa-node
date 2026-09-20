@@ -37,7 +37,7 @@ func IssueKYCCredential(issuerKey []byte, issuerDID, subjectDID, status, riskLev
 	vc := &VerifiableCredential{
 		Context: []string{
 			"https://www.w3.org/2018/credentials/v1",
-			"https://schema.qubitscoin.org/credentials/kyc/v1",
+			"https://schema.oenexa.org/credentials/kyc/v1",
 		},
 		ID:           fmt.Sprintf("urn:uuid:kyc-%d", time.Now().UnixNano()),
 		Type:         []string{"VerifiableCredential", "KYCCredential"},

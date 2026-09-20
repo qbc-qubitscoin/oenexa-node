@@ -62,4 +62,3 @@ func (a *Asset) UnshieldUnits(units uint64) error {
 	a.ShieldedUnits -= units
 	return nil
 }
-

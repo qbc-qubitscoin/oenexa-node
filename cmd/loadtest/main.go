@@ -28,9 +28,9 @@ func main() {
 	workers := flag.Int("workers", 10, "Number of concurrent workers")
 	flag.Parse()
 
-	password := os.Getenv("QBC_PASSWORD")
+	password := os.Getenv("OEN_PASSWORD")
 	if password == "" {
-		log.Fatal("QBC_PASSWORD environment variable is required")
+		log.Fatal("OEN_PASSWORD environment variable is required")
 	}
 
 	w, err := keystore.Decrypt(*ksPath, password)
@@ -73,7 +73,7 @@ func main() {
 					return
 				default:
 					n := atomic.AddUint64(&currentNonce, 1) - 1
-					
+
 					// Just send to ourselves to avoid needing another address
 					tx := core.NewTransfer(w.Address, w.Address, w.PublicKey, n, 1, core.InitialBaseFee)
 					if err := tx.Sign(w.PrivateKey); err != nil {
@@ -85,7 +85,7 @@ func main() {
 					rawHex := hex.EncodeToString(raw)
 
 					t0 := time.Now()
-					_, err := rpcCall(*rpcAddr, "qbc_sendRawTransaction", []string{rawHex})
+					_, err := rpcCall(*rpcAddr, "oen_sendRawTransaction", []string{rawHex})
 					latMs := uint64(time.Since(t0).Milliseconds())
 					atomic.AddUint64(&totalLatMs, latMs)
 
@@ -101,7 +101,7 @@ func main() {
 
 	wg.Wait()
 	elapsed := time.Since(start).Seconds()
-	
+
 	sent := atomic.LoadUint64(&txSent)
 	failed := atomic.LoadUint64(&txFailed)
 	totLat := atomic.LoadUint64(&totalLatMs)
@@ -120,7 +120,7 @@ func main() {
 }
 
 func fetchNonce(endpoint, addr string) (uint64, error) {
-	result, err := rpcCall(endpoint, "qbc_getTransactionCount", []string{addr})
+	result, err := rpcCall(endpoint, "oen_getTransactionCount", []string{addr})
 	if err != nil {
 		return 0, err
 	}

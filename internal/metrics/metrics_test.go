@@ -52,8 +52,8 @@ func TestMetrics_SetAndObserve(t *testing.T) {
 	FeeBurned.Add(1000)
 	BaseFee.Set(1e9)
 	BlockProductionDuration.Observe(0.001)
-	RPCRequests.WithLabelValues("qbc_chainInfo").Inc()
-	RPCErrors.WithLabelValues("qbc_chainInfo").Inc()
+	RPCRequests.WithLabelValues("oen_chainInfo").Inc()
+	RPCErrors.WithLabelValues("oen_chainInfo").Inc()
 	// If any of these panic, the test fails.
 }
 
@@ -97,8 +97,8 @@ func TestServe_StartsAndResponds(t *testing.T) {
 		t.Errorf("/metrics: want 200, got %d", resp2.StatusCode)
 	}
 	body2, _ := io.ReadAll(resp2.Body)
-	if !strings.Contains(string(body2), "qbc_chain_height") {
-		t.Error("/metrics response should contain qbc_chain_height")
+	if !strings.Contains(string(body2), "oen_chain_height") {
+		t.Error("/metrics response should contain oen_chain_height")
 	}
 
 	// Graceful shutdown via context cancellation.

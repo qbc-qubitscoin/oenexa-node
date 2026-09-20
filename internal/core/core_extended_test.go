@@ -54,7 +54,7 @@ func TestCore_NextBaseFee(t *testing.T) {
 		// delta = 0 -> current - delta = 10.
 	}
 	// Let's use a large current to hit delta > 0
-	if fee := NextBaseFee(100, target/2); fee != 100 - (100 * (target/2) / target / 8) {
+	if fee := NextBaseFee(100, target/2); fee != 100-(100*(target/2)/target/8) {
 		// delta = 100 * (target/2) / target / 8 = 100 * 0.5 / 8 = 6
 		// 100 - 6 = 94
 	}
@@ -79,12 +79,12 @@ func TestCore_TotalEmissionAt(t *testing.T) {
 	if e := TotalEmissionAt(0); e != 0 {
 		t.Errorf("expected 0, got %d", e)
 	}
-	
+
 	e1 := TotalEmissionAt(10)
 	if e1 != InitialBlockReward*10 {
 		t.Errorf("expected %d, got %d", InitialBlockReward*10, e1)
 	}
-	
+
 	cs := CirculatingSupply(10)
 	if cs != GenesisPremine+e1 {
 		t.Errorf("expected %d, got %d", GenesisPremine+e1, cs)
@@ -120,8 +120,8 @@ func TestCore_FeeEstimate(t *testing.T) {
 	}
 }
 
-func TestCore_TransferCostQubits(t *testing.T) {
-	cost := TransferCostQubits(10, 5)
+func TestCore_TransferCostOenexa(t *testing.T) {
+	cost := TransferCostOenexa(10, 5)
 	if cost != GasTransfer*15 {
 		t.Errorf("expected %d, got %d", GasTransfer*15, cost)
 	}
@@ -140,7 +140,7 @@ func TestCore_GenesisConfig(t *testing.T) {
 	if cfg.ChainID != ChainID {
 		t.Errorf("expected ChainID %d, got %d", ChainID, cfg.ChainID)
 	}
-	
+
 	blk := cfg.Build()
 	if blk.Header.Height != 0 {
 		t.Errorf("expected height 0, got %d", blk.Header.Height)
@@ -160,11 +160,11 @@ func TestCore_BlockEncodingAndSigning(t *testing.T) {
 	}
 	pub := w.PublicKey
 	priv := w.PrivateKey
-	
+
 	var prevHash, stateRoot [crypto.HashSize]byte
 	var valAddr [crypto.AddressSize]byte
 	copy(valAddr[:], pub[:crypto.AddressSize])
-	
+
 	blk, err := NewBlock(1, prevHash, stateRoot, time.Now().UnixNano(), valAddr, nil, 0, 10, 0)
 	if err != nil {
 		t.Fatalf("failed to create block: %v", err)
@@ -176,28 +176,28 @@ func TestCore_BlockEncodingAndSigning(t *testing.T) {
 	if err == nil {
 		t.Errorf("expected error from bad tx")
 	}
-	
+
 	enc := blk.Header.Encode()
 	if len(enc) == 0 {
 		t.Errorf("expected non-empty encoding")
 	}
-	
+
 	hash := blk.ComputeHash()
 	if !bytes.Equal(hash[:], blk.Hash[:]) {
 		t.Errorf("hash mismatch")
 	}
-	
+
 	// Test signing
 	err = blk.SignHeader(priv)
 	if err != nil {
 		t.Fatalf("failed to sign: %v", err)
 	}
-	
+
 	err = blk.VerifyValidatorSig(pub)
 	if err != nil {
 		t.Fatalf("signature verification failed: %v", err)
 	}
-	
+
 	// Test with bad pubkey
 	badW, _ := crypto.NewWallet()
 	badPub := badW.PublicKey
@@ -205,7 +205,7 @@ func TestCore_BlockEncodingAndSigning(t *testing.T) {
 	if err == nil {
 		t.Errorf("expected verification to fail with bad pubkey")
 	}
-	
+
 	// Test with bad signature
 	blk.Signature[0] ^= 0xff
 	err = blk.VerifyValidatorSig(pub)
@@ -222,7 +222,7 @@ func TestCore_BlockEncodingAndSigning(t *testing.T) {
 	if err == nil {
 		t.Errorf("expected error on bad pub key")
 	}
-	
+
 	tx := NewTransfer(valAddr, valAddr, pub, 1, 10, 10)
 	err = tx.Sign([]byte("badprivkey"))
 	if err == nil {
