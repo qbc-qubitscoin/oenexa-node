@@ -1,0 +1,96 @@
+# OENEXA Developer Quickstart & Runbook
+
+Welcome to the OENEXA core repository. This project comprises a custom blockchain built in Go, featuring a post-quantum cryptographic layer (ML-DSA-65), a WASM smart contract virtual machine (OenexaVM), and a comprehensive ecosystem of decentralized applications (Phases 1-32).
+
+This document outlines the step-by-step process for running the project locally for development, and the strategy for moving to a production server environment.
+
+---
+
+## Part 1: Running Locally (Development Mode)
+
+Local development runs a single-node "devnet" or local testnet. This allows you to deploy WASM smart contracts, test the JSON-RPC interface, and interact with the web dashboards without requiring a full peer-to-peer network.
+
+### Step 1: Prerequisites
+Ensure you have the following installed on your local machine:
+1. **Go (1.21+)**: The core node is written in Go.
+2. **TinyGo**: Required to compile Go smart contracts into WebAssembly (WASM) for the OenexaVM.
+3. **Make** (optional, but recommended for build scripts).
+
+### Step 2: Build the Core Node
+Compile the main blockchain node executable. Use `oenexa-node` as the binary name to avoid collision with Node.js in your terminal:
+```bash
+# In PowerShell / Windows:
+go build -o oenexa-node.exe ./cmd/node
+
+# In Linux / macOS / Git Bash:
+go build -o oenexa-node ./cmd/node
+```
+
+### Step 3: Run the Local Node
+Start the node in standalone/dev mode:
+```bash
+# In Windows PowerShell:
+.\oenexa-node.exe start
+
+# In Linux / macOS / Git Bash:
+./oenexa-node start
+
+# Or run directly via Go without building an executable:
+go run ./cmd/node start
+```
+*Note: The node produces blocks every 2 seconds, serves JSON-RPC on `http://localhost:8545`, and exposes Prometheus metrics at `http://localhost:9100/metrics`.*
+
+### Step 4: Run the Test Suites
+The repository contains comprehensive unit tests for all 32 phases (Core, Crypto, OenexaVM, Oracles, DeFi, DAOs, etc.) with verified **100% statement coverage**:
+```bash
+# Run all Go tests recursively
+go test ./...
+
+# Run frontend tests (Vitest)
+cd web && npm test -- --run
+```
+
+### Step 5: Start the Web Dashboard
+The project contains a modern React 18 + TypeScript 5 web dashboard (Portal, Explorer, Wallet, DeFi):
+```bash
+cd web
+npm install
+npm run dev
+```
+Open your browser to `http://localhost:5173` (or visit `http://localhost:8545` when running the node, as the built static assets are embedded into the Go node server).
+
+---
+
+## Part 2: Production Server Deployment
+
+Moving to production requires transitioning from a local devnet to a distributed Peer-to-Peer (P2P) network. 
+
+### 1. Infrastructure Preparation
+- **Servers**: Provision cloud instances (AWS EC2, Google Compute Engine, or bare metal) with at least 4 Cores, 16GB RAM, and NVMe SSDs for fast state I/O.
+- **Networking**: Open port `30303` (TCP/UDP) for the P2P network layer, and optionally port `8545` if the node is intended to be a public RPC endpoint.
+
+### 2. Compilation and Binary Distribution
+- Do not build on the production server. Use a CI/CD pipeline (e.g., GitHub Actions) to compile static Linux binaries (`GOOS=linux GOARCH=amd64`).
+- Distribute the compiled `oend` binary to your server nodes.
+
+### 3. Bootstrap Nodes (Seed Nodes)
+A blockchain needs initial connection points.
+1. Deploy 3 to 5 highly available "Seed Nodes" across different geographic regions.
+2. Note their P2P addresses (e.g., `enode://<pubkey>@<ip>:30303`).
+
+### 4. Running the Mainnet Validator Node
+On a production server, run the node pointing to the seed nodes and using a secure production configuration.
+
+```bash
+# Example Systemd execution command
+./oend \
+  --network mainnet \
+  --bootnodes "enode://pubkey1@ip1:30303,enode://pubkey2@ip2:30303" \
+  --validator-key /etc/oenexa/keys/validator.key \
+  --datadir /var/lib/oenexa
+```
+
+### 5. Process Management and Monitoring
+- **Systemd/Docker**: Wrap the execution in a Systemd service file or a Docker container ensuring the process auto-restarts on failure.
+- **Telemetry**: Hook the node logs into a monitoring stack (Prometheus + Grafana). Monitor metric endpoints for block propagation times, ML-DSA verification latencies, and memory usage.
+- **Security**: Keep validator private keys secure, ideally utilizing Hardware Security Modules (HSMs) or secure cloud enclaves (e.g., AWS KMS) via OENEXA's Phase 21 custody integrations.
