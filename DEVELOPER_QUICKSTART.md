@@ -71,7 +71,7 @@ Moving to production requires transitioning from a local devnet to a distributed
 
 ### 2. Compilation and Binary Distribution
 - Do not build on the production server. Use a CI/CD pipeline (e.g., GitHub Actions) to compile static Linux binaries (`GOOS=linux GOARCH=amd64`).
-- Distribute the compiled `qbcd` binary to your server nodes.
+- Distribute the compiled `oend` binary to your server nodes.
 
 ### 3. Bootstrap Nodes (Seed Nodes)
 A blockchain needs initial connection points.
@@ -83,7 +83,7 @@ On a production server, run the node pointing to the seed nodes and using a secu
 
 ```bash
 # Example Systemd execution command
-./qbcd \
+./oend \
   --network mainnet \
   --bootnodes "enode://pubkey1@ip1:30303,enode://pubkey2@ip2:30303" \
   --validator-key /etc/oenexa/keys/validator.key \

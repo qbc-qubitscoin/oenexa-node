@@ -133,18 +133,18 @@ func TestTransferCostOenexa_AboveZero(t *testing.T) {
 
 func TestFeeComparisonTable_OENIsCheapest(t *testing.T) {
 	table := FeeComparisonTable()
-	var qbcFee float64
+	var oenFee float64
 	minOtherFee := 1e18
 	for _, row := range table {
 		if row.Chain[:3] == "OEN" {
-			qbcFee = row.TransferUSD
+			oenFee = row.TransferUSD
 		} else if row.TransferUSD < minOtherFee {
 			minOtherFee = row.TransferUSD
 		}
 	}
-	if qbcFee >= minOtherFee {
+	if oenFee >= minOtherFee {
 		t.Errorf("OEN fee $%.10f should be cheaper than all others (cheapest other: $%.8f)",
-			qbcFee, minOtherFee)
+			oenFee, minOtherFee)
 	}
 }
 

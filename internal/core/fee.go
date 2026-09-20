@@ -138,7 +138,7 @@ type FeeComparison struct {
 func FeeComparisonTable() []FeeComparison {
 	// OEN transfer fee at genesis base fee, assuming $1/OEN:
 	//   21 gas × 10 oenexa/gas = 210 oenexa = 0.00000021 OEN = $0.00000021
-	qbcFeeUSD := float64(TransferCostOenexa(InitialBaseFee, 0)) / float64(OneOEN)
+	oenFeeUSD := float64(TransferCostOenexa(InitialBaseFee, 0)) / float64(OneOEN)
 
 	return []FeeComparison{
 		{Chain: "Ethereum (L1)", TransferUSD: 1.50, TPSLimit: 15},
@@ -147,6 +147,6 @@ func FeeComparisonTable() []FeeComparison {
 		{Chain: "Polygon", TransferUSD: 0.002, TPSLimit: 7_000},
 		{Chain: "Solana", TransferUSD: 0.00025, TPSLimit: 65_000},
 		{Chain: "Sui", TransferUSD: 0.00002, TPSLimit: 120_000},
-		{Chain: "OEN (genesis base fee, $1/OEN)", TransferUSD: qbcFeeUSD, TPSLimit: 23_000_000},
+		{Chain: "OEN (genesis base fee, $1/OEN)", TransferUSD: oenFeeUSD, TPSLimit: 23_000_000},
 	}
 }

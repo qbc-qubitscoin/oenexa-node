@@ -82,6 +82,6 @@ func TestDefaultMocks(t *testing.T) {
 		t.Fatal("expected length 5")
 	}
 
-	qbcStateRead(0, 0, 0, 0)
-	qbcStateWrite(0, 0, 0, 0)
+	oenStateRead(0, 0, 0, 0)
+	oenStateWrite(0, 0, 0, 0)
 }

@@ -2,10 +2,10 @@ package oenexaid
 
 // OENEXA WASM Host Functions
 //go:wasmimport env oen_state_read
-func qbcStateRead(keyPtr, keyLen, valPtr, valMaxLen uint32) uint32 { return 0 }
+func oenStateRead(keyPtr, keyLen, valPtr, valMaxLen uint32) uint32 { return 0 }
 
 //go:wasmimport env oen_state_write
-func qbcStateWrite(keyPtr, keyLen, valPtr, valLen uint32) {}
+func oenStateWrite(keyPtr, keyLen, valPtr, valLen uint32) {}
 
 // register_did binds a DID document hash to the sender's address.
 // Payload format: [did_doc_hash 32 bytes]

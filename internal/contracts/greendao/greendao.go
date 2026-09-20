@@ -120,7 +120,7 @@ func (dao *GreenDAO) ExecuteProposal(proposalID uint64) error {
 	p.Status = StatusExecuted
 
 	// In a real system, we invoke the WASM host function oen_transfer here
-	// qbcTransfer(p.Recipient, p.AmountRequested)
+	// oenTransfer(p.Recipient, p.AmountRequested)
 
 	return nil
 }
