@@ -1,23 +1,736 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
-    <title>OENEXA (OEN) — Quantum-Shielded Portal & Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>" />
-    <script>
-      {
-        const saved = localStorage.getItem("oen_theme") || localStorage.getItem("oen_theme");
-        if (saved) {
-          document.documentElement.setAttribute('data-theme', saved);
-        }
-      }
-    </script>
-    <script type="module" crossorigin src="/assets/index-wfj7xKuT.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DctOWvX0.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="OENEXA Node Dashboard — Post-Quantum Blockchain Explorer" />
+  <title>🛡️ OENEXA (OEN) Node Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>" />
+  <style>
+    /* ===== Reset & Custom Properties ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface2:    #1c2330;
+      --border:      #30363d;
+      --green:       #39d353;
+      --green-dim:   #238636;
+      --green-glow:  rgba(57, 211, 83, 0.18);
+      --text:        #e6edf3;
+      --text-muted:  #8b949e;
+      --accent:      #58a6ff;
+      --danger:      #f85149;
+      --warning:     #d29922;
+      --radius:      10px;
+      --font-mono:   'Courier New', Courier, monospace;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ===== Layout ===== */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+    /* ===== Header ===== */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-icon { font-size: 28px; line-height: 1; }
+
+    .logo-text h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .logo-text span {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .ticker-badge {
+      background: var(--green-dim);
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      border: 1px solid var(--green-dim);
+    }
+
+    /* ===== Status Indicator ===== */
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .pulse-dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 6px var(--danger);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--green); }
+      50%       { opacity: 0.6; transform: scale(0.85); box-shadow: 0 0 12px var(--green); }
+    }
+
+    /* ===== Main Content ===== */
+    main { padding: 32px 0 60px; }
+
+    /* ===== Section Title ===== */
+    .section-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-left: 2px;
+      border-left: 3px solid var(--green);
+      padding-left: 10px;
+    }
+
+    /* ===== Stat Cards Grid ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 16px var(--green-glow);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .stat-value.mono { font-family: var(--font-mono); font-size: 0.9rem; word-break: break-all; }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .stat-icon { font-size: 1.4rem; margin-bottom: 2px; }
+
+    /* ===== Panel ===== */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .panel-badge {
+      font-size: 0.72rem;
+      background: var(--surface2);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* ===== Table ===== */
+    .table-wrapper { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    tbody td {
+      padding: 11px 16px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .mono-cell { font-family: var(--font-mono); color: var(--accent); font-size: 0.8rem; }
+    .muted { color: var(--text-muted); }
+
+    /* ===== Placeholder row skeleton ===== */
+    .skeleton {
+      height: 12px;
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+      background-size: 200% 100%;
+      border-radius: 4px;
+      animation: shimmer 1.6s infinite;
+      display: inline-block;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ===== Crypto info panel ===== */
+    .crypto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0;
+    }
+
+    .crypto-item {
+      padding: 18px 22px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .crypto-item:last-child { border-right: none; }
+
+    .crypto-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .crypto-chip.green {
+      background: var(--green-glow);
+      border-color: var(--green-dim);
+      color: var(--green);
+    }
+
+    .crypto-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .crypto-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ===== Quick Links ===== */
+    .links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+    }
+
+    .link-card:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 12px rgba(88, 166, 255, 0.15);
+    }
+
+    .link-icon { font-size: 1.1rem; }
+
+    /* ===== State root display ===== */
+    .state-root-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--green);
+      word-break: break-all;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ===== Refresh button ===== */
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .refresh-btn:hover { border-color: var(--green); color: var(--green); }
+    .refresh-btn.spinning .refresh-icon { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Error banner ===== */
+    .error-banner {
+      background: rgba(248, 81, 73, 0.12);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-banner.visible { display: block; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 640px) {
+      .header-inner { flex-direction: column; gap: 12px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .stat-value { font-size: 1.3rem; }
+      .crypto-grid { grid-template-columns: 1fr; }
+      .crypto-item { border-right: none; }
+    }
+
+    @media (max-width: 400px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <span class="logo-icon">🛡️</span>
+      <div class="logo-text">
+        <h1>OENEXA Node</h1>
+        <span>Post-Quantum Blockchain</span>
+      </div>
+      <span class="ticker-badge">OEN</span>
+    </a>
+
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="refresh-btn" id="refreshBtn" onclick="fetchStatus()" aria-label="Refresh status">
+        <span class="refresh-icon" style="display:inline-block;">⟳</span>
+        Refresh
+      </button>
+      <div class="status-pill" id="statusPill">
+        <span class="pulse-dot" id="pulseDot"></span>
+        <span id="statusText">Connecting…</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Main ===== -->
+<main>
+  <div class="container">
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner" role="alert"></div>
+
+    <!-- Node Status Cards -->
+    <p class="section-title">Node Status</p>
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon">🌐</div>
+        <div class="stat-label">Network</div>
+        <div class="stat-value" id="statNetwork" style="font-size:1.2rem;">—</div>
+        <div class="stat-sub">Chain identifier</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Chain Height</div>
+        <div class="stat-value" id="statHeight">—</div>
+        <div class="stat-sub">Latest committed block</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Peer Count</div>
+        <div class="stat-value" id="statPeers">—</div>
+        <div class="stat-sub">Connected peers</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Mempool</div>
+        <div class="stat-value" id="statMempool">—</div>
+        <div class="stat-sub">Pending transactions</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🔖</div>
+        <div class="stat-label">Node Version</div>
+        <div class="stat-value" id="statVersion" style="font-size:1.1rem;">—</div>
+        <div class="stat-sub">Binary release</div>
+      </div>
+
+    </div>
+
+    <!-- State Root -->
+    <p class="section-title">State Root</p>
+    <div class="panel" style="margin-bottom:32px;">
+      <div class="panel-header">
+        <span class="panel-title">Sparse Merkle Trie — Current State Root</span>
+        <span class="panel-badge">SMT</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <div class="state-root-box" id="statStateRoot">0x0000…0000</div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">
+          Cryptographic commitment to the entire account and contract state at the latest block.
+        </p>
+      </div>
+    </div>
+
+    <!-- Recent Blocks -->
+    <p class="section-title">Recent Blocks</p>
+    <div class="panel" style="margin-bottom:32px;">
+      <div class="panel-header">
+        <span class="panel-title">Latest Blocks</span>
+        <span class="panel-badge" id="blocksBadge">Loading…</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Height</th>
+              <th>Hash (prefix)</th>
+              <th>Validator</th>
+              <th>Txs</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="blocksBody">
+            <!-- populated by JS or placeholder skeletons -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cryptography Info -->
+    <p class="section-title">Cryptography</p>
+    <div class="panel" style="margin-bottom:32px;">
+      <div class="crypto-grid">
+
+        <div class="crypto-item">
+          <div class="crypto-chip green">POST-QUANTUM</div>
+          <div class="crypto-name">ML-DSA-65</div>
+          <div class="crypto-desc">
+            Module Lattice-based Digital Signature Algorithm (FIPS 204).
+            Resistant to attacks from large-scale quantum computers.
+            Security level 3 — equivalent to AES-192.
+          </div>
+        </div>
+
+        <div class="crypto-item">
+          <div class="crypto-chip">STATE TREE</div>
+          <div class="crypto-name">Sparse Merkle Trie</div>
+          <div class="crypto-desc">
+            Efficient key-value authenticated data structure for account/contract
+            state. Enables compact Merkle proofs without storing empty leaves,
+            supporting fast light-client verification.
+          </div>
+        </div>
+
+        <div class="crypto-item">
+          <div class="crypto-chip">HASH</div>
+          <div class="crypto-name">SHA-3 / SHAKE-256</div>
+          <div class="crypto-desc">
+            All block and transaction hashes use SHA-3 (Keccak family).
+            Quantum-resistant one-way function for integrity proofs and
+            Merkle leaf construction.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <p class="section-title">Quick Links</p>
+    <div class="links-grid" style="margin-bottom:0;">
+      <a class="link-card" href="https://github.com/oenexa" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">🐙</span> GitHub Repository
+      </a>
+      <a class="link-card" href="/api/status" target="_blank">
+        <span class="link-icon">📡</span> /api/status (JSON)
+      </a>
+      <a class="link-card" href="https://oenexa.io/docs" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">📖</span> Documentation
+      </a>
+      <a class="link-card" href="https://oenexa.io/whitepaper" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">📄</span> Whitepaper
+      </a>
+      <a class="link-card" href="https://oenexa.io/explorer" target="_blank" rel="noopener noreferrer">
+        <span class="link-icon">🔍</span> Block Explorer
+      </a>
+    </div>
+
+  </div>
+</main>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <p>
+    🛡️ <strong>OENEXA</strong> (OEN) — Post-Quantum Blockchain &nbsp;|&nbsp;
+    <a href="https://oenexa.io" target="_blank" rel="noopener noreferrer">oenexa.io</a>
+    &nbsp;|&nbsp; Dashboard auto-refreshes every 30 s
+  </p>
+  <p style="margin-top:6px;font-size:0.72rem;color:#6e7681;">
+    Powered by ML-DSA-65 · Sparse Merkle Trie · Go embedded web server
+  </p>
+</footer>
+
+<script>
+  // ===== Constants =====
+  const API_URL       = '/api/status';
+  const REFRESH_MS    = 30_000;   // 30 seconds
+  const BLOCK_ROWS    = 6;        // placeholder rows
+
+  // ===== DOM refs =====
+  const $network    = document.getElementById('statNetwork');
+  const $height     = document.getElementById('statHeight');
+  const $peers      = document.getElementById('statPeers');
+  const $mempool    = document.getElementById('statMempool');
+  const $version    = document.getElementById('statVersion');
+  const $stateRoot  = document.getElementById('statStateRoot');
+  const $statusText = document.getElementById('statusText');
+  const $pulseDot   = document.getElementById('pulseDot');
+  const $statusPill = document.getElementById('statusPill');
+  const $errorBan   = document.getElementById('errorBanner');
+  const $blocksBadge= document.getElementById('blocksBadge');
+  const $blocksBody = document.getElementById('blocksBody');
+  const $refreshBtn = document.getElementById('refreshBtn');
+
+  // ===== Utilities =====
+  function fmt(n) {
+    if (n === undefined || n === null) return '—';
+    return Number(n).toLocaleString();
+  }
+
+  function truncate(str, start = 6, end = 4) {
+    if (!str || str.length <= start + end + 2) return str || '—';
+    return str.slice(0, start) + '…' + str.slice(-end);
+  }
+
+  function skeletonTd(w = 80) {
+    return `<td><span class="skeleton" style="width:${w}px;"></span></td>`;
+  }
+
+  // ===== Build placeholder block rows =====
+  function buildPlaceholderRows(count) {
+    return Array.from({ length: count }, (_, i) =>
+      `<tr>${skeletonTd(60)}${skeletonTd(110)}${skeletonTd(90)}${skeletonTd(30)}${skeletonTd(70)}</tr>`
+    ).join('');
+  }
+
+  // ===== Build a real block row (for future use when block API exists) =====
+  function buildBlockRow(block) {
+    return `
+      <tr>
+        <td class="mono-cell">${fmt(block.height)}</td>
+        <td class="mono-cell">${truncate(block.hash)}</td>
+        <td class="mono-cell muted">${truncate(block.validator)}</td>
+        <td>${fmt(block.tx_count)}</td>
+        <td class="muted">${block.time || '—'}</td>
+      </tr>`;
+  }
+
+  // ===== Set online / offline state =====
+  function setOnline(online) {
+    $pulseDot.classList.toggle('offline', !online);
+    $statusText.textContent = online ? 'Online' : 'Offline';
+    $statusPill.style.borderColor = online ? 'var(--green-dim)' : 'var(--danger)';
+  }
+
+  // ===== Fetch status from /api/status =====
+  async function fetchStatus() {
+    $refreshBtn.classList.add('spinning');
+
+    try {
+      const res  = await fetch(API_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+
+      // Populate stat cards
+      $network.textContent   = data.network   || '—';
+      $height.textContent    = fmt(data.chain_height);
+      $peers.textContent     = fmt(data.peer_count);
+      $mempool.textContent   = fmt(data.pending_tx);
+      $version.textContent   = data.version   || '—';
+      $stateRoot.textContent = data.state_root || '0x0000…0000';
+
+      // Blocks: the status endpoint doesn't return block list yet;
+      // keep skeletons but update the badge with live height.
+      $blocksBadge.textContent = `Latest: #${fmt(data.chain_height)}`;
+
+      setOnline(true);
+      $errorBan.classList.remove('visible');
+
+    } catch (err) {
+      setOnline(false);
+      $errorBan.textContent = `⚠ Could not reach /api/status: ${err.message}`;
+      $errorBan.classList.add('visible');
+      $blocksBadge.textContent = 'Unavailable';
+    } finally {
+      $refreshBtn.classList.remove('spinning');
+    }
+  }
+
+  // ===== Init =====
+  (function init() {
+    // Render placeholder rows immediately
+    $blocksBody.innerHTML = buildPlaceholderRows(BLOCK_ROWS);
+
+    // Initial fetch
+    fetchStatus();
+
+    // Auto-refresh every 30 s
+    setInterval(fetchStatus, REFRESH_MS);
+  })();
+</script>
+</body>
 </html>
