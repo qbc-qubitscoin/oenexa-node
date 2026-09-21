@@ -22,7 +22,7 @@ This document outlines the step-by-step development process used to implement th
 5. **Micro-Merchant Gateway (Phase 13)**: Point-of-Sale (POS) integrations for street vendors and retail stores to instantly accept OEN with zero fees.
 
 ## Stage 4: Infrastructure, AI, and SaaS (Phases 14 - 21)
-1. **Oenexa AI & Data Center Grid (Phase 14)**: Native financing and tracking for Tier-4, hyperscale data centers running on renewable energy.
+1. **Oenexa Cortex (Phase 14)**: Native financing and tracking for Tier-4, hyperscale data centers running on renewable energy.
 2. **Compute-as-a-Service (Phase 15)**: Decentralized leasing of GPU/TPU clusters for AI agents and LLMs.
 3. **SaaS Development (Phase 16)**: Frameworks for deploying, crowdfunding, and subscribing to hybrid Software-as-a-Service platforms via OEN.
 4. **Real World Assets (Phase 17)**: Tokenization of real estate and traditional securities.

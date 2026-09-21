@@ -75,8 +75,8 @@ The 32-phase evolutionary roadmap from foundational node engineering to a fully 
 - **Phase 13: Micro-Merchant Gateway** — Fast, zero-fee Point-of-Sale integrations for mobile merchants.
 
 ### AI, Infrastructure & SaaS (Phases 14–21)
-- **Phase 14: Oenexa AI & Data Center Grid** — Fractionalized tokenization and financing of Tier-4 green data centers.  
-  📄 [AI & Data Center Grid Documentation](./Phase_14_AI_DataCenter_Grid_Documentation.md)
+- **Phase 14: Oenexa Cortex** — Fractionalized tokenization and financing of Tier-4 green data centers.  
+  📄 [Cortex Documentation](./Phase_14_Cortex_Documentation.md)
 - **Phase 15: Compute-as-a-Service (CaaS)** — Tokenized leasing of decentralized GPU/TPU power for AI models.
 - **Phase 16: SaaS Development Platform** — Smart contract frameworks for recurring SaaS subscriptions and product crowdfunding.
 - **Phase 17: Real-World Asset (RWA) Engine** — Securities, real estate, and carbon credit tokenization on-chain.

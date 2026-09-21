@@ -1,4 +1,4 @@
-# Oenexa AI & Data Center Grid (Phase 14)
+# Oenexa Cortex (Phase 14)
 
 **Document Version**: v2.0  
 **Phase**: Phase 14  
@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-**The Oenexa AI & Data Center Grid** is the foundational infrastructure financing and operational layer for the OENEXA ecosystem. Recognizing that the future of Artificial Intelligence and decentralized computation requires massive, energy-intensive data centers, Phase 14 tokenizes the financing, governance, and operational yields of Tier-4, hyperscale data centers.
+**The Oenexa Cortex** is the foundational infrastructure financing and operational layer for the OENEXA ecosystem. Recognizing that the future of Artificial Intelligence and decentralized computation requires massive, energy-intensive data centers, Phase 14 tokenizes the financing, governance, and operational yields of Tier-4, hyperscale data centers.
 
 By leveraging post-quantum smart contracts executed on OenexaVM, institutional and retail investors can hold fractional ownership of data center infrastructure. Furthermore, it ensures these data centers operate on 100% renewable energy, bridging advanced AI compute with green infrastructure.
 
@@ -19,7 +19,7 @@ By leveraging post-quantum smart contracts executed on OenexaVM, institutional a
 
 ```
 +-------------------------------------------------------------------------+
-|                  AI & Data Center Grid Architecture                     |
+|                       Oenexa Cortex Architecture                        |
 +-------------------------------------------------------------------------+
                                       |
          +----------------------------+----------------------------+

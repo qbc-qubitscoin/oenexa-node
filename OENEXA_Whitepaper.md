@@ -32,9 +32,9 @@ Oenexa believes privacy is a fundamental human right. Inheriting the most powerf
 *   **Shielded Pool:** Fully confidential transactions utilizing Post-Quantum Zero-Knowledge Proofs (ZKPs). The sender, receiver, and transaction amounts are cryptographically hidden.
 *   **Selective Disclosure (Viewing Keys):** Users can optionally generate viewing keys to reveal specific shielded transactions to auditors or regulatory bodies without exposing their entire financial history.
 
-## 4. Oenexa AI & Data Center Grid
+## 4. Oenexa Cortex
 
-The exponential growth of Artificial Intelligence (AI) requires massive, energy-intensive infrastructure. Oenexa natively integrates the financing and operation of this infrastructure into its blockchain, replacing legacy concepts with a unified AI & Compute Grid.
+The exponential growth of Artificial Intelligence (AI) requires massive, energy-intensive infrastructure. Oenexa natively integrates the financing and operation of this infrastructure into its blockchain through the **Oenexa Cortex**.
 
 *   **Data Center Development:** OEN is used to fund, build, and scale Tier-4, hyperscale data centers. 
 *   **AI Development & Hosting:** These data centers physically host decentralized AI agents, large language models (LLMs), and predictive climate algorithms. 

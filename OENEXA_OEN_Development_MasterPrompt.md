@@ -276,7 +276,7 @@
 
 ---
 
-## PHASE 14 — Oenexa AI & Data Center Grid
+## PHASE 14 — Oenexa Cortex
 
 **Objective:** Launch the native financing and tracking platform for Tier-4, hyperscale data centers.
 
