@@ -18,6 +18,7 @@ package node
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -160,6 +161,17 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 		wallet.PrivateKey,
 		vs, n.st, n.pool, chain[0], n.execVM, n.upgradeMgr,
 	)
+	
+	if n.p2pNode != nil {
+		n.engine.OnVoteBroadcast = func(v *consensus.Vote) {
+			if data, err := json.Marshal(v); err == nil {
+				_ = n.p2pNode.BroadcastVote(context.Background(), data)
+			}
+		}
+		n.engine.OnBlockBroadcast = func(blk *core.Block) {
+			_ = n.p2pNode.BroadcastBlock(context.Background(), blk)
+		}
+	}
 	// Re-inject stored blocks so BlockByHeight works correctly.
 	for i := 1; i < len(chain); i++ {
 		n.engine.InjectBlock(chain[i])
@@ -188,9 +200,19 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 			_ = n.p2pNode.BroadcastTx(context.Background(), tx)
 		}
 		n.p2pNode.OnBlockReceived = func(blk *core.Block) {
-			// Let the syncer handle out-of-order block arrival.
+			if n.engine != nil {
+				_ = n.engine.ProcessProposal(blk)
+			}
 			if n.syncer != nil {
 				n.syncer.ApplyBlocks([]*core.Block{blk})
+			}
+		}
+		n.p2pNode.OnVoteReceived = func(data []byte) {
+			if n.engine != nil {
+				var v consensus.Vote
+				if err := json.Unmarshal(data, &v); err == nil {
+					_ = n.engine.ProcessVote(&v)
+				}
 			}
 		}
 		n.p2pNode.OnSyncReq = func(req p2p.SyncReq) {

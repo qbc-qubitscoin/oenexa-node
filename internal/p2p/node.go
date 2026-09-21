@@ -21,6 +21,7 @@ import (
 const (
 	TxTopic             = "/oenexa/tx/1.0.0"
 	BlockTopic          = "/oenexa/block/1.0.0"
+	VoteTopic           = "/oenexa/vote/1.0.0"
 	SyncReqTopic        = "/oenexa/syncreq/1.0.0"
 	SyncResTopic        = "/oenexa/syncres/1.0.0"
 	DiscoveryServiceTag = "oenexa-network-discovery"
@@ -38,23 +39,26 @@ type SyncRes struct {
 
 // Node is the libp2p network participant.
 type Node struct {
-	host       host.Host
-	pubsub     *pubsub.PubSub
-	identity   *Identity
-	
+	host     host.Host
+	pubsub   *pubsub.PubSub
+	identity *Identity
+
 	txTopic      *pubsub.Topic
 	blockTopic   *pubsub.Topic
+	voteTopic    *pubsub.Topic
 	syncReqTopic *pubsub.Topic
 	syncResTopic *pubsub.Topic
-	
+
 	txSub      *pubsub.Subscription
 	blockSub   *pubsub.Subscription
+	voteSub    *pubsub.Subscription
 	syncReqSub *pubsub.Subscription
 	syncResSub *pubsub.Subscription
 
 	// Hooks
 	OnTxReceived    func(*core.Transaction)
 	OnBlockReceived func(*core.Block)
+	OnVoteReceived  func([]byte)
 	OnSyncReq       func(SyncReq)
 	OnSyncRes       func(SyncRes)
 }
@@ -137,6 +141,10 @@ func (n *Node) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	n.voteTopic, err = n.pubsub.Join(VoteTopic)
+	if err != nil {
+		return err
+	}
 	n.syncReqTopic, err = n.pubsub.Join(SyncReqTopic)
 	if err != nil {
 		return err
@@ -155,6 +163,10 @@ func (n *Node) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	n.voteSub, err = n.voteTopic.Subscribe()
+	if err != nil {
+		return err
+	}
 	n.syncReqSub, err = n.syncReqTopic.Subscribe()
 	if err != nil {
 		return err
@@ -167,6 +179,7 @@ func (n *Node) Start(ctx context.Context) error {
 	// Run listener loops
 	go n.handleTxSub(ctx)
 	go n.handleBlockSub(ctx)
+	go n.handleVoteSub(ctx)
 	go n.handleSyncReqSub(ctx)
 	go n.handleSyncResSub(ctx)
 
@@ -175,6 +188,9 @@ func (n *Node) Start(ctx context.Context) error {
 
 // BroadcastSyncReq gossips a sync request to the network.
 func (n *Node) BroadcastSyncReq(ctx context.Context, req SyncReq) error {
+	if n.syncReqTopic == nil {
+		return nil
+	}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return err
@@ -184,6 +200,9 @@ func (n *Node) BroadcastSyncReq(ctx context.Context, req SyncReq) error {
 
 // BroadcastSyncRes gossips a sync response to the network.
 func (n *Node) BroadcastSyncRes(ctx context.Context, res SyncRes) error {
+	if n.syncResTopic == nil {
+		return nil
+	}
 	data, err := json.Marshal(res)
 	if err != nil {
 		return err
@@ -205,8 +224,20 @@ func (n *Node) PeerCount() int {
 	return len(n.host.Network().Peers())
 }
 
+// ListenAddrs returns the node's listening multiaddresses.
+func (n *Node) ListenAddrs() []string {
+	var addrs []string
+	for _, addr := range n.host.Addrs() {
+		addrs = append(addrs, fmt.Sprintf("%s/p2p/%s", addr.String(), n.host.ID().String()))
+	}
+	return addrs
+}
+
 // BroadcastTx gossips a transaction to the network.
 func (n *Node) BroadcastTx(ctx context.Context, tx *core.Transaction) error {
+	if n.txTopic == nil {
+		return nil
+	}
 	data, err := json.Marshal(tx)
 	if err != nil {
 		return err
@@ -215,8 +246,11 @@ func (n *Node) BroadcastTx(ctx context.Context, tx *core.Transaction) error {
 }
 
 // BroadcastBlock gossips a block to the network.
-func (n *Node) BroadcastBlock(ctx context.Context, block *core.Block) error {
-	data, err := json.Marshal(block)
+func (n *Node) BroadcastBlock(ctx context.Context, blk *core.Block) error {
+	if n.blockTopic == nil {
+		return nil
+	}
+	data, err := json.Marshal(blk)
 	if err != nil {
 		return err
 	}
@@ -266,6 +300,29 @@ func (n *Node) handleBlockSub(ctx context.Context) {
 			n.OnBlockReceived(&block)
 		}
 	}
+}
+
+func (n *Node) handleVoteSub(ctx context.Context) {
+	for {
+		msg, err := n.voteSub.Next(ctx)
+		if err != nil {
+			return
+		}
+		if msg.ReceivedFrom == n.host.ID() {
+			continue
+		}
+		if n.OnVoteReceived != nil {
+			n.OnVoteReceived(msg.Data)
+		}
+	}
+}
+
+// BroadcastVote gossips a consensus vote.
+func (n *Node) BroadcastVote(ctx context.Context, voteData []byte) error {
+	if n.voteTopic == nil {
+		return nil
+	}
+	return n.voteTopic.Publish(ctx, voteData)
 }
 
 func (n *Node) handleSyncReqSub(ctx context.Context) {

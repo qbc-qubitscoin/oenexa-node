@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/oenexa/oenexa/internal/metrics"
-	"github.com/oenexa/oenexa/internal/web"
 )
 
 const maxRequestBody = 4 << 20 // 4 MiB
@@ -34,13 +33,9 @@ func NewServer(addr string, api *API, readTimeout, writeTimeout time.Duration) *
 	mux := http.NewServeMux()
 	s := &Server{api: api}
 	mux.HandleFunc("/", s.handleRPC)
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
-	})
-	mux.Handle("/ui/", http.StripPrefix("/ui", web.Handler()))
-	mux.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/ui/", http.StatusFound)
 	})
 
 	s.http = &http.Server{

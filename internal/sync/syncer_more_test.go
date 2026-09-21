@@ -27,7 +27,7 @@ func TestSyncer_Run_ContextCancel(t *testing.T) {
 	engine := consensus.NewEngine(w.Address, w.PublicKey, w.PrivateKey, vs, st, nil, genesis, nil, nil)
 
 	ident := p2p.NewIdentity(w.PublicKey, w.PrivateKey, "127.0.0.1:0")
-	node, _ := p2p.NewNode(ident)
+	node, _ := p2p.NewNode(ident, 0)
 
 	s := New(engine, st, nil, node, nil, nil)
 
@@ -70,7 +70,7 @@ func TestSyncer_trySync(t *testing.T) {
 
 	// mock node needs a network
 	ident := p2p.NewIdentity(w.PublicKey, w.PrivateKey, "127.0.0.1:0")
-	node, _ := p2p.NewNode(ident)
+	node, _ := p2p.NewNode(ident, 0)
 
 	s := New(engine, st, nil, node, nil, nil)
 

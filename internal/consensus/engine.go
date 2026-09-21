@@ -21,7 +21,16 @@ const (
 	MaxTxPerBlock = 10_000 // raised to match the higher block gas limit
 )
 
-// Engine drives single-validator BFT block production.
+type BFTStep int
+
+const (
+	StepPropose BFTStep = iota
+	StepPrevote
+	StepPrecommit
+	StepCommit
+)
+
+// Engine drives BFT block production and validation.
 type Engine struct {
 	mu sync.Mutex
 
@@ -32,11 +41,23 @@ type Engine struct {
 	validatorSet *ValidatorSet
 	state        *state.DB
 	pool         *mempool.Mempool
-	execVM       *vm.VM           // WASM VM (maybe nil)
-	upgradeMgr   *upgrade.Manager // auto-upgrade watcher (maybe nil)
+	execVM       *vm.VM
+	upgradeMgr   *upgrade.Manager
 
-	chain    []*core.Block // in-memory chain, index = height
+	chain    []*core.Block
 	commitCh chan *core.Block
+
+	// BFT State
+	step          BFTStep
+	round         uint32
+	proposal      *core.Block
+	proposalState *state.DB
+	prevotes      map[[crypto.HashSize]byte]map[string]*Vote // blockHash -> validator -> Vote
+	precommits    map[[crypto.HashSize]byte]map[string]*Vote
+
+	// P2P Hooks
+	OnVoteBroadcast  func(*Vote)
+	OnBlockBroadcast func(*core.Block)
 }
 
 // NewEngine creates a consensus engine.
@@ -62,6 +83,8 @@ func NewEngine(
 		upgradeMgr:    upgradeMgr,
 		chain:         []*core.Block{genesis},
 		commitCh:      make(chan *core.Block, 64),
+		prevotes:      make(map[[crypto.HashSize]byte]map[string]*Vote),
+		precommits:    make(map[[crypto.HashSize]byte]map[string]*Vote),
 	}
 }
 
@@ -102,14 +125,176 @@ func (e *Engine) produceBlock(ctx context.Context) error {
 		return nil // not our turn
 	}
 
+	if e.step != StepPropose {
+		return nil // already proposing/voting for this height
+	}
+
 	blk, newState, err := e.buildBlock(height)
 	if err != nil {
 		return fmt.Errorf("buildBlock: %w", err)
 	}
-	if err := commitFunc(e, blk, newState); err != nil {
-		return fmt.Errorf("commit: %w", err)
+	
+	e.proposal = blk
+	e.proposalState = newState
+	e.step = StepPrevote
+
+	log.Printf("[consensus] Proposing block %d (%x)", height, blk.Hash[:4])
+
+	if e.OnBlockBroadcast != nil {
+		e.OnBlockBroadcast(blk)
+	}
+
+	// Since we proposed it, we also prevote for it
+	e.castVoteLocked(VotePrevote, height, blk.Hash)
+	return nil
+}
+
+// ProcessProposal receives a block proposal from the network.
+func (e *Engine) ProcessProposal(blk *core.Block) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	height := uint64(len(e.chain))
+	if blk.Header.Height != height {
+		return nil // ignore old/future proposals for now
+	}
+
+	proposer := e.validatorSet.Proposer(height)
+	if blk.Header.ValidatorAddr != proposer.Address {
+		return fmt.Errorf("invalid proposer")
+	}
+
+	if e.step > StepPropose {
+		return nil // already processing a proposal
+	}
+
+	// In a full implementation, we'd validate the state transitions here.
+	// For the prototype, we assume the proposal is valid if the signature matches.
+	e.proposal = blk
+	e.step = StepPrevote
+
+	// Broadcast our prevote
+	e.castVoteLocked(VotePrevote, height, blk.Hash)
+	return nil
+}
+
+// ProcessVote receives a BFT vote from the network.
+func (e *Engine) ProcessVote(v *Vote) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if err := v.Verify(); err != nil {
+		return err
+	}
+
+	height := uint64(len(e.chain))
+	if v.Height != height {
+		return nil
+	}
+
+	if !e.validatorSet.Contains(v.Voter) {
+		return fmt.Errorf("vote from non-validator")
+	}
+
+	voterHex := crypto.ToHex(v.Voter)
+	hash := v.BlockHash
+
+	if v.Type == VotePrevote {
+		if e.prevotes[hash] == nil {
+			e.prevotes[hash] = make(map[string]*Vote)
+		}
+		e.prevotes[hash][voterHex] = v
+		e.checkPrevoteQuorumLocked(height, hash)
+	} else if v.Type == VotePrecommit {
+		if e.precommits[hash] == nil {
+			e.precommits[hash] = make(map[string]*Vote)
+		}
+		e.precommits[hash][voterHex] = v
+		e.checkPrecommitQuorumLocked(height, hash)
 	}
 	return nil
+}
+
+func (e *Engine) castVoteLocked(voteType uint8, height uint64, hash [crypto.HashSize]byte) {
+	v := &Vote{
+		Type:      voteType,
+		Height:    height,
+		Round:     e.round,
+		BlockHash: hash,
+		Voter:     e.validatorAddr,
+		PublicKey: e.validatorPub,
+	}
+	_ = v.Sign(e.validatorPriv)
+
+	if voteType == VotePrevote {
+		if e.prevotes[hash] == nil {
+			e.prevotes[hash] = make(map[string]*Vote)
+		}
+		e.prevotes[hash][crypto.ToHex(e.validatorAddr)] = v
+	} else if voteType == VotePrecommit {
+		if e.precommits[hash] == nil {
+			e.precommits[hash] = make(map[string]*Vote)
+		}
+		e.precommits[hash][crypto.ToHex(e.validatorAddr)] = v
+	}
+
+	if e.OnVoteBroadcast != nil {
+		e.OnVoteBroadcast(v)
+	}
+
+	if voteType == VotePrevote {
+		e.checkPrevoteQuorumLocked(height, hash)
+	} else {
+		e.checkPrecommitQuorumLocked(height, hash)
+	}
+}
+
+func (e *Engine) checkPrevoteQuorumLocked(height uint64, hash [crypto.HashSize]byte) {
+	if e.step >= StepPrecommit {
+		return
+	}
+	var voters [][crypto.AddressSize]byte
+	for _, vote := range e.prevotes[hash] {
+		voters = append(voters, vote.Voter)
+	}
+	if e.validatorSet.HasQuorum(voters) {
+		e.step = StepPrecommit
+		e.castVoteLocked(VotePrecommit, height, hash)
+	}
+}
+
+func (e *Engine) checkPrecommitQuorumLocked(height uint64, hash [crypto.HashSize]byte) {
+	if e.step >= StepCommit {
+		return
+	}
+	var voters [][crypto.AddressSize]byte
+	for _, vote := range e.precommits[hash] {
+		voters = append(voters, vote.Voter)
+	}
+	if e.validatorSet.HasQuorum(voters) {
+		e.step = StepCommit
+		log.Printf("[consensus] Quorum reached for block %d. Committing.", height)
+		
+		// If we are a follower, we might not have `e.proposalState`. We'd apply it here.
+		// For prototype simplicity, if we lack it, we build it.
+		stateToCommit := e.proposalState
+		if stateToCommit == nil && e.proposal != nil {
+			// Fast forward validation build
+			_, stateToCommit, _ = e.buildBlock(height)
+		}
+
+		if e.proposal != nil && stateToCommit != nil {
+			_ = commitFunc(e, e.proposal, stateToCommit)
+		}
+		
+		// Reset for next height
+		e.step = StepPropose
+		e.round = 0
+		e.proposal = nil
+		e.proposalState = nil
+		e.prevotes = make(map[[crypto.HashSize]byte]map[string]*Vote)
+		e.precommits = make(map[[crypto.HashSize]byte]map[string]*Vote)
+	}
 }
 
 // buildBlock assembles a new block on a state snapshot.

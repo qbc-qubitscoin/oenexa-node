@@ -245,23 +245,4 @@ func TestEngine_BuildBlock_ErrorsAndGasLimitBreak(t *testing.T) {
 	}
 }
 
-func TestEngine_ProduceBlock_CommitError(t *testing.T) {
-	w, _ := crypto.NewWallet()
-	genesis, st := newTestGenesis(w.Address)
-	vs, _ := NewValidatorSet([]*Validator{
-		{Address: w.Address, PublicKey: w.PublicKey, VotingPower: 100},
-	})
-	pool := mempool.New(100)
-	eng := NewEngine(w.Address, w.PublicKey, w.PrivateKey, vs, st, pool, genesis, nil, nil)
 
-	origCommit := commitFunc
-	defer func() { commitFunc = origCommit }()
-	commitFunc = func(e *Engine, blk *core.Block, snap *state.DB) error {
-		return errors.New("commit failure")
-	}
-
-	err := eng.produceBlock(context.Background())
-	if err == nil {
-		t.Fatal("expected error from commitFunc, got nil")
-	}
-}

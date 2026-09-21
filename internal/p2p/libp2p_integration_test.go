@@ -45,11 +45,16 @@ func TestLibp2pNode_TxGossip(t *testing.T) {
 		t.Fatalf("node2 start: %v", err)
 	}
 
-	// 4. M-DNS takes time to discover (or we can skip it and manually connect)
-	// We'll manually connect to speed up the test using mDNS port (which is randomly assigned because port 0).
-	// But libp2p node doesn't expose Multiaddrs publicly yet. Let's just wait a bit for mDNS.
-	// Actually, mDNS discovery can be flaky in tests. We'll wait 2 seconds.
-	time.Sleep(2 * time.Second)
+	// 4. Manually connect them to avoid mDNS test flakiness
+	addrs := node2.ListenAddrs()
+	if len(addrs) > 0 {
+		if err := node1.Connect(ctx, addrs[0]); err != nil {
+			t.Fatalf("failed to connect node1 to node2: %v", err)
+		}
+	}
+	
+	// Wait a moment for the pubsub mesh to establish
+	time.Sleep(1500 * time.Millisecond)
 
 	// 5. Broadcast a Transaction
 	tx := &core.Transaction{
@@ -74,7 +79,7 @@ func TestLibp2pNode_TxGossip(t *testing.T) {
 		if receivedTx.Hash != tx.Hash {
 			t.Fatalf("received wrong tx hash")
 		}
-	case <-ctx.Done():
-		t.Fatalf("timeout waiting for gossip message. mDNS discovery might have failed.")
+	case <-time.After(3 * time.Second):
+		t.Fatalf("timeout waiting for gossip message. mesh might not have established yet.")
 	}
 }
