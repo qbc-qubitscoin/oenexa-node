@@ -41,6 +41,13 @@ The exponential growth of Artificial Intelligence (AI) requires massive, energy-
 *   **Compute-as-a-Service (CaaS):** The computing power (GPUs, TPUs, AI clusters) of these data centers is leased out. Clients pay for computation directly using OEN coins, generating yield for infrastructure participants.
 *   **SaaS Development & Subscriptions:** Software companies and developers can build and host hybrid SaaS (Software-as-a-Service) applications on the Oenexa Grid. End-users pay their monthly SaaS subscription fees seamlessly in OEN, while initial development costs are crowdfunded and governed by smart contracts.
 
+### 4.1. Cortex Smart Contract Architecture
+The Cortex operates via a suite of native OenexaVM smart contracts that manage the lifecycle of data center financing and yield generation:
+1. **Infrastructure Bonds (Fractionalization):** New physical data center projects are instantiated as `CortexAsset` contracts. Users stake OEN to fund construction, receiving fractional ownership shares in return.
+2. **Oracle Telemetry Ingest:** The decentralized Oracle network feeds real-world telemetry (GPU hours consumed, kWh of renewable energy used) directly into the Cortex smart contracts to track operational efficiency.
+3. **Automated Yield Streaming (CaaS Revenue):** As AI developers pay OEN to lease compute power from the data center, the smart contract accumulates these fees in a `RevenuePool`.
+4. **Dividend Distribution:** The contract automatically calculates proportional yields based on share ownership and distributes the accumulated OEN revenue back to the initial infrastructure backers.
+
 ## 5. Decentralized Everyday Commerce (D-Commerce)
 
 While OEN scales to support massive data centers, its velocity is realized in everyday commerce. OEN is a seamless, high-speed currency for Real-World Scenarios—powering direct Peer-to-Peer (P2P), Business-to-Peer (B2P), and Business-to-Business (B2B) transactions.
