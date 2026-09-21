@@ -1,36 +1,33 @@
-# Layer-2 Rollups (Phase 25)
-
-**Version**: v1.0 | **Phase**: 25 | **Status**: Research phase (ZK-STARK library evaluation in progress)
+Title: Layer-2 Rollups & Scalability (Phase 25)
+Version: v1.0 | Phase: 25
 
 ## Overview
+OENEXA aims to process over 100,000 Transactions Per Second (TPS). To achieve this, we have architected a **Layer-2 Rollup** engine in `internal/rollup`.
 
-Phase 25 introduces Layer-2 optimistic and ZK rollups on top of OENEXA L1. This targets 100,000+ TPS — the whitepaper goal that L1 ML-DSA-65 signatures alone cannot achieve on commodity hardware.
+Instead of burdening the Layer-1 (L1) blockchain with every single transaction, transactions are routed to an off-chain **Sequencer**. The Sequencer acts as a high-speed execution environment, batching thousands of transfers into a single mathematical payload.
 
-## Why Rollups Are Necessary
+## Architecture
 
-> ML-DSA-65 verification at 78 µs/op caps L1 throughput at ~12,800 verifications/second per core. Rollups batch thousands of L2 transactions into a single L1 proof, amortizing the L1 verification cost across the batch.
+### 1. The L2 Sequencer (`sequencer.go`)
+- Maintains an in-memory `Mempool` of Layer-2 transactions.
+- Re-uses OENEXA's cryptographic `state.DB` to execute state transitions identically to the L1 chain.
+- Periodically calls `BuildBatch()` to bundle all transactions, calculate the new L2 State Root (`PostRoot`), and emit a cryptographic proof.
 
-## Rollup Architectures
+### 2. The L1 Bridge (`l1_bridge.go`)
+- Acts as the main chain's anchor for the Layer-2 network.
+- Accepts `Batch` payloads from the Sequencer.
+- Instead of re-executing all 10,000 transactions, the Bridge simply verifies the ZK-STARK (Zero-Knowledge) proof provided by the Sequencer.
+- Because OENEXA is quantum-safe, these STARK proofs rely heavily on hash-based mechanics which resist quantum cryptanalysis.
 
-### 1. Optimistic Rollups
-- Batches transactions off-chain; posts compressed state diff to L1
-- Fraud proof window (7 days)
-- L1 acts as data availability + dispute resolution layer
-- Fraud proofs executed in OenexaVM (WASM)
-- Achieves ~10-20x throughput improvement over L1
+### 3. The Batch Payload (`batch.go`)
+Each batch contains:
+- `BatchID`: Sequential identifier.
+- `PreRoot`: The L2 State Root prior to the transactions.
+- `PostRoot`: The resulting L2 State Root.
+- `ZkStarkProof`: The cryptographic guarantee that the state transition from PreRoot to PostRoot is mathematically valid.
 
-### 2. ZK Rollups (STARK-based)
-- Generates STARK proofs of batch validity off-chain
-- Instant finality on L1 (no challenge period)
-- OENEXA-specific: uses post-quantum-friendly STARK proofs (FRI-based, no elliptic curve dependency)
-- Target: 100,000 TPS with sub-second L2 finality
-
-## Bridging (L1 ↔ L2)
-- Native bridge contract for L1 ↔ L2 OEN transfers
-- 7-day withdrawal delay (Optimistic) / Instant (ZK)
-- RWA tokens bridgeable to L2 with Merkle proofs of L1 ownership
-
-## Ecosystem Integration
-- L2 state roots committed to L1 Sparse Merkle Trie
-- DeFi (Phase 12) deployed directly to L2 for high-frequency trading
-- Custody (Phase 21) operators interact primarily via L1 for large settlements
+## Integration Testing
+The full lifecycle is proven in `rollup_integration_test.go`:
+1. Users generate quantum-safe (ML-DSA-65) keypairs and sign transactions.
+2. The Sequencer accepts, validates, and executes them off-chain.
+3. The L1 Bridge securely verifies the ZK-STARK proof and updates the canonical state.
