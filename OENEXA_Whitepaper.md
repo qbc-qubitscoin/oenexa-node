@@ -45,8 +45,13 @@ The exponential growth of Artificial Intelligence (AI) requires massive, energy-
 
 While OEN scales to support massive data centers, its velocity is realized in everyday commerce. OEN is a seamless, high-speed currency for Real-World Scenarios—powering direct Peer-to-Peer (P2P), Business-to-Peer (B2P), and Business-to-Business (B2B) transactions.
 
-*   **Restaurant & Delivery Escrow:** Oenexa replaces extractive Web2 delivery apps (like Uber Eats or DoorDash) with feeless D-Commerce. A user orders food, and the OEN coin is locked in an on-chain escrow smart contract. The funds flow *directly* to the restaurant and the delivery courier the moment the food arrives, taking 0% platform fees.
-*   **Retail & Apparel:** Consumers can use OEN to directly purchase materials, clothes, and everyday goods from physical stores and e-commerce gateways.
+*   **The Oenexa Open Market & Food Delivery Platform:** Oenexa features its own native e-commerce and food delivery platform. Suppliers, restaurants, and retail vendors can list their goods and food, while buyers can purchase them directly through the decentralized open market.
+*   **QR-Code Mediated Smart Escrow:** The platform utilizes a foolproof, zero-trust delivery mechanism managed by OenexaVM smart contracts to replace extractive Web2 delivery apps (like Uber Eats or DoorDash):
+    1. **Order & Escrow:** A buyer places an order, locking the total OEN (cost of food + delivery commission) securely into the network's smart contract.
+    2. **Pickup via Barcode/QR:** The delivery mediator (courier) arrives at the restaurant and scans a unique generated barcode or QR code to securely confirm they have received the food or materials from the seller.
+    3. **Delivery & Final Confirmation:** Upon arriving at the destination, the buyer presents their personal secure QR code on their device. The courier scans this final QR code to cryptographically confirm the successful handover.
+    4. **Instant Settlement:** Immediately upon this final QR confirmation, the smart contract automatically releases the reserved OEN, settling the payment to the restaurant and the commission to the delivery person instantly.
+*   **Retail & Apparel:** Consumers can use OEN to directly purchase materials, clothes, and everyday goods from physical stores and e-commerce gateways integrated into the Oenexa ecosystem.
 *   **Micro-Merchant Empowerment:** Street vendors and independent creators can accept OEN instantly via their mobile wallets, benefiting from sub-second finality and zero chargebacks.
 
 ## 6. OenexaVM: The Smart Contract Engine

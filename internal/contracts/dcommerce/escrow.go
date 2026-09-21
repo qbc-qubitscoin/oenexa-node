@@ -2,6 +2,7 @@ package dcommerce
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"time"
@@ -29,8 +30,10 @@ type DeliveryOrder struct {
 	Restaurant    [crypto.AddressSize]byte     `json:"restaurant"`
 	Courier       [crypto.AddressSize]byte     `json:"courier"`
 	FoodAmount    uint64             `json:"food_amount"`
-	DeliveryFee   uint64             `json:"delivery_fee"`
-	State         OrderState         `json:"state"`
+	DeliveryFee   uint64                       `json:"delivery_fee"`
+	PickupQRHash  string                       `json:"pickup_qr_hash"` // Hash of the barcode provided by restaurant
+	DropoffQRHash string                       `json:"dropoff_qr_hash"` // Hash of the QR provided by buyer
+	State         OrderState                   `json:"state"`
 	CreatedAt     int64              `json:"created_at"`
 	DeliveredAt   int64              `json:"delivered_at"`
 }
@@ -50,7 +53,7 @@ func NewDeliveryEscrowContract() *DeliveryEscrowContract {
 }
 
 // CreateOrder is called by the Buyer to lock funds in escrow for a food order.
-func (c *DeliveryEscrowContract) CreateOrder(buyer, restaurant [crypto.AddressSize]byte, foodAmount, deliveryFee uint64) (*DeliveryOrder, error) {
+func (c *DeliveryEscrowContract) CreateOrder(buyer, restaurant [crypto.AddressSize]byte, foodAmount, deliveryFee uint64, dropoffQRHash string) (*DeliveryOrder, error) {
 	// In production, the VM deducts (foodAmount + deliveryFee) from the Buyer's balance and locks it in the contract.
 	
 	hasher := sha256.New()
@@ -61,13 +64,14 @@ func (c *DeliveryEscrowContract) CreateOrder(buyer, restaurant [crypto.AddressSi
 	orderID := string(hasher.Sum(nil)[:8]) // shortened for example
 
 	order := &DeliveryOrder{
-		OrderID:     orderID,
-		Buyer:       buyer,
-		Restaurant:  restaurant,
-		FoodAmount:  foodAmount,
-		DeliveryFee: deliveryFee,
-		State:       StateCreated,
-		CreatedAt:   time.Now().Unix(),
+		OrderID:       orderID,
+		Buyer:         buyer,
+		Restaurant:    restaurant,
+		FoodAmount:    foodAmount,
+		DeliveryFee:   deliveryFee,
+		DropoffQRHash: dropoffQRHash,
+		State:         StateCreated,
+		CreatedAt:     time.Now().Unix(),
 	}
 
 	c.orders[orderID] = order
@@ -75,7 +79,7 @@ func (c *DeliveryEscrowContract) CreateOrder(buyer, restaurant [crypto.AddressSi
 }
 
 // AcceptOrder is called by the Restaurant to acknowledge they are preparing the food.
-func (c *DeliveryEscrowContract) AcceptOrder(orderID string, restaurant [crypto.AddressSize]byte) error {
+func (c *DeliveryEscrowContract) AcceptOrder(orderID string, restaurant [crypto.AddressSize]byte, pickupQRHash string) error {
 	order, exists := c.orders[orderID]
 	if !exists {
 		return errors.New("order not found")
@@ -87,6 +91,7 @@ func (c *DeliveryEscrowContract) AcceptOrder(orderID string, restaurant [crypto.
 		return errors.New("invalid state transition: order must be CREATED")
 	}
 
+	order.PickupQRHash = pickupQRHash
 	order.State = StateAccepted
 	return nil
 }
@@ -107,22 +112,52 @@ func (c *DeliveryEscrowContract) AssignCourier(orderID string, courier [crypto.A
 	}
 
 	order.Courier = courier
+	return nil
+}
+
+// ConfirmPickup is called by the Courier after scanning the Restaurant's QR code.
+func (c *DeliveryEscrowContract) ConfirmPickup(orderID string, courier [crypto.AddressSize]byte, pickupSecret string) error {
+	order, exists := c.orders[orderID]
+	if !exists {
+		return errors.New("order not found")
+	}
+	if order.Courier != courier {
+		return errors.New("unauthorized: only the assigned courier can confirm pickup")
+	}
+	if order.State != StateAccepted {
+		return errors.New("invalid state transition")
+	}
+	
+	// Verify the QR code secret
+	hash := sha256.Sum256([]byte(pickupSecret))
+	hashHex := hex.EncodeToString(hash[:])
+	if hashHex != order.PickupQRHash {
+		return errors.New("invalid pickup QR code")
+	}
+
 	order.State = StatePickedUp
 	return nil
 }
 
-// ConfirmDelivery is called by the Buyer to unlock the escrowed funds.
+// ConfirmDelivery is called by the Courier after scanning the Buyer's QR code.
 // The VM will transfer the foodAmount to the Restaurant, and deliveryFee to the Courier.
-func (c *DeliveryEscrowContract) ConfirmDelivery(orderID string, buyer [crypto.AddressSize]byte) ([]*core.Transaction, error) {
+func (c *DeliveryEscrowContract) ConfirmDelivery(orderID string, courier [crypto.AddressSize]byte, dropoffSecret string) ([]*core.Transaction, error) {
 	order, exists := c.orders[orderID]
 	if !exists {
 		return nil, errors.New("order not found")
 	}
-	if order.Buyer != buyer {
-		return nil, errors.New("unauthorized: only the buyer can confirm delivery")
+	if order.Courier != courier {
+		return nil, errors.New("unauthorized: only the assigned courier can confirm delivery")
 	}
 	if order.State != StatePickedUp {
 		return nil, errors.New("invalid state transition: order must be PICKED_UP")
+	}
+
+	// Verify the drop-off QR code secret
+	hash := sha256.Sum256([]byte(dropoffSecret))
+	hashHex := hex.EncodeToString(hash[:])
+	if hashHex != order.DropoffQRHash {
+		return nil, errors.New("invalid dropoff QR code")
 	}
 
 	order.State = StateDelivered
