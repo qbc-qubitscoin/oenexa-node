@@ -156,21 +156,85 @@ func (e *Engine) ProcessProposal(blk *core.Block) error {
 
 	height := uint64(len(e.chain))
 	if blk.Header.Height != height {
-		return nil // ignore old/future proposals for now
+		return fmt.Errorf("proposal height %d does not match chain height %d", blk.Header.Height, height)
 	}
 
 	proposer := e.validatorSet.Proposer(height)
-	if blk.Header.ValidatorAddr != proposer.Address {
+	if proposer == nil || blk.Header.ValidatorAddr != proposer.Address {
 		return fmt.Errorf("invalid proposer")
 	}
 
-	if e.step > StepPropose {
-		return nil // already processing a proposal
+	// 1. Cryptographic validation: Verify proposer's ML-DSA-65 header signature
+	if len(proposer.PublicKey) > 0 {
+		if err := blk.VerifyValidatorSig(proposer.PublicKey); err != nil {
+			return fmt.Errorf("invalid block validator signature: %w", err)
+		}
 	}
 
-	// In a full implementation, we'd validate the state transitions here.
-	// For the prototype, we assume the proposal is valid if the signature matches.
+	// 2. Chain linkage validation
+	prev := e.chain[height-1]
+	if blk.Header.PrevHash != prev.Hash {
+		return fmt.Errorf("invalid parent block hash")
+	}
+	if blk.Header.Timestamp <= prev.Header.Timestamp {
+		return fmt.Errorf("block timestamp %d not after parent timestamp %d", blk.Header.Timestamp, prev.Header.Timestamp)
+	}
+
+	// 3. Merkle root validation of transactions
+	txHashes := make([][crypto.HashSize]byte, len(blk.Txs))
+	for i, tx := range blk.Txs {
+		txHashes[i] = tx.Hash
+	}
+	expectedMerkle := core.ComputeMerkleRoot(txHashes)
+	if expectedMerkle != blk.Header.MerkleRoot {
+		return fmt.Errorf("invalid transactions merkle root")
+	}
+
+	// 4. State transition replay and validation
+	snap := e.state.Snapshot()
+	baseFee := prev.Header.BaseFee
+	var totalGas, totalBurned, totalTip uint64
+
+	for _, tx := range blk.Txs {
+		result, err := applyTxFunc(snap, tx, core.BlockGasLimit-totalGas, e.execVM, baseFee)
+		if err != nil {
+			return fmt.Errorf("transaction execution failed (%s): %w", crypto.ToHex(tx.Hash), err)
+		}
+		totalGas += result.GasUsed
+		totalBurned += result.BurnedFee
+		totalTip += result.ValidatorTip
+		if totalGas > core.BlockGasLimit {
+			return fmt.Errorf("block gas limit exceeded")
+		}
+	}
+
+	if totalGas != blk.Header.GasUsed {
+		return fmt.Errorf("gas used mismatch: header has %d, computed %d", blk.Header.GasUsed, totalGas)
+	}
+	if totalBurned != blk.Header.BurnedFees {
+		return fmt.Errorf("burned fees mismatch: header has %d, computed %d", blk.Header.BurnedFees, totalBurned)
+	}
+
+	// Credit validator: tip + block subsidy
+	reward := core.BlockReward(height)
+	income := totalTip + reward
+	if income > 0 {
+		valAcc := snap.GetAccount(proposer.Address)
+		valAcc.Balance += income
+		snap.SetAccount(proposer.Address, valAcc)
+	}
+
+	computedRoot := snap.CommitRoot()
+	if computedRoot != blk.Header.StateRoot {
+		return fmt.Errorf("state root mismatch: header has %s, computed %s", crypto.ToHex(blk.Header.StateRoot), crypto.ToHex(computedRoot))
+	}
+
+	if e.step > StepPropose {
+		return nil // already processing or past propose step
+	}
+
 	e.proposal = blk
+	e.proposalState = snap
 	e.step = StepPrevote
 
 	// Broadcast our prevote
@@ -199,6 +263,21 @@ func (e *Engine) ProcessVote(v *Vote) error {
 	voterHex := crypto.ToHex(v.Voter)
 	hash := v.BlockHash
 
+	// Equivocation detection: check if validator voted for a different hash at the same height & round
+	votesMap := e.prevotes
+	if v.Type == VotePrecommit {
+		votesMap = e.precommits
+	}
+	for otherHash, voterVotes := range votesMap {
+		if otherHash != hash {
+			if existingVote, exists := voterVotes[voterHex]; exists && existingVote.Round == v.Round {
+				log.Printf("[consensus] SECURITY ALERT: Equivocation detected from validator %s at height %d round %d! Slashing validator.", voterHex, v.Height, v.Round)
+				e.slashValidatorLocked(v.Voter)
+				return fmt.Errorf("equivocation detected from validator %s", voterHex)
+			}
+		}
+	}
+
 	if v.Type == VotePrevote {
 		if e.prevotes[hash] == nil {
 			e.prevotes[hash] = make(map[string]*Vote)
@@ -213,6 +292,22 @@ func (e *Engine) ProcessVote(v *Vote) error {
 		e.checkPrecommitQuorumLocked(height, hash)
 	}
 	return nil
+}
+
+func (e *Engine) slashValidatorLocked(addr [crypto.AddressSize]byte) {
+	// 1. Slash voting power in validator set
+	e.validatorSet.Slash(addr, 1)
+
+	// 2. Slash 10% on-chain balance in state if account exists
+	if e.state != nil {
+		acc := e.state.GetAccount(addr)
+		if acc != nil && acc.Balance > 0 {
+			penalty := acc.Balance / 10
+			acc.Balance -= penalty
+			e.state.SetAccount(addr, acc)
+			log.Printf("[consensus] Slashed %d OEN from validator %s", penalty/core.OneOEN, crypto.ToHex(addr))
+		}
+	}
 }
 
 func (e *Engine) castVoteLocked(voteType uint8, height uint64, hash [crypto.HashSize]byte) {

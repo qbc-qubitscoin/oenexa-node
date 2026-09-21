@@ -89,3 +89,21 @@ func (vs *ValidatorSet) All() []*Validator {
 
 // TotalPower returns the aggregate voting power.
 func (vs *ValidatorSet) TotalPower() uint64 { return vs.totalPower }
+
+// Slash reduces a validator's voting power by penalty.
+// Returns true if the validator was found and slashed.
+func (vs *ValidatorSet) Slash(addr [crypto.AddressSize]byte, penalty uint64) bool {
+	key := crypto.ToHex(addr)
+	idx, ok := vs.addressIndex[key]
+	if !ok {
+		return false
+	}
+	val := vs.validators[idx]
+	if penalty > val.VotingPower {
+		penalty = val.VotingPower
+	}
+	val.VotingPower -= penalty
+	vs.totalPower -= penalty
+	return true
+}
+

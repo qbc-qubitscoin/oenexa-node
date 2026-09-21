@@ -162,16 +162,6 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 		vs, n.st, n.pool, chain[0], n.execVM, n.upgradeMgr,
 	)
 	
-	if n.p2pNode != nil {
-		n.engine.OnVoteBroadcast = func(v *consensus.Vote) {
-			if data, err := json.Marshal(v); err == nil {
-				_ = n.p2pNode.BroadcastVote(context.Background(), data)
-			}
-		}
-		n.engine.OnBlockBroadcast = func(blk *core.Block) {
-			_ = n.p2pNode.BroadcastBlock(context.Background(), blk)
-		}
-	}
 	// Re-inject stored blocks so BlockByHeight works correctly.
 	for i := 1; i < len(chain); i++ {
 		n.engine.InjectBlock(chain[i])
@@ -195,6 +185,16 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 		log.Printf("[node] P2P init failed (single-node mode): %v", p2pErr)
 	} else {
 		n.p2pNode = p2pNode
+		if n.engine != nil {
+			n.engine.OnVoteBroadcast = func(v *consensus.Vote) {
+				if data, err := json.Marshal(v); err == nil {
+					_ = n.p2pNode.BroadcastVote(context.Background(), data)
+				}
+			}
+			n.engine.OnBlockBroadcast = func(blk *core.Block) {
+				_ = n.p2pNode.BroadcastBlock(context.Background(), blk)
+			}
+		}
 		n.p2pNode.OnTxReceived = func(tx *core.Transaction) {
 			_ = n.pool.Add(tx)
 			_ = n.p2pNode.BroadcastTx(context.Background(), tx)
