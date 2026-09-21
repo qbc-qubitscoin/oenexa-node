@@ -63,45 +63,27 @@ The 32-phase evolutionary roadmap from foundational node engineering to a fully 
 - **Phase 8: Quantum-Safe Wallet Infrastructure** — Non-custodial CLI/SDK wallet with quantum-safe key management.  
   📄 [Wallet Architecture Design](./Wallet_Architecture_Design.md) | [Wallet Security Audit](./Wallet_Security_Audit.md)
 
-### Identity, Oracles & DeFi Primitives (Phases 9–13)
+### Identity, Oracles & D-Commerce (Phases 9–13)
 - **Phase 9: OenexaID Decentralized Identity** — Self-sovereign DIDs and verifiable credentials for KYC/accreditation.  
   📄 [OenexaID Schema Specification](./OenexaID_Schema.md) | [OenexaID Legal & Privacy Review](./OenexaID_Legal_Privacy_Review.md)
-- **Phase 10: CarbonX ESG Registry** — On-chain carbon offset tokenization and retirement registry.  
-  📄 [CarbonX ESG Framework](./CarbonX_ESG_Framework.md) | [CarbonX Registry Integration](./CarbonX_Registry_Integration.md)
-- **Phase 11: Decentralized Oracle Network** — Verifiable multi-source data feeds with threshold signing.  
+- **Phase 10: Decentralized Oracle Network** — Verifiable multi-source data feeds with threshold signing.  
   📄 [Oracle Design Specification](./Oracle_Design.md) | [Oracle Security Review](./Oracle_Security_Review.md)
-- **Phase 12: Decentralized Exchange (DeFi)** — Constant-product AMM pools, liquidity mining, and flash-loan resistance.  
+- **Phase 11: DeFi Hub (OenexaSwap)** — Constant-product AMM pools, liquidity mining, and over-collateralized lending.  
   📄 [DeFi Architecture Specification](./DeFi_Architecture.md) | [DeFi Security Audit Report](./DeFi_Audit_Report.md)
-- **Phase 13: GreenDAO Governance Framework** — Community-directed environmental treasury and on-chain voting.  
-  📄 [GreenDAO Governance Framework](./GreenDAO_Governance_Framework.md) | [GreenDAO Legal Entity Structure](./GreenDAO_Legal_Entity_Structure.md)
+- **Phase 12: D-Commerce Escrow Platform** — Zero-trust, QR-code mediated delivery mechanics for P2P/B2P food and goods delivery.  
+  📄 [D-Commerce Escrow Documentation](./Phase_12_DCommerce_Escrow_Documentation.md)
+- **Phase 13: Micro-Merchant Gateway** — Fast, zero-fee Point-of-Sale integrations for mobile merchants.
 
-### Real-World Assets & Decentralized Infrastructure (Phases 14–18)
-- **Phase 14: HydroChain Infrastructure Platform** — Fractionalized tokenization of hydroelectric and clean water assets.  
-  📄 [HydroChain Documentation](./Phase_14_Hydrochain_Documentation.md)
-- **Phase 15: Real-World Assets (RWA) Registry** — Universal compliant tokenization framework for physical and institutional assets.  
-  📄 [RWA Documentation](./Phase_15_Rwa_Documentation.md)
-- **Phase 16: Decentralized Storage Layer** — Content-addressed decentralized storage with on-chain cryptographic anchoring.  
-  📄 [Storage Layer Documentation](./Phase_16_Storage_Documentation.md)
-- **Phase 17: Decentralized Compute Network** — Verifiable off-chain WASM compute marketplace with on-chain settlement.  
-  📄 [Compute Network Documentation](./Phase_17_Compute_Documentation.md)
-- **Phase 18: AI Model Marketplace** — Decentralized model registry, private inference execution, and royalty monetization.  
-  📄 [AI Marketplace Documentation](./Phase_18_Aimarket_Documentation.md)
-
-### Institutional Rails & Scalability (Phases 19–25)
-- **Phase 19: CBDC Bridge & Sovereign Currency** — Programmable central bank digital currency issuance rails and compliance filters.  
-  📄 [CBDC Documentation](./Phase_19_Cbdc_Documentation.md)
-- **Phase 20: ISO 20022 Financial Messaging** — Native MX message parsing and bidirectional traditional banking integration.  
-  📄 [ISO 20022 Documentation](./Phase_20_Iso20022_Documentation.md)
-- **Phase 21: Institutional Custody Bridge** — Multi-party computation (MPC) and hardware security module (HSM) cold storage bridge.  
-  📄 [Institutional Custody Documentation](./Phase_21_Custody_Documentation.md)
-- **Phase 22: Web3 SuperApp & Ecosystem Portal** — Unified mobile/desktop interface for identity, wallet, DeFi, and RWA.  
-  📄 [SuperApp Documentation](./Phase_22_Superapp_Documentation.md)
-- **Phase 23: Global Liquidity & Interoperability** — Cross-chain atomic swaps and quantum-safe bridge protocols.  
-  📄 [Global Liquidity Documentation](./Phase_23_Global_Documentation.md)
-- **Phase 24: Mainnet Genesis & Decentralization** — Production genesis event, validator decentralization, and network bootstrapping.  
-  📄 [Mainnet Genesis Documentation](./Phase_24_Mainnet_Documentation.md)
-- **Phase 25: Layer-2 Rollups & High-Throughput Scaling** — ZK-Rollups and optimistic rollup chains targeting 100k+ TPS.  
-  📄 [Rollups Documentation](./Phase_25_Rollups_Documentation.md)
+### AI, Infrastructure & SaaS (Phases 14–21)
+- **Phase 14: Oenexa AI & Data Center Grid** — Fractionalized tokenization and financing of Tier-4 green data centers.  
+  📄 [AI & Data Center Grid Documentation](./Phase_14_AI_DataCenter_Grid_Documentation.md)
+- **Phase 15: Compute-as-a-Service (CaaS)** — Tokenized leasing of decentralized GPU/TPU power for AI models.
+- **Phase 16: SaaS Development Platform** — Smart contract frameworks for recurring SaaS subscriptions and product crowdfunding.
+- **Phase 17: Real-World Asset (RWA) Engine** — Securities, real estate, and carbon credit tokenization on-chain.
+- **Phase 18: AI Agent Marketplace** — Autonomous discovery and payment routing for specialized AI agents.
+- **Phase 19: CBDC Gateway** — Institutional bridge for Central Bank Digital Currencies.
+- **Phase 20: ISO 20022 Integration** — Traditional finance message parsing and clearing integration.
+- **Phase 21: Institutional Custody** — HSM integration and quantum-safe multisignature cold storage.
 
 ### Global Impact & Frontier Technology (Phases 26–32)
 - **Phase 26: Global ESG Marketplace** — Scaled global trading platform for verified ecological and renewable credits.  

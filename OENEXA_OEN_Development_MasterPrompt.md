@@ -1,7 +1,7 @@
 # OENEXA (OEN) — Master Development Prompt
 ### Full-Program Build Specification, Phase 0 → Phase 32
 
-**Companion document to:** *OENEXA_OEN_Whitepaper.md*
+**Companion document to:** *OENEXA_Whitepaper.md*
 **Purpose:** A single, structured prompt/spec that a development organization (or an AI coding agent operating under human supervision) can follow phase-by-phase to build the OEN ecosystem, with explicit scope, tasks, dependencies, and exit criteria per phase.
 
 ---
@@ -241,129 +241,125 @@
 
 ---
 
-## PHASE 12 — GreenDAO Launch
+## PHASE 12 — D-Commerce Escrow
 
-**Objective:** Stand up the renewable-energy funding DAO.
+**Objective:** Implement native E-Commerce and Food Delivery smart contracts with zero-trust escrow.
 
 **Key Tasks:**
-- Implement DAO governance contracts (proposal, voting, treasury disbursement)
-- Define funding criteria and due-diligence process for renewable energy projects (hydropower, solar, wind, storage, EV charging, green hydrogen)
-- Build project-proposal and community-voting interfaces
-- Establish a real-world legal entity/structure capable of receiving and disbursing funds to physical energy projects (on-chain governance alone cannot sign real-world contracts)
+- Develop DeliveryEscrow smart contracts supporting P2P and B2P flows.
+- Implement QR-code mediated pickup and drop-off mechanisms.
+- Build the Oenexa Open Market platform integrating these contracts.
+- Independent security audit of the escrow locking and release functions.
 
-**Dependencies:** Phase 11 (treasury mechanics), Phase 9 (identity for accredited/eligible participants where legally required)
+**Dependencies:** Phase 6 OenexaVM
 
-**Deliverables:** Governance Framework, GreenDAO contracts and interface, legal entity structure documentation
+**Deliverables:** Escrow smart contracts, QR-code delivery verification flow, security audit report
 
-**Exit Criteria:** At least one full pilot funding cycle (proposal → vote → disbursement → reporting) completed successfully with real due-diligence documentation.
+**Exit Criteria:** Escrow smart contracts tested locally with simulated QR hashes, confirming zero-trust fund settlement to both merchant and courier.
 
 ---
 
-## PHASE 13 — CarbonX Marketplace
+## PHASE 13 — Micro-Merchant Gateway
 
-**Objective:** Launch the carbon credit tokenization and trading marketplace.
+**Objective:** Build Point-of-Sale (POS) integrations for everyday merchants.
 
 **Key Tasks:**
-- Integrate with accredited carbon registries (e.g., Verra, Gold Standard) as the verification source of truth
-- Implement tokenization contracts representing verified registry claims (not novel carbon accounting)
-- Implement trading and retirement (burn) functionality with public retirement certificates
-- ESG compliance review to prevent double-counting between on-chain tokens and the underlying registry
+- Develop mobile-friendly merchant web dashboards to track incoming D-Commerce orders.
+- Integrate instantaneous QR-code payment and receipt generation.
+- Implement zero-fee localized routing for fast settlement in street-vendor and retail scenarios.
 
-**Dependencies:** Phase 10 QESG Oracle, Phase 11 DEX infrastructure
+**Dependencies:** Phase 12 D-Commerce Escrow, Phase 9 OenexaID
 
-**Deliverables:** ESG Framework, CarbonX contracts and marketplace, registry-integration documentation
+**Deliverables:** Micro-Merchant Gateway interface, POS API endpoints
 
-**Exit Criteria:** Registry partner(s) confirm no double-counting risk in the integration design; pilot carbon credit issuance-to-retirement cycle completed end-to-end.
+**Exit Criteria:** Successful end-to-end simulation of a retail user buying a physical good from a mobile vendor using OEN.
 
 ---
 
-## PHASE 14 — HydroChain Platform
+## PHASE 14 — Oenexa AI & Data Center Grid
 
-**Objective:** Launch the dedicated hydropower tokenization network.
+**Objective:** Launch the native financing and tracking platform for Tier-4, hyperscale data centers.
 
 **Key Tasks:**
-- Build production-tracking integrations (smart meters / operator reporting at real hydropower facilities)
-- Implement revenue-distribution and dividend contracts tied to verified production data
-- Build investor dashboards showing real-time production and payout data
-- Securities-law review in each jurisdiction where hydropower revenue tokens will be offered
+- Build infrastructure financing contracts (Green Bonds) to crowd-fund physical data center construction.
+- Implement tokenized tracking of 100% renewable energy consumption (hydropower, solar).
+- Deploy investor dashboards showing real-time infrastructure yield.
+- Securities-law review in each jurisdiction where infrastructure bonds are offered.
 
-**Dependencies:** Phase 10 Oracles (production data feeds), Phase 6 OenexaVM, Phase 9 OenexaID (investor eligibility where required)
+**Dependencies:** Phase 6 OenexaVM, Phase 10 Oracles
 
-**Deliverables:** HydroChain platform, Investor Dashboard, securities-law review memo per target jurisdiction
+**Deliverables:** Data Center financing platform, Investor Dashboard, securities-law review
 
-**Exit Criteria:** Legal sign-off in at least one launch jurisdiction; pilot hydropower asset onboarded with verified production data flowing correctly to distribution contracts.
+**Exit Criteria:** Legal sign-off in at least one launch jurisdiction; pilot data center financing pool initialized.
 
 ---
 
-## PHASE 15 — RWA Platform Launch
+## PHASE 15 — Compute-as-a-Service (CaaS)
 
-**Objective:** Generalize tokenization beyond hydropower to the full RWA asset set.
+**Objective:** Enable decentralized leasing of GPU/TPU clusters for AI and LLMs.
 
 **Key Tasks:**
-- Build standardized legal-wrapper templates for real estate, infrastructure, agriculture, commodities, and bonds
-- Implement the QToken Engine's fractional-ownership and yield-distribution logic generically across asset classes
-- Build asset-verification workflows (title, appraisal, ongoing attestation) with named third-party verifiers per asset class
-- Jurisdiction-by-jurisdiction securities/commodities law review for each new asset class added
+- Develop contracts that lock OEN in exchange for off-chain compute hours.
+- Build integrations linking on-chain payment with off-chain Kubernetes/AI cluster provisioning.
+- Establish slashing and proof-of-compute verification for node operators providing CaaS.
 
-**Dependencies:** Phase 14 (proven pattern from HydroChain), Phase 9 OenexaID
+**Dependencies:** Phase 14 AI & Data Center Grid
 
-**Deliverables:** OenexaRWA platform, QToken Engine, asset-verification workflow documentation, legal review per asset class
+**Deliverables:** CaaS leasing contracts, compute-verification node plugin
+
+**Exit Criteria:** Successful provisioning of an off-chain compute workload using an on-chain OEN payment.
+
+---
+
+## PHASE 16 — SaaS Development Platform
+
+**Objective:** Create frameworks for deploying, crowdfunding, and subscribing to hybrid SaaS applications.
+
+**Key Tasks:**
+- Develop subscription smart contracts (auto-deducting monthly OEN from user wallets).
+- Build the SaaS Launchpad for software companies to raise initial development funds.
+- Implement license key generation tied to on-chain subscription verification.
+
+**Dependencies:** Phase 14 AI & Data Center Grid
+
+**Deliverables:** SaaS Subscription protocol, SaaS Launchpad DApp
+
+**Exit Criteria:** A mock SaaS application successfully restricts access unless an active on-chain OEN subscription is detected.
+
+---
+
+## PHASE 17 — Real World Assets (RWA)
+
+**Objective:** Generalize tokenization beyond infrastructure to real estate and traditional securities.
+
+**Key Tasks:**
+- Build standardized legal-wrapper templates for real estate, commodities, and bonds.
+- Implement fractional-ownership and yield-distribution logic across asset classes.
+- Build asset-verification workflows (title, appraisal) with named third-party verifiers.
+- Jurisdiction-by-jurisdiction securities law review.
+
+**Dependencies:** Phase 9 OenexaID, Phase 14 AI & Data Center Grid
+
+**Deliverables:** OenexaRWA platform, QToken Engine, legal review per asset class
 
 **Exit Criteria:** At least one non-energy asset class (e.g., real estate) successfully tokenized end-to-end with legal sign-off.
 
 ---
 
-## PHASE 16 — Oenexa Storage
+## PHASE 18 — AI Agent Marketplace
 
-**Objective:** Build decentralized storage infrastructure.
-
-**Key Tasks:**
-- Implement encrypted, decentralized file storage with redundancy/erasure coding
-- Implement immutable archival for compliance/audit records
-- Implement file-sharing access-control tied to OenexaID credentials
-
-**Dependencies:** Phase 9 OenexaID, Phase 5 encryption standards
-
-**Deliverables:** OenexaStorage network, storage SDK
-
-**Exit Criteria:** Storage network demonstrates data durability and retrieval under simulated node-failure testing.
-
----
-
-## PHASE 17 — Oenexa Compute
-
-**Objective:** Build distributed compute and GPU marketplace infrastructure.
+**Objective:** Tokenize AI agent discovery and autonomous task routing.
 
 **Key Tasks:**
-- Implement a GPU/compute marketplace with staking-based provider trust
-- Implement serverless function execution environment
-- Integrate with OenexaAI (Phase-spanning) for AI training-workload support
+- Build a registry of autonomous AI agents offering specific tasks (e.g., trading, research, auditing).
+- Implement task-routing smart contracts that hold OEN in escrow until an AI agent returns a verified result.
+- Integrate the marketplace into the Oenexa Super App.
 
-**Dependencies:** Phase 16 storage (compute jobs need data access), Phase 6 OenexaVM (job/payment contracts)
+**Dependencies:** Phase 15 Compute-as-a-Service
 
-**Deliverables:** OenexaCompute marketplace, SDK and API documentation
+**Deliverables:** AI Agent registry, Task Escrow contracts
 
-**Exit Criteria:** Successful pilot AI-training or rendering job completed end-to-end through the marketplace with correct payment settlement.
-
----
-
-## PHASE 18 — AI Marketplace
-
-**Objective:** Launch the OenexaAI Market for specialized agents.
-
-**Key Tasks:**
-- Build agent listing, discovery, and payment-per-use contracts
-- Onboard initial agent categories: trading, customer support, security, research, energy forecasting, compliance
-- Implement agent output auditing/reputation scoring so users can evaluate agent quality and safety before use
-- Establish content/behavior policies for listed agents (no agents that facilitate fraud, market manipulation, or unlicensed financial advice)
-
-**Dependencies:** Phase 17 compute infrastructure, Phase 12 OenexaAI modules
-
-**Deliverables:** AI Architecture document, OenexaAI Market platform, agent policy framework
-
-**Exit Criteria:** Marketplace live with a defined number of vetted agents across categories, each passing the agent policy review.
-
----
+**Exit Criteria:** Successful routing of a user prompt to an AI agent, paid natively in OEN, with results stored on-chain or via IPFS.
 
 ## PHASE 19 — CBDC Gateway
 
