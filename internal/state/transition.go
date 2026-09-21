@@ -176,6 +176,7 @@ func applyDeploy(
 			return core.GasDeploy, nil, fmt.Errorf("deploy failed: %w", err)
 		}
 		ec := &vm.ExecutionContext{
+			State:        st,
 			ContractAddr: contractAddr,
 			CallerAddr:   tx.From,
 			Value:        tx.Amount,
@@ -250,6 +251,7 @@ func applyCall(
 	}
 
 	ec := &vm.ExecutionContext{
+		State:        st,
 		ContractAddr: tx.To,
 		CallerAddr:   tx.From,
 		Value:        tx.Amount,

@@ -59,15 +59,16 @@ type DB struct {
 	trie *mpt.Trie
 
 	// dirty is the write-ahead buffer: accounts modified in the current block
-	// are stored here until CommitRoot() flushes them into the trie.
-	// Reads check dirty first (cache hit) before consulting the trie.
 	dirty map[[crypto.AddressSize]byte]*Account
+
+	// dirtyStorage is the write-ahead buffer for contract storage slots.
+	// ContractAddr -> Slot -> Value
+	dirtyStorage map[[crypto.AddressSize]byte]map[uint32]uint64
 
 	// shieldedPool is the total nano-OEN value locked in the shielded pool.
 	shieldedPool uint64
 
 	// nullifiers is the set of already-spent note nullifiers.
-	// Attempting to reveal the same nullifier twice is an error.
 	nullifiers map[[32]byte]bool
 
 	// commitmentTree accumulates shielded note commitments.
@@ -84,6 +85,7 @@ func NewStateDB() *DB {
 	return &DB{
 		trie:           mpt.New(nil), // nil backend → pure in-memory map
 		dirty:          make(map[[crypto.AddressSize]byte]*Account),
+		dirtyStorage:   make(map[[crypto.AddressSize]byte]map[uint32]uint64),
 		nullifiers:     make(map[[32]byte]bool),
 		commitmentTree: shielded.NewNoteCommitmentTree(),
 	}
@@ -100,6 +102,7 @@ func NewStateDBWithTrie(t *mpt.Trie) *DB {
 	return &DB{
 		trie:           t,
 		dirty:          make(map[[crypto.AddressSize]byte]*Account),
+		dirtyStorage:   make(map[[crypto.AddressSize]byte]map[uint32]uint64),
 		nullifiers:     make(map[[32]byte]bool),
 		commitmentTree: shielded.NewNoteCommitmentTree(),
 	}
@@ -204,13 +207,29 @@ func (s *DB) CommitRoot() [crypto.HashSize]byte {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// ── Step 1: flush dirty accounts into the trie ───────────────────────
+	// ── Step 1: flush dirty accounts and storage into the trie ───────────────
 	for addr, acc := range s.dirty {
 		valHash := mpt.EncodeAccountHash(acc.Nonce, acc.Balance, acc.CodeHash, acc.StorageRoot)
 		_ = s.trie.Update(addr, valHash) // errors are unreachable (in-memory path)
 	}
-	// Reset the dirty buffer.
+	
+	for addr, slots := range s.dirtyStorage {
+		for slot, val := range slots {
+			// Compute flat storage key: Hash256(addr || slot)
+			slotBytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(slotBytes, slot)
+			storageKey := crypto.HashMany(addr[:], slotBytes)
+			
+			// Value is encoded as an 8-byte big-endian hash
+			var valHash [32]byte
+			binary.BigEndian.PutUint64(valHash[24:], val)
+			_ = s.trie.Update(storageKey, valHash)
+		}
+	}
+	
+	// Reset the dirty buffers.
 	s.dirty = make(map[[crypto.AddressSize]byte]*Account)
+	s.dirtyStorage = make(map[[crypto.AddressSize]byte]map[uint32]uint64)
 
 	// ── Step 2: persist trie nodes to disk ──────────────────────────────
 	_ = s.trie.Commit()
@@ -372,12 +391,20 @@ func (s *DB) Snapshot() *DB {
 	snap := &DB{
 		trie:           mpt.NewWithRoot(s.trie.BackendRef(), s.trie.Root()),
 		dirty:          make(map[[crypto.AddressSize]byte]*Account, len(s.dirty)),
+		dirtyStorage:   make(map[[crypto.AddressSize]byte]map[uint32]uint64, len(s.dirtyStorage)),
 		shieldedPool:   s.shieldedPool,
 		nullifiers:     make(map[[32]byte]bool, len(s.nullifiers)),
 		commitmentTree: s.commitmentTree.Clone(),
 	}
 	for k, v := range s.dirty {
 		snap.dirty[k] = v.Clone()
+	}
+	for k, storageMap := range s.dirtyStorage {
+		newMap := make(map[uint32]uint64, len(storageMap))
+		for slot, val := range storageMap {
+			newMap[slot] = val
+		}
+		snap.dirtyStorage[k] = newMap
 	}
 	for k := range s.nullifiers {
 		snap.nullifiers[k] = true
@@ -403,6 +430,16 @@ func (s *DB) Apply(snap *DB) {
 	s.dirty = make(map[[crypto.AddressSize]byte]*Account, len(snap.dirty))
 	for k, v := range snap.dirty {
 		s.dirty[k] = v.Clone()
+	}
+
+	// Copy dirty storage.
+	s.dirtyStorage = make(map[[crypto.AddressSize]byte]map[uint32]uint64, len(snap.dirtyStorage))
+	for k, storageMap := range snap.dirtyStorage {
+		newMap := make(map[uint32]uint64, len(storageMap))
+		for slot, val := range storageMap {
+			newMap[slot] = val
+		}
+		s.dirtyStorage[k] = newMap
 	}
 
 	// Copy shielded state.

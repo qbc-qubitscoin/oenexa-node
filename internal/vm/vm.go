@@ -14,7 +14,6 @@ import (
 type VM struct {
 	rt      wazero.Runtime
 	modules map[string]wazero.CompiledModule // codeHash hex -> compiled module
-	storage *ContractStorage
 	seq     atomic.Uint64 // unique suffix for module instance names
 }
 
@@ -26,7 +25,6 @@ func NewVM(ctx context.Context) (*VM, error) {
 	v := &VM{
 		rt:      rt,
 		modules: make(map[string]wazero.CompiledModule),
-		storage: NewContractStorage(),
 	}
 	if err := v.registerHostModule(ctx); err != nil {
 		_ = rt.Close(ctx)
@@ -39,11 +37,17 @@ func NewVM(ctx context.Context) (*VM, error) {
 func (v *VM) registerHostModule(ctx context.Context) error {
 	_, err := v.rt.NewHostModuleBuilder("env").
 		NewFunctionBuilder().
-		WithGoModuleFunction(hostGet(v.storage), []api.ValueType{api.ValueTypeI32}, []api.ValueType{api.ValueTypeI64}).
+		WithGoModuleFunction(hostGet(), []api.ValueType{api.ValueTypeI32}, []api.ValueType{api.ValueTypeI64}).
 		Export("oen_get").
 		NewFunctionBuilder().
-		WithGoModuleFunction(hostSet(v.storage), []api.ValueType{api.ValueTypeI32, api.ValueTypeI64}, []api.ValueType{}).
+		WithGoModuleFunction(hostSet(), []api.ValueType{api.ValueTypeI32, api.ValueTypeI64}, []api.ValueType{}).
 		Export("oen_set").
+		NewFunctionBuilder().
+		WithGoModuleFunction(hostTransfer(), []api.ValueType{api.ValueTypeI32, api.ValueTypeI64}, []api.ValueType{api.ValueTypeI64}).
+		Export("oen_transfer").
+		NewFunctionBuilder().
+		WithGoModuleFunction(hostBalance(), []api.ValueType{api.ValueTypeI32}, []api.ValueType{api.ValueTypeI64}).
+		Export("oen_balance").
 		NewFunctionBuilder().
 		WithGoModuleFunction(hostLog(), []api.ValueType{api.ValueTypeI32, api.ValueTypeI32}, []api.ValueType{}).
 		Export("oen_log").
@@ -115,8 +119,7 @@ func (v *VM) Call(
 	return result, nil
 }
 
-// Storage returns the underlying contract storage (for inspection/testing).
-func (v *VM) Storage() *ContractStorage { return v.storage }
+
 
 // Close releases all wazero resources.
 func (v *VM) Close(ctx context.Context) {

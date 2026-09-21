@@ -15,17 +15,15 @@ const (
 	gasCostCaller      uint64 = 50
 	gasCostBlockHeight uint64 = 10
 	gasCostValue       uint64 = 10
+	gasCostTransfer    uint64 = 1000
+	gasCostBalance     uint64 = 100
 )
 
-// NOTE: wazero GoModuleFunc signature is:
-//   func(ctx context.Context, mod api.Module, stack []uint64)
-// Params are in stack[0...n-1]; return values are written back into stack[0...m-1].
-
 // hostGet implements env.oen_get(slot i32) -> i64
-func hostGet(storage *ContractStorage) api.GoModuleFunc {
+func hostGet() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
-		if ec == nil {
+		if ec == nil || ec.State == nil {
 			stack[0] = 0
 			return
 		}
@@ -33,15 +31,15 @@ func hostGet(storage *ContractStorage) api.GoModuleFunc {
 			panic(ErrOutOfGas)
 		}
 		slot := uint32(stack[0])
-		stack[0] = storage.Get(ec.ContractAddr, slot)
+		stack[0] = ec.State.GetStorage(ec.ContractAddr, slot)
 	}
 }
 
 // hostSet implements env.oen_set(slot i32, value i64)
-func hostSet(storage *ContractStorage) api.GoModuleFunc {
+func hostSet() api.GoModuleFunc {
 	return func(ctx context.Context, mod api.Module, stack []uint64) {
 		ec := GetExecCtx(ctx)
-		if ec == nil {
+		if ec == nil || ec.State == nil {
 			return
 		}
 		if ec.ReadOnly {
@@ -52,7 +50,76 @@ func hostSet(storage *ContractStorage) api.GoModuleFunc {
 		}
 		slot := uint32(stack[0])
 		value := stack[1]
-		storage.Set(ec.ContractAddr, slot, value)
+		ec.State.SetStorage(ec.ContractAddr, slot, value)
+	}
+}
+
+// hostTransfer implements env.oen_transfer(to_ptr i32, amount i64)
+func hostTransfer() api.GoModuleFunc {
+	return func(ctx context.Context, mod api.Module, stack []uint64) {
+		ec := GetExecCtx(ctx)
+		if ec == nil || ec.State == nil {
+			stack[0] = 0
+			return
+		}
+		if ec.ReadOnly {
+			panic("transfer in a read-only context")
+		}
+		if err := ec.UseGas(gasCostTransfer); err != nil {
+			panic(ErrOutOfGas)
+		}
+		
+		mem := mod.Memory()
+		if mem == nil {
+			panic("no memory")
+		}
+		
+		toPtr := uint32(stack[0])
+		amount := stack[1]
+		
+		b, ok := mem.Read(toPtr, 32)
+		if !ok || len(b) != 32 {
+			panic("invalid address pointer")
+		}
+		
+		var toAddr [32]byte
+		copy(toAddr[:], b)
+		
+		if err := ec.State.Transfer(ec.ContractAddr, toAddr, amount); err != nil {
+			stack[0] = 0 // fail
+		} else {
+			stack[0] = 1 // success
+		}
+	}
+}
+
+// hostBalance implements env.oen_balance(addr_ptr i32) -> i64
+func hostBalance() api.GoModuleFunc {
+	return func(ctx context.Context, mod api.Module, stack []uint64) {
+		ec := GetExecCtx(ctx)
+		if ec == nil || ec.State == nil {
+			stack[0] = 0
+			return
+		}
+		if err := ec.UseGas(gasCostBalance); err != nil {
+			panic(ErrOutOfGas)
+		}
+		
+		mem := mod.Memory()
+		if mem == nil {
+			panic("no memory")
+		}
+		
+		addrPtr := uint32(stack[0])
+		b, ok := mem.Read(addrPtr, 32)
+		if !ok || len(b) != 32 {
+			panic("invalid address pointer")
+		}
+		
+		var addr [32]byte
+		copy(addr[:], b)
+		
+		stack[0] = ec.State.GetBalance(addr)
 	}
 }
 
