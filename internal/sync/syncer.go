@@ -129,15 +129,12 @@ func (s *Syncer) trySync() {
 			count = uint32(remaining)
 		}
 
-		payload := p2p.GetBlocksPayload{
+		req := p2p.SyncReq{
 			FromHeight: want,
 			MaxCount:   count,
 		}
-		data, _ := gobEncode(payload)
-		frame := append([]byte{byte(p2p.MsgGetBlocks)}, data...)
-
 		// Broadcast to all peers — the first responder wins.
-		s.node.BroadcastRaw(frame)
+		_ = s.node.BroadcastSyncReq(context.Background(), req)
 		want += uint64(count)
 	}
 }

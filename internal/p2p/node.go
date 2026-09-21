@@ -2,314 +2,311 @@ package p2p
 
 import (
 	"context"
-	"encoding/binary"
+	"crypto/ed25519"
+	"encoding/json"
+	"fmt"
 	"log"
-	"net"
-	"sync"
-	"time"
 
+	"github.com/libp2p/go-libp2p"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+
+	oenexaCrypto "github.com/oenexa/oenexa/internal/crypto"
 	"github.com/oenexa/oenexa/internal/core"
-	"github.com/oenexa/oenexa/internal/crypto"
 )
 
 const (
-	defaultMaxPeers = 25
-	dialTimeout     = 10 * time.Second
+	TxTopic             = "/oenexa/tx/1.0.0"
+	BlockTopic          = "/oenexa/block/1.0.0"
+	SyncReqTopic        = "/oenexa/syncreq/1.0.0"
+	SyncResTopic        = "/oenexa/syncres/1.0.0"
+	DiscoveryServiceTag = "oenexa-network-discovery"
 )
 
-var pingInterval = 30 * time.Second
-
-// Node is the top-level P2P network participant.
-type Node struct {
-	identity *Identity
-	server   *tcpServer
-	gossip   *GossipCache
-
-	peersMu sync.RWMutex
-	peers   map[string]*Peer // nodeID hex -> Peer
-
-	// Hooks — set by the application layer before calling Start.
-	OnPeerConnect    func(*PeerInfo)
-	OnPeerDisconnect func(*PeerInfo)
-	OnTxReceived     func(*core.Transaction)
-	OnBlockReceived  func(*core.Block)
+// Sync structs for pubsub
+type SyncReq struct {
+	FromHeight uint64 `json:"from_height"`
+	MaxCount   uint32 `json:"max_count"`
 }
 
-// NewNode creates a P2P node from a wallet identity and listen address.
-func NewNode(local *Identity) (*Node, error) {
-	srv, err := newTCPServer(local)
-	if err != nil {
-		return nil, err
+type SyncRes struct {
+	Blocks []*core.Block `json:"blocks"`
+}
+
+// Node is the libp2p network participant.
+type Node struct {
+	host       host.Host
+	pubsub     *pubsub.PubSub
+	identity   *Identity
+	
+	txTopic      *pubsub.Topic
+	blockTopic   *pubsub.Topic
+	syncReqTopic *pubsub.Topic
+	syncResTopic *pubsub.Topic
+	
+	txSub      *pubsub.Subscription
+	blockSub   *pubsub.Subscription
+	syncReqSub *pubsub.Subscription
+	syncResSub *pubsub.Subscription
+
+	// Hooks
+	OnTxReceived    func(*core.Transaction)
+	OnBlockReceived func(*core.Block)
+	OnSyncReq       func(SyncReq)
+	OnSyncRes       func(SyncRes)
+}
+
+// mdnsNotifee handles mDNS peer discovery events.
+type mdnsNotifee struct {
+	h host.Host
+}
+
+func (n *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
+	if pi.ID == n.h.ID() {
+		return
 	}
+	log.Printf("[p2p] Discovered peer via mDNS: %s", pi.ID.String())
+	err := n.h.Connect(context.Background(), pi)
+	if err != nil {
+		log.Printf("[p2p] Failed to connect to discovered peer: %v", err)
+	} else {
+		log.Printf("[p2p] Connected to %s", pi.ID.String())
+	}
+}
+
+// NewNode creates a libp2p node.
+func NewNode(local *Identity, listenPort int) (*Node, error) {
+	// Generate a deterministic libp2p Ed25519 key from the ML-DSA-65 private key hash
+	// so the peer ID is consistent across restarts.
+	seed := oenexaCrypto.Hash256(local.PrivateKey)
+	edKey := ed25519.NewKeyFromSeed(seed[:32])
+	
+	privKey, err := crypto.UnmarshalEd25519PrivateKey(edKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate libp2p key: %w", err)
+	}
+
+	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", listenPort)
+	
+	h, err := libp2p.New(
+		libp2p.ListenAddrStrings(listenAddr),
+		libp2p.Identity(privKey),
+		libp2p.DefaultTransports,
+		libp2p.DefaultSecurity,
+		libp2p.DefaultMuxers,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("libp2p.New: %w", err)
+	}
+
+	ps, err := pubsub.NewGossipSub(context.Background(), h)
+	if err != nil {
+		return nil, fmt.Errorf("pubsub.NewGossipSub: %w", err)
+	}
+
 	return &Node{
+		host:     h,
+		pubsub:   ps,
 		identity: local,
-		server:   srv,
-		gossip:   NewGossipCache(0),
-		peers:    make(map[string]*Peer),
 	}, nil
 }
 
-// Start begins listening for inbound connections.
-func (n *Node) Start(ctx context.Context) {
-	log.Printf("[p2p] node started, listening on %s (nodeID=%s)",
-		n.identity.ListenAddr, crypto.ToHex(n.identity.NodeID))
-	go n.server.acceptLoop(ctx, func(p *Peer) {
-		n.addPeer(ctx, p)
-	})
-	go n.pingLoop(ctx)
-}
+// Start begins gossiping and listening for incoming pubsub messages.
+func (n *Node) Start(ctx context.Context) error {
+	log.Printf("[p2p] libp2p node started. ID: %s", n.host.ID())
+	for _, addr := range n.host.Addrs() {
+		log.Printf("[p2p] Listening on: %s/p2p/%s", addr, n.host.ID())
+	}
 
-// Connect dials a remote address and performs the initiator handshake.
-func (n *Node) Connect(ctx context.Context, addr string) error {
-	dialCtx, cancel := context.WithTimeout(ctx, dialTimeout)
-	defer cancel()
+	// Setup mDNS discovery
+	mdnsService := mdns.NewMdnsService(n.host, DiscoveryServiceTag, &mdnsNotifee{h: n.host})
+	if err := mdnsService.Start(); err != nil {
+		log.Printf("[p2p] warning: mDNS discovery failed to start: %v", err)
+	}
 
-	var d net.Dialer
-	conn, err := d.DialContext(dialCtx, "tcp", addr)
+	var err error
+	// Join topics
+	n.txTopic, err = n.pubsub.Join(TxTopic)
+	if err != nil {
+		return err
+	}
+	n.blockTopic, err = n.pubsub.Join(BlockTopic)
+	if err != nil {
+		return err
+	}
+	n.syncReqTopic, err = n.pubsub.Join(SyncReqTopic)
+	if err != nil {
+		return err
+	}
+	n.syncResTopic, err = n.pubsub.Join(SyncResTopic)
 	if err != nil {
 		return err
 	}
 
-	// We need the remote's public key for KEM — use a placeholder PeerInfo
-	// the server will populate it during handshake.
-	remotePeerInfo := &PeerInfo{ListenAddr: addr}
-	sc, err := InitiatorHandshake(conn, n.identity, remotePeerInfo)
+	// Subscribe
+	n.txSub, err = n.txTopic.Subscribe()
 	if err != nil {
-		_ = conn.Close()
+		return err
+	}
+	n.blockSub, err = n.blockTopic.Subscribe()
+	if err != nil {
+		return err
+	}
+	n.syncReqSub, err = n.syncReqTopic.Subscribe()
+	if err != nil {
+		return err
+	}
+	n.syncResSub, err = n.syncResTopic.Subscribe()
+	if err != nil {
 		return err
 	}
 
-	peer := newPeer(remotePeerInfo, sc)
-	n.addPeer(ctx, peer)
+	// Run listener loops
+	go n.handleTxSub(ctx)
+	go n.handleBlockSub(ctx)
+	go n.handleSyncReqSub(ctx)
+	go n.handleSyncResSub(ctx)
+
 	return nil
 }
 
-func (n *Node) addPeer(ctx context.Context, p *Peer) {
-	n.peersMu.Lock()
-	key := crypto.ToHex(p.Info.NodeID)
-	if _, exists := n.peers[key]; exists {
-		n.peersMu.Unlock()
-		p.Close()
-		return
-	}
-	if len(n.peers) >= defaultMaxPeers {
-		n.peersMu.Unlock()
-		p.Close()
-		return
-	}
-	n.peers[key] = p
-	n.peersMu.Unlock()
-
-	log.Printf("[p2p] peer connected: %s (%s)", p.Info.ListenAddr, crypto.ToHex(p.Info.NodeID))
-	if n.OnPeerConnect != nil {
-		n.OnPeerConnect(p.Info)
-	}
-
-	go func() {
-		p.run(ctx, func(msg []byte) { n.dispatch(p, msg) })
-		n.removePeer(p)
-	}()
-
-	// Send our peer list.
-	go n.sendPeerList(p)
-}
-
-func (n *Node) removePeer(p *Peer) {
-	n.peersMu.Lock()
-	delete(n.peers, crypto.ToHex(p.Info.NodeID))
-	n.peersMu.Unlock()
-
-	log.Printf("[p2p] peer disconnected: %s", p.Info.ListenAddr)
-	if n.OnPeerDisconnect != nil {
-		n.OnPeerDisconnect(p.Info)
-	}
-}
-
-// BroadcastTx gossips a transaction to all peers.
-func (n *Node) BroadcastTx(tx *core.Transaction) {
-	msg, err := NewTxGossip(tx)
+// BroadcastSyncReq gossips a sync request to the network.
+func (n *Node) BroadcastSyncReq(ctx context.Context, req SyncReq) error {
+	data, err := json.Marshal(req)
 	if err != nil {
-		return
+		return err
 	}
-	if !n.gossip.MarkSeen(msg.MsgID) {
-		return
-	}
-	n.broadcast(msg)
+	return n.syncReqTopic.Publish(ctx, data)
 }
 
-// BroadcastBlock gossips a block to all peers.
-func (n *Node) BroadcastBlock(blk *core.Block) {
-	msg, err := NewBlockGossip(blk)
+// BroadcastSyncRes gossips a sync response to the network.
+func (n *Node) BroadcastSyncRes(ctx context.Context, res SyncRes) error {
+	data, err := json.Marshal(res)
 	if err != nil {
-		return
+		return err
 	}
-	if !n.gossip.MarkSeen(msg.MsgID) {
-		return
-	}
-	n.broadcast(msg)
+	return n.syncResTopic.Publish(ctx, data)
 }
 
-func (n *Node) broadcast(msg *GossipMsg) {
-	if msg.Hops >= maxGossipHops {
-		return
-	}
-	data, err := gobEncodeFunc(msg)
+// Connect dials an explicit multiaddress.
+func (n *Node) Connect(ctx context.Context, multiaddr string) error {
+	addrInfo, err := peer.AddrInfoFromString(multiaddr)
 	if err != nil {
-		return
+		return err
 	}
-	frame := append([]byte{byte(msg.Type)}, data...)
+	return n.host.Connect(ctx, *addrInfo)
+}
 
-	n.peersMu.RLock()
-	defer n.peersMu.RUnlock()
-	for _, p := range n.peers {
-		err := p.Send(frame)
+// PeerCount returns the number of connected libp2p peers.
+func (n *Node) PeerCount() int {
+	return len(n.host.Network().Peers())
+}
+
+// BroadcastTx gossips a transaction to the network.
+func (n *Node) BroadcastTx(ctx context.Context, tx *core.Transaction) error {
+	data, err := json.Marshal(tx)
+	if err != nil {
+		return err
+	}
+	return n.txTopic.Publish(ctx, data)
+}
+
+// BroadcastBlock gossips a block to the network.
+func (n *Node) BroadcastBlock(ctx context.Context, block *core.Block) error {
+	data, err := json.Marshal(block)
+	if err != nil {
+		return err
+	}
+	return n.blockTopic.Publish(ctx, data)
+}
+
+func (n *Node) handleTxSub(ctx context.Context) {
+	for {
+		msg, err := n.txSub.Next(ctx)
 		if err != nil {
 			return
 		}
-	}
-}
-
-func (n *Node) dispatch(sender *Peer, frame []byte) {
-	if len(frame) < 1 {
-		return
-	}
-	mt := MsgType(frame[0])
-	payload := frame[1:]
-
-	switch mt {
-	case MsgTx:
-		var gossip GossipMsg
-		if err := gobDecode(payload, &gossip); err != nil {
-			return
+		// Skip our own messages
+		if msg.ReceivedFrom == n.host.ID() {
+			continue
 		}
-		if !n.gossip.MarkSeen(gossip.MsgID) {
-			return
-		}
+
 		var tx core.Transaction
-		if err := gobDecode(gossip.Data, &tx); err != nil {
-			return
+		if err := json.Unmarshal(msg.Data, &tx); err != nil {
+			log.Printf("[p2p] failed to unmarshal tx: %v", err)
+			continue
 		}
+
 		if n.OnTxReceived != nil {
 			n.OnTxReceived(&tx)
 		}
-		// Re-gossip with incremented hop count.
-		gossip.Hops++
-		n.broadcast(&gossip)
+	}
+}
 
-	case MsgBlock:
-		var gossip GossipMsg
-		if err := gobDecode(payload, &gossip); err != nil {
-			return
-		}
-		if !n.gossip.MarkSeen(gossip.MsgID) {
-			return
-		}
-		var blk core.Block
-		if err := gobDecode(gossip.Data, &blk); err != nil {
-			return
-		}
-		if n.OnBlockReceived != nil {
-			n.OnBlockReceived(&blk)
-		}
-		gossip.Hops++
-		n.broadcast(&gossip)
-
-	case MsgPeerList:
-		var pl PeerListPayload
-		if err := gobDecode(payload, &pl); err != nil {
-			return
-		}
-		// Connect to unknown peers.
-		for _, info := range pl.Peers {
-			if info.NodeID == n.identity.NodeID {
-				continue
-			}
-			key := crypto.ToHex(info.NodeID)
-			n.peersMu.RLock()
-			_, known := n.peers[key]
-			n.peersMu.RUnlock()
-			if !known {
-				go func() {
-					err := n.Connect(context.Background(), info.ListenAddr)
-					if err != nil {
-						log.Printf("[p2p] failed to connect to peer %s: %v", info.ListenAddr, err)
-					}
-				}()
-			}
-		}
-
-	case MsgPing:
-		pong := []byte{byte(MsgPong), 0, 0, 0, 0, 0, 0, 0, 0}
-		err := sender.Send(pong)
+func (n *Node) handleBlockSub(ctx context.Context) {
+	for {
+		msg, err := n.blockSub.Next(ctx)
 		if err != nil {
 			return
 		}
+		if msg.ReceivedFrom == n.host.ID() {
+			continue
+		}
 
-	case MsgPong:
-		// no-op
-	}
-}
+		var block core.Block
+		if err := json.Unmarshal(msg.Data, &block); err != nil {
+			log.Printf("[p2p] failed to unmarshal block: %v", err)
+			continue
+		}
 
-func (n *Node) sendPeerList(p *Peer) {
-	n.peersMu.RLock()
-	peers := make([]PeerInfo, 0, len(n.peers))
-	for _, peer := range n.peers {
-		if peer.Info.NodeID != p.Info.NodeID {
-			peers = append(peers, *peer.Info)
+		if n.OnBlockReceived != nil {
+			n.OnBlockReceived(&block)
 		}
 	}
-	n.peersMu.RUnlock()
-
-	if len(peers) == 0 {
-		return
-	}
-	pl := PeerListPayload{Peers: peers}
-	data, err := gobEncodeFunc(pl)
-	if err != nil {
-		return
-	}
-	frame := append([]byte{byte(MsgPeerList)}, data...)
-	err = p.Send(frame)
-	if err != nil {
-		return
-	}
 }
 
-func (n *Node) pingLoop(ctx context.Context) {
-	ticker := time.NewTicker(pingInterval)
-	defer ticker.Stop()
+func (n *Node) handleSyncReqSub(ctx context.Context) {
 	for {
-		select {
-		case <-ctx.Done():
+		msg, err := n.syncReqSub.Next(ctx)
+		if err != nil {
 			return
-		case <-ticker.C:
-			ping := make([]byte, 9)
-			ping[0] = byte(MsgPing)
-			binary.BigEndian.PutUint64(ping[1:], uint64(time.Now().UnixNano()))
-			n.peersMu.RLock()
-			for _, p := range n.peers {
-				_ = p.Send(ping)
-			}
-			n.peersMu.RUnlock()
+		}
+		if msg.ReceivedFrom == n.host.ID() {
+			continue
+		}
+
+		var req SyncReq
+		if err := json.Unmarshal(msg.Data, &req); err != nil {
+			continue
+		}
+
+		if n.OnSyncReq != nil {
+			n.OnSyncReq(req)
 		}
 	}
 }
 
-// PeerCount returns the number of connected peers.
-func (n *Node) PeerCount() int {
-	n.peersMu.RLock()
-	defer n.peersMu.RUnlock()
-	return len(n.peers)
-}
+func (n *Node) handleSyncResSub(ctx context.Context) {
+	for {
+		msg, err := n.syncResSub.Next(ctx)
+		if err != nil {
+			return
+		}
+		if msg.ReceivedFrom == n.host.ID() {
+			continue
+		}
 
-// BroadcastRaw sends a raw byte frame to all connected peers.
-// Used by the sync layer to send MsgGetBlocks without gossip dedup.
-func (n *Node) BroadcastRaw(frame []byte) {
-	n.peersMu.RLock()
-	defer n.peersMu.RUnlock()
-	for _, p := range n.peers {
-		if err := p.Send(frame); err != nil {
-			log.Printf("[p2p] BroadcastRaw send error to %s: %v", p.Info.ListenAddr, err)
+		var res SyncRes
+		if err := json.Unmarshal(msg.Data, &res); err != nil {
+			continue
+		}
+
+		if n.OnSyncRes != nil {
+			n.OnSyncRes(res)
 		}
 	}
 }
+

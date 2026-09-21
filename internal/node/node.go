@@ -22,6 +22,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/oenexa/oenexa/internal/config"
@@ -168,20 +170,46 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 	if listenAddr == "" {
 		listenAddr = "0.0.0.0:8765"
 	}
+	listenPort := 8765
+	if parts := strings.Split(listenAddr, ":"); len(parts) == 2 {
+		if p, err := strconv.Atoi(parts[1]); err == nil {
+			listenPort = p
+		}
+	}
+	
 	identity := p2p.NewIdentity(wallet.PublicKey, wallet.PrivateKey, listenAddr)
-	p2pNode, p2pErr := p2p.NewNode(identity)
+	p2pNode, p2pErr := p2p.NewNode(identity, listenPort)
 	if p2pErr != nil {
 		log.Printf("[node] P2P init failed (single-node mode): %v", p2pErr)
 	} else {
 		n.p2pNode = p2pNode
 		n.p2pNode.OnTxReceived = func(tx *core.Transaction) {
 			_ = n.pool.Add(tx)
-			n.p2pNode.BroadcastTx(tx)
+			_ = n.p2pNode.BroadcastTx(context.Background(), tx)
 		}
 		n.p2pNode.OnBlockReceived = func(blk *core.Block) {
 			// Let the syncer handle out-of-order block arrival.
 			if n.syncer != nil {
 				n.syncer.ApplyBlocks([]*core.Block{blk})
+			}
+		}
+		n.p2pNode.OnSyncReq = func(req p2p.SyncReq) {
+			// Fetch blocks and broadcast response
+			var blocks []*core.Block
+			for i := uint32(0); i < req.MaxCount; i++ {
+				blk, err := n.blockStore.GetBlockByHeight(req.FromHeight + uint64(i))
+				if err != nil || blk == nil {
+					break
+				}
+				blocks = append(blocks, blk)
+			}
+			if len(blocks) > 0 {
+				_ = n.p2pNode.BroadcastSyncRes(context.Background(), p2p.SyncRes{Blocks: blocks})
+			}
+		}
+		n.p2pNode.OnSyncRes = func(res p2p.SyncRes) {
+			if n.syncer != nil {
+				n.syncer.ApplyBlocks(res.Blocks)
 			}
 		}
 	}
@@ -292,7 +320,7 @@ func (n *Node) blockLoop(ctx context.Context) {
 
 			// Broadcast.
 			if n.p2pNode != nil {
-				n.p2pNode.BroadcastBlock(blk)
+				_ = n.p2pNode.BroadcastBlock(context.Background(), blk)
 			}
 
 			// Metrics.
