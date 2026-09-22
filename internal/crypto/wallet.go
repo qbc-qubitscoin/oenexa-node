@@ -51,3 +51,13 @@ func (w *Wallet) Zeroize() {
 		w.PrivateKey[i] = 0
 	}
 }
+
+// WalletFromPrivateKey recovers a Wallet from raw ML-DSA-65 private key bytes.
+func WalletFromPrivateKey(privKeyBytes []byte) (*Wallet, error) {
+	priv := new(mldsa65.PrivateKey)
+	if err := priv.UnmarshalBinary(privKeyBytes); err != nil {
+		return nil, err
+	}
+	pub := priv.Public().(*mldsa65.PublicKey)
+	return walletFromKeys(pub, priv)
+}

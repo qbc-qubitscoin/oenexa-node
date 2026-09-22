@@ -17,10 +17,11 @@ import (
 // API holds references to node subsystems and handles JSON-RPC method calls.
 type API struct {
 	engine  *consensus.Engine
-	st      *state.DB
-	pool    *mempool.Mempool
-	peersFn func() int // returns current peer count
-	version string
+	st            *state.DB
+	pool          *mempool.Mempool
+	peersFn       func() int // returns current peer count
+	broadcastTxFn func(*core.Transaction)
+	version       string
 }
 
 // NewAPI constructs an API handler.
@@ -36,6 +37,11 @@ func NewAPI(
 		peersFn = func() int { return 0 }
 	}
 	return &API{engine: engine, st: st, pool: pool, peersFn: peersFn, version: ver}
+}
+
+// SetBroadcastTx sets the hook used to broadcast locally submitted transactions over P2P.
+func (a *API) SetBroadcastTx(fn func(*core.Transaction)) {
+	a.broadcastTxFn = fn
 }
 
 // Dispatch routes a parsed request to the appropriate handler.
@@ -57,24 +63,32 @@ func (a *API) Dispatch(req *Request) *Response {
 		return a.blockByHeight(req)
 	case "oen_blockByHash":
 		return a.blockByHash(req)
-	case "oen_blockHeight":
+	case "oen_blockHeight", "eth_blockNumber":
 		return okResponse(req.ID, a.engine.Height())
 
 	// ── Accounts ───────────────────────────────────────────────────────────
-	case "oen_getBalance":
+	case "oen_getBalance", "eth_getBalance":
 		return a.getBalance(req)
-	case "oen_getTransactionCount":
+	case "oen_getTransactionCount", "eth_getTransactionCount":
 		return a.getTransactionCount(req)
 
 	// ── Transactions ───────────────────────────────────────────────────────
-	case "oen_sendRawTransaction":
+	case "oen_sendRawTransaction", "eth_sendRawTransaction":
 		return a.sendRawTransaction(req)
 
 	// ── Fees ───────────────────────────────────────────────────────────────
 	case "oen_feeEstimate":
 		return a.feeEstimate(req)
-	case "oen_gasPrice":
+	case "oen_gasPrice", "eth_gasPrice":
 		return a.gasPrice(req)
+
+	// ── Web3 Compatibility ─────────────────────────────────────────────────
+	case "eth_chainId":
+		return okResponse(req.ID, fmt.Sprintf("0x%x", core.ChainID))
+	case "net_version":
+		return okResponse(req.ID, fmt.Sprintf("%d", core.ChainID))
+	case "web3_clientVersion":
+		return okResponse(req.ID, fmt.Sprintf("Oenexa/v%s", a.version))
 
 	default:
 		return errResponse(req.ID, CodeMethodNotFound, fmt.Sprintf("method %q not found", req.Method))
@@ -192,7 +206,11 @@ func (a *API) sendRawTransaction(req *Request) *Response {
 	if err := json.Unmarshal(req.Params, &params); err != nil || len(params) == 0 {
 		return errResponse(req.ID, CodeInvalidParams, "params: [raw_tx hex-string]")
 	}
-	raw, err := hex.DecodeString(params[0])
+	rawStr := params[0]
+	if len(rawStr) >= 2 && (rawStr[:2] == "0x" || rawStr[:2] == "0X") {
+		rawStr = rawStr[2:]
+	}
+	raw, err := hex.DecodeString(rawStr)
 	if err != nil {
 		return errResponse(req.ID, CodeInvalidParams, "invalid hex: "+err.Error())
 	}
@@ -202,6 +220,9 @@ func (a *API) sendRawTransaction(req *Request) *Response {
 	}
 	if err := a.pool.Add(tx); err != nil {
 		return errResponse(req.ID, CodeInternalError, "mempool: "+err.Error())
+	}
+	if a.broadcastTxFn != nil {
+		a.broadcastTxFn(tx)
 	}
 	return okResponse(req.ID, map[string]string{
 		"tx_hash": crypto.ToHex(tx.Hash),

@@ -102,7 +102,16 @@ func (tx *Transaction) BasicValidate() error {
 	if len(tx.Signature) != crypto.SignatureSize {
 		return errors.New("invalid signature size")
 	}
-	return tx.Verify()
+	if err := tx.Verify(); err != nil {
+		return err
+	}
+	computedHash := tx.ComputeHash()
+	if tx.Hash == [crypto.HashSize]byte{} {
+		tx.Hash = computedHash
+	} else if tx.Hash != computedHash {
+		return errors.New("transaction hash mismatch")
+	}
+	return nil
 }
 
 // NewTransfer creates a transfer transaction (not yet signed).

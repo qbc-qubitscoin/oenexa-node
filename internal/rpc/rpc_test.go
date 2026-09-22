@@ -308,3 +308,70 @@ func TestRPC_OenAliases(t *testing.T) {
 		t.Fatalf("missing balance_nano_oen in %v", resBal)
 	}
 }
+
+func TestRPC_Web3Compatibility(t *testing.T) {
+	ts, w := buildTestHandler(t)
+
+	// eth_chainId
+	resChainId := rpcCallString(t, ts, "eth_chainId", nil)
+	if resChainId == "" {
+		t.Errorf("expected chainId string, got empty")
+	}
+
+	// net_version
+	resNet := rpcCallString(t, ts, "net_version", nil)
+	if resNet == "" {
+		t.Errorf("expected net_version string, got empty")
+	}
+
+	// web3_clientVersion
+	resVer := rpcCallString(t, ts, "web3_clientVersion", nil)
+	if resVer == "" {
+		t.Errorf("expected web3_clientVersion string, got empty")
+	}
+
+	// eth_getBalance with 0x prefix
+	resBal := rpcCall(t, ts, "eth_getBalance", []string{"0x" + crypto.AddressToHex(w.Address)})
+	if _, ok := resBal["balance_nano_oen"]; !ok {
+		t.Fatalf("missing balance_nano_oen in %v", resBal)
+	}
+
+	// eth_getTransactionCount
+	resNonce := rpcCall(t, ts, "eth_getTransactionCount", []string{crypto.AddressToHex(w.Address)})
+	if _, ok := resNonce["nonce"]; !ok {
+		t.Fatalf("missing nonce in %v", resNonce)
+	}
+}
+
+func rpcCallString(t *testing.T, ts *httptest.Server, method string, params interface{}) string {
+	t.Helper()
+	body, _ := json.Marshal(map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      1,
+		"method":  method,
+		"params":  params,
+	})
+	resp, err := http.Post(ts.URL, "application/json", bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("POST %s: %v", method, err)
+	}
+	defer resp.Body.Close()
+
+	var out struct {
+		Result json.RawMessage `json:"result"`
+		Error  *struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if out.Error != nil {
+		t.Fatalf("rpc error on %s: code=%d msg=%s", method, out.Error.Code, out.Error.Message)
+	}
+	var res string
+	_ = json.Unmarshal(out.Result, &res)
+	return res
+}
+

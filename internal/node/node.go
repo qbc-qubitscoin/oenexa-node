@@ -197,7 +197,6 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 		}
 		n.p2pNode.OnTxReceived = func(tx *core.Transaction) {
 			_ = n.pool.Add(tx)
-			_ = n.p2pNode.BroadcastTx(context.Background(), tx)
 		}
 		n.p2pNode.OnBlockReceived = func(blk *core.Block) {
 			if n.engine != nil {
@@ -245,10 +244,14 @@ func New(cfg *config.Config, keystorePassword string) (*Node, error) {
 	if cfg.RPC.Enabled {
 		var peersFn func() int
 		if n.p2pNode != nil {
-			peersFn = nil
-			_ = n.p2pNode.PeerCount
+			peersFn = n.p2pNode.PeerCount
 		}
 		api := rpc.NewAPI(n.engine, n.st, n.pool, peersFn, upgrade.Current().String())
+		if n.p2pNode != nil {
+			api.SetBroadcastTx(func(tx *core.Transaction) {
+				_ = n.p2pNode.BroadcastTx(context.Background(), tx)
+			})
+		}
 		n.rpcServer = rpc.NewServer(
 			cfg.RPC.ListenAddr, api,
 			cfg.RPC.ReadTimeout.Duration,

@@ -34,8 +34,11 @@ func ToHex(h [HashSize]byte) string {
 var ZeroHash [HashSize]byte
 
 // HexToHash decodes a 64-character hex string into a [HashSize]byte.
-// Returns an error if the input is not exactly 64 hex characters.
+// Accepts both bare hex strings and 0x-prefixed hex strings.
 func HexToHash(s string) ([HashSize]byte, error) {
+	if len(s) >= 2 && (s[:2] == "0x" || s[:2] == "0X") {
+		s = s[2:]
+	}
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return [HashSize]byte{}, err
@@ -49,7 +52,11 @@ func HexToHash(s string) ([HashSize]byte, error) {
 }
 
 // HexToAddress decodes a hex string into an [AddressSize]byte.
+// Accepts both bare hex strings and 0x-prefixed hex strings.
 func HexToAddress(s string) ([AddressSize]byte, error) {
+	if len(s) >= 2 && (s[:2] == "0x" || s[:2] == "0X") {
+		s = s[2:]
+	}
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return [AddressSize]byte{}, err

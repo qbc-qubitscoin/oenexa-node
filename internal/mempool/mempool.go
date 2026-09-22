@@ -40,6 +40,16 @@ func New(maxSize int) *Mempool {
 
 // Add validates and inserts a transaction into the pool.
 func (mp *Mempool) Add(tx *core.Transaction) error {
+	// Fast duplicate check before expensive post-quantum signature verification
+	if tx.Hash != [crypto.HashSize]byte{} {
+		mp.mu.RLock()
+		if _, exists := mp.txs[tx.Hash]; exists {
+			mp.mu.RUnlock()
+			return errors.New("duplicate transaction")
+		}
+		mp.mu.RUnlock()
+	}
+
 	if err := tx.BasicValidate(); err != nil {
 		return err
 	}

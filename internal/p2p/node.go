@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -54,6 +56,14 @@ type Node struct {
 	voteSub    *pubsub.Subscription
 	syncReqSub *pubsub.Subscription
 	syncResSub *pubsub.Subscription
+
+	// Deduplication & rate-limiting caches
+	seenMu     sync.RWMutex
+	seenTxs    map[[oenexaCrypto.HashSize]byte]time.Time
+	seenBlocks map[[oenexaCrypto.HashSize]byte]time.Time
+
+	// Worker pool for parallel transaction processing
+	txChan chan *core.Transaction
 
 	// Hooks
 	OnTxReceived    func(*core.Transaction)
@@ -112,9 +122,12 @@ func NewNode(local *Identity, listenPort int) (*Node, error) {
 	}
 
 	return &Node{
-		host:     h,
-		pubsub:   ps,
-		identity: local,
+		host:       h,
+		pubsub:     ps,
+		identity:   local,
+		seenTxs:    make(map[[oenexaCrypto.HashSize]byte]time.Time),
+		seenBlocks: make(map[[oenexaCrypto.HashSize]byte]time.Time),
+		txChan:     make(chan *core.Transaction, 2048),
 	}, nil
 }
 
@@ -123,6 +136,25 @@ func (n *Node) Start(ctx context.Context) error {
 	log.Printf("[p2p] libp2p node started. ID: %s", n.host.ID())
 	for _, addr := range n.host.Addrs() {
 		log.Printf("[p2p] Listening on: %s/p2p/%s", addr, n.host.ID())
+	}
+
+	// Start parallel transaction verification workers
+	for i := 0; i < 8; i++ {
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case tx, ok := <-n.txChan:
+					if !ok {
+						return
+					}
+					if n.OnTxReceived != nil {
+						n.OnTxReceived(tx)
+					}
+				}
+			}
+		}()
 	}
 
 	// Setup mDNS discovery
@@ -238,6 +270,11 @@ func (n *Node) BroadcastTx(ctx context.Context, tx *core.Transaction) error {
 	if n.txTopic == nil {
 		return nil
 	}
+	if tx.Hash == [oenexaCrypto.HashSize]byte{} {
+		tx.Hash = tx.ComputeHash()
+	}
+	n.markSeenTx(tx.Hash)
+
 	data, err := json.Marshal(tx)
 	if err != nil {
 		return err
@@ -250,11 +287,75 @@ func (n *Node) BroadcastBlock(ctx context.Context, blk *core.Block) error {
 	if n.blockTopic == nil {
 		return nil
 	}
+	n.markSeenBlock(blk.Hash)
+
 	data, err := json.Marshal(blk)
 	if err != nil {
 		return err
 	}
 	return n.blockTopic.Publish(ctx, data)
+}
+
+func (n *Node) hasSeenTx(hash [oenexaCrypto.HashSize]byte) bool {
+	n.seenMu.RLock()
+	defer n.seenMu.RUnlock()
+	_, ok := n.seenTxs[hash]
+	return ok
+}
+
+func (n *Node) markSeenTx(hash [oenexaCrypto.HashSize]byte) {
+	n.seenMu.Lock()
+	defer n.seenMu.Unlock()
+	if len(n.seenTxs) > 50_000 {
+		now := time.Now()
+		for k, t := range n.seenTxs {
+			if now.Sub(t) > 5*time.Minute {
+				delete(n.seenTxs, k)
+			}
+		}
+		if len(n.seenTxs) > 50_000 {
+			count := 0
+			for k := range n.seenTxs {
+				delete(n.seenTxs, k)
+				count++
+				if count > 25_000 {
+					break
+				}
+			}
+		}
+	}
+	n.seenTxs[hash] = time.Now()
+}
+
+func (n *Node) hasSeenBlock(hash [oenexaCrypto.HashSize]byte) bool {
+	n.seenMu.RLock()
+	defer n.seenMu.RUnlock()
+	_, ok := n.seenBlocks[hash]
+	return ok
+}
+
+func (n *Node) markSeenBlock(hash [oenexaCrypto.HashSize]byte) {
+	n.seenMu.Lock()
+	defer n.seenMu.Unlock()
+	if len(n.seenBlocks) > 5_000 {
+		now := time.Now()
+		for k, t := range n.seenBlocks {
+			if now.Sub(t) > 30*time.Minute {
+				delete(n.seenBlocks, k)
+			}
+		}
+		if len(n.seenBlocks) > 5_000 {
+			count := 0
+			for k := range n.seenBlocks {
+				delete(n.seenBlocks, k)
+				count++
+				if count > 2_500 {
+					break
+				}
+			}
+		}
+	}
+	n.seenBlocks[hash] = time.Now()
 }
 
 func (n *Node) handleTxSub(ctx context.Context) {
@@ -268,14 +369,33 @@ func (n *Node) handleTxSub(ctx context.Context) {
 			continue
 		}
 
+		// Security: reject packets larger than 2 MiB
+		if len(msg.Data) > 2*1024*1024 {
+			continue
+		}
+
 		var tx core.Transaction
 		if err := json.Unmarshal(msg.Data, &tx); err != nil {
 			log.Printf("[p2p] failed to unmarshal tx: %v", err)
 			continue
 		}
 
-		if n.OnTxReceived != nil {
-			n.OnTxReceived(&tx)
+		if tx.Hash == [oenexaCrypto.HashSize]byte{} {
+			tx.Hash = tx.ComputeHash()
+		}
+
+		// Deduplication: skip if already seen
+		if n.hasSeenTx(tx.Hash) {
+			continue
+		}
+		n.markSeenTx(tx.Hash)
+
+		// Non-blocking dispatch to parallel verification workers
+		select {
+		case n.txChan <- &tx:
+		default:
+			// Under extreme overload, log warning
+			log.Printf("[p2p] warning: tx worker queue full, dropped tx %x", tx.Hash[:4])
 		}
 	}
 }
@@ -290,11 +410,21 @@ func (n *Node) handleBlockSub(ctx context.Context) {
 			continue
 		}
 
+		// Security: reject block packets larger than 16 MiB
+		if len(msg.Data) > 16*1024*1024 {
+			continue
+		}
+
 		var block core.Block
 		if err := json.Unmarshal(msg.Data, &block); err != nil {
 			log.Printf("[p2p] failed to unmarshal block: %v", err)
 			continue
 		}
+
+		if n.hasSeenBlock(block.Hash) {
+			continue
+		}
+		n.markSeenBlock(block.Hash)
 
 		if n.OnBlockReceived != nil {
 			n.OnBlockReceived(&block)
