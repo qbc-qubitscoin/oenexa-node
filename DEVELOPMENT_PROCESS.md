@@ -14,7 +14,7 @@ This document outlines the evolutionary development process used to implement th
 5. **PBFT Consensus & Slashing (Phase 5B)**: Practical Byzantine Fault Tolerant consensus engine with 2-phase voting (Prevote, Precommit), leader rotation, full state transition verification, and automatic equivocation (double-voting) slashing.
 
 ### Stage 2: Tooling & Utilities (Phases 6 - 8)
-1. **Oenexa CLI & Node**: Multi-command wallet (`oenexa-cli`) supporting ML-DSA-65 key generation, balance inspection, and JSON-RPC transfers.
+1. **Oenexa CLI & Node**: Multi-command daemon (`oenexa-node`) and standalone client wallet (`oenexa-cli`) supporting ML-DSA-65 key generation, balance inspection, and JSON-RPC transfers.
 2. **Testnet Tools & Benchmarks**: High-load benchmarking suite (4,500 TPS testnet alpha), signature batch verification, and cryptographic fuzzing.
 3. **Smart Contract Tooling**: Bytecode deployment utilities and gas profilers for the OenexaVM.
 
@@ -48,31 +48,58 @@ This document outlines the evolutionary development process used to implement th
 This section provides future students, researchers, and core contributors with the foundational knowledge required to understand how each subsystem of the OENEXA node functions under the hood.
 
 ```
-+-----------------------------------------------------------------------------+
-|                          OENEXA Node Architecture                           |
-+-----------------------------------------------------------------------------+
-|                                                                             |
-|   [ JSON-RPC / CLI ] <---------- HTTP / WebSockets ---------> [ User App ]  |
-|           |                                                                 |
-|           v                                                                 |
-|   [ Mempool Engine ] <---- P2P Gossiping (/oenexa/tx) ----> [ Peer Nodes ]  |
-|           |                                                                 |
-|           v                                                                 |
-|   [ Consensus Engine ] <--- Votes & Proposals (/vote) ----> [ Validators ]  |
-|           |  (PBFT 2-Step Voting: Prevote & Precommit)                      |
-|           v                                                                 |
-|   [ State Transition (ApplyTx) ]                                            |
-|       |--> VM Execution: Pure-Go WebAssembly (wazero)                       |
-|       |--> Fee Model: EIP-1559 (BaseFee Burned + Validator Tip)             |
-|       |--> Smart Contracts: D-Commerce Escrow, Cortex AI Grid               |
-|           |                                                                 |
-|           v                                                                 |
-|   [ Sparse Merkle Trie (SMT) ] ---> Deterministic StateRoot                 |
-|           |                                                                 |
-|           v                                                                 |
-|   [ Persistent BlockStore & StateStore ] ---> BadgerDB Storage Engine       |
-|                                                                             |
-+-----------------------------------------------------------------------------+
++─────────────────────────────────────────────────────────────────────────────────────────────+
+|                                  OENEXA System Architecture                                 |
++─────────────────────────────────────────────────────────────────────────────────────────────+
+|                                                                                             |
+|   [ DECOUPLED FRONTEND ECOSYSTEM ]                                                          |
+|   ┌────────────────────────────────┐  ┌───────────────────────────────┐                     |
+|   │   oenexa-frontend (React/TS)   │  │ D-Commerce Mobile Apps / POS  │                     |
+|   └───────────────┬────────────────┘  └───────────────┬───────────────┘                     |
+|                   │                                   │                                     |
+|                   ▼                                   ▼                                     |
+|       ═════════════════════════════════════════════════════════════                         |
+|         Standard Web3 JSON-RPC 2.0 (:8545) & REST API (/api/status)                         |
+|       ═════════════════════════════════════════════════════════════                         |
+|                   │                                                                         |
+|                   ▼                                                                         |
+|   [ CORE BLOCKCHAIN NODE (oenexa-node) ]                                                    |
+|   ┌────────────────────────────────┐                  libp2p GossipSub                      |
+|   │   JSON-RPC & REST Providers    │ ◄────── Topics: /oenexa/tx, /block, /vote ─────► Peers |
+|   └───────────────┬────────────────┘                                                        |
+|                   │ Pull Pending Txs                                                        |
+|                   ▼                                                                         |
+|   ┌────────────────────────────────┐                                                        |
+|   │        Mempool Engine          │                                                        |
+|   │  (Priority Heap & Deduplication│                                                        |
+|   └───────────────┬────────────────┘                                                        |
+|                   │                                                                         |
+|                   ▼                                                                         |
+|   ┌────────────────────────────────┐                                                        |
+|   │        PBFT Consensus          │ ◄────── Prevotes & Precommits ─────────► Validators    |
+|   │  (Propose/Prevote/Commit/Slash)│                                                        |
+|   └───────────────┬────────────────┘                                                        |
+|                   │ Execute Block                                                           |
+|                   ▼                                                                         |
+|   ┌────────────────────────────────┐                                                        |
+|   │    State Transition Engine     │                                                        |
+|   │  - Wazero Pure-Go WASM VM      │                                                        |
+|   │  - EIP-1559 BaseFee Burn       │                                                        |
+|   │  - Cortex & D-Commerce Escrow  │                                                        |
+|   │  - Dual-Pool Turnstile Invariant                                                        |
+|   └───────────────┬────────────────┘                                                        |
+|                   │ Commit Dirty Accounts                                                   |
+|                   ▼                                                                         |
+|   ┌────────────────────────────────┐                                                        |
+|   │    256-Bit Sparse Merkle Trie  │ ────► Deterministic StateRoot                          |
+|   │  (SMT with In-Memory Buffer)   │                                                        |
+|   └───────────────┬────────────────┘                                                        |
+|                   │ Disk Commit                                                             |
+|                   ▼                                                                         |
+|   ┌────────────────────────────────┐                                                        |
+|   │  Persistent Database Storage   │ ────► LevelDB / BadgerDB Engine                        |
+|   └────────────────────────────────┘                                                        |
++─────────────────────────────────────────────────────────────────────────────────────────────+
 ```
 
 ---
@@ -153,19 +180,39 @@ OENEXA powers the future of decentralized AI through **Oenexa Cortex** (`interna
 
 ---
 
+### 6. Decoupled Engineering Architecture (Backend vs Frontend)
+A premier lesson in distributed systems design is **Separation of Concerns**:
+
+- **The Core Daemon (`oenexa-node`)**: Pure Go backend focused strictly on consensus, cryptography, state transition, WASM VM, and P2P communication. Contains zero visual UI, npm dependencies, or HTML bundles.
+- **The Decoupled Frontend (`oenexa-frontend`)**: Independent client application repository (React 18 / TypeScript 5 / Vite) consuming JSON-RPC 2.0 (port 8545) and REST endpoints (`/api/status`).
+- **Why Separate?**:
+  1. Prevents bloated binary compilation and dependency conflicts.
+  2. Eliminates security vulnerabilities introduced by frontend packaging tools in consensus-critical code.
+  3. Enables rapid UI iteration and independent deployment cycles without requiring blockchain hardforks or node binary redeployment.
+
+---
+
 ## Part III: Codebase Directory Guide
 
 | Directory | Purpose | Key Files |
 | :--- | :--- | :--- |
-| `cmd/node/` | Main daemon entrypoint | `main.go` |
-| `cmd/oenexa-cli/` | Multi-command wallet CLI | `main.go` |
-| `internal/crypto/` | Post-quantum ML-DSA-65 & ML-KEM-768 | `crypto.go`, `wallet.go` |
+| `cmd/node/` | Full node daemon entrypoint | `main.go` |
+| `cmd/oenexa-cli/` | Multi-command client wallet CLI | `main.go` |
+| `cmd/loadtest/` | Load testing and benchmarking suite | `main.go` |
+| `cmd/multisig/` | Multi-signature wallet CLI | `main.go` |
+| `cmd/oenexaid/` | Decentralized Identity (DID/VC) CLI | `main.go` |
+| `internal/crypto/` | Post-quantum ML-DSA-65 & ML-KEM-768 | `crypto.go`, `wallet.go`, `hash.go` |
 | `internal/core/` | Blocks, transactions, headers, genesis | `block.go`, `transaction.go`, `genesis.go` |
-| `internal/state/` | Sparse Merkle Trie & StateDB | `statedb.go`, `smt.go`, `account.go` |
+| `internal/state/` | StateDB & block execution transition | `statedb.go`, `account.go`, `state_processor.go` |
+| `internal/mpt/` | 256-bit Sparse Merkle Trie (SMT) | `trie.go`, `leaf.go`, `proof.go` |
 | `internal/consensus/` | PBFT engine, validator set, slashing | `engine.go`, `validator.go`, `vote.go` |
+| `internal/shielded/` | Dual-pool privacy, note tree, turnstile | `note.go`, `nullifier.go`, `turnstile.go` |
 | `internal/p2p/` | libp2p pubsub gossip network | `node.go`, `identity.go` |
+| `internal/rollup/` | Layer-2 rollup sequencer & L1 anchor | `sequencer.go`, `batch.go`, `l1_bridge.go` |
 | `internal/vm/` | Wazero pure-Go WASM runtime | `vm.go`, `gas.go` |
 | `internal/contracts/dcommerce/`| Zero-trust delivery escrow | `escrow.go`, `escrow_test.go` |
 | `internal/contracts/cortex/` | AI Data Center CaaS & bonds | `cortex.go`, `cortex_test.go` |
 | `internal/mempool/` | EIP-1559 gas-priority pool | `mempool.go` |
-| `internal/rpc/` | JSON-RPC 2.0 web API | `server.go`, `api.go` |
+| `internal/rpc/` | Web3 JSON-RPC 2.0 API server | `server.go`, `api.go` |
+| `internal/web/` | REST API provider (/api/status) with CORS | `server.go` |
+| `test/bdd/` | Ginkgo v2 & Gomega BDD test suites | `bdd_test.go` |

@@ -75,3 +75,15 @@
 - Use Cloudflare Circl for post-quantum primitives (ML-DSA-65, ML-KEM-768).
 - Use Wazero for the WebAssembly runtime (100% pure Go WebAssembly interpreter/compiler).
 - Use Syndtr GoLevelDB for pure Go persistent storage.
+
+---
+
+## 6. Strict Frontend/Backend Decoupled Architecture
+
+### Rule Statement
+> **The OENEXA core repository is strictly the Layer-1 blockchain backend (`oenexa-node`). Absolutely no frontend visual assets, JavaScript/TypeScript framework files, HTML bundles, or npm dependencies (`package.json`, `node_modules`) are permitted in this repository.**
+
+- **Separation of Repositories**: All visual dashboards, block explorers, and client wallet frontends reside in dedicated client repositories (e.g. `oenexa-frontend`).
+- **Standard API Interface**: The core node exposes all state, blocks, transactions, and metrics via standardized Web3 JSON-RPC 2.0 (port 8545) and REST endpoints (`/api/status`).
+- **CORS & Decoupled Compatibility**: `internal/web` and `internal/rpc` must maintain permissive Cross-Origin Resource Sharing (CORS) headers and backward-compatible schemas to support external frontend applications seamlessly.
+- **No UI Bleed**: Never import frontend-specific libraries or introduce browser dependencies into backend consensus or state transition logic.

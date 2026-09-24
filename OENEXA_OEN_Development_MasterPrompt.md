@@ -18,6 +18,7 @@
 4. **Regulatory checkpoints.** Phases involving custody (21), CBDC (19), banking (20), securities-like RWAs (14–16, 26), and public token distribution (1, 24) require legal review gates in addition to technical exit criteria.
 5. **Incremental decentralization.** Early phases may run with a smaller, permissioned validator/operator set for safety; each subsequent phase should include an explicit plan for progressively decentralizing control (validators, governance, upgrade keys).
 6. **No phase claims performance it hasn't benchmarked.** TPS, latency, and uptime figures from the whitepaper are targets to be validated empirically at each relevant phase (7, 24, 25) — reported figures must come from actual test results, not projections.
+7. **Decoupled Architecture (Backend vs Frontend).** The core blockchain client (`oenexa-node`) is strictly a pure-Go backend daemon (`CGO_ENABLED=0`) focusing on consensus, state transitions, cryptography, and the VM. All visual interfaces (web dashboard, block explorer, quantum wallet) and client tools reside in decoupled repositories (`oenexa-frontend` or mobile apps) interacting with the node exclusively via Web3 JSON-RPC 2.0 (port 8545) and REST endpoints (`/api/status`).
 
 ---
 

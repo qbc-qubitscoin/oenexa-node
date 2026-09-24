@@ -77,13 +77,30 @@ The 32-phase evolutionary roadmap from foundational node engineering to a fully 
 ### AI, Infrastructure & SaaS (Phases 14–21)
 - **Phase 14: Oenexa Cortex** — Fractionalized tokenization and financing of Tier-4 green data centers.  
   📄 [Cortex Documentation](./Phase_14_Cortex_Documentation.md)
-- **Phase 15: Compute-as-a-Service (CaaS)** — Tokenized leasing of decentralized GPU/TPU power for AI models.
-- **Phase 16: SaaS Development Platform** — Smart contract frameworks for recurring SaaS subscriptions and product crowdfunding.
-- **Phase 17: Real-World Asset (RWA) Engine** — Securities, real estate, and carbon credit tokenization on-chain.
-- **Phase 18: AI Agent Marketplace** — Autonomous discovery and payment routing for specialized AI agents.
-- **Phase 19: CBDC Gateway** — Institutional bridge for Central Bank Digital Currencies.
-- **Phase 20: ISO 20022 Integration** — Traditional finance message parsing and clearing integration.
-- **Phase 21: Institutional Custody** — HSM integration and quantum-safe multisignature cold storage.
+- **Phase 15: Real-World Asset (RWA) Engine** — Securities, real estate, and carbon credit tokenization on-chain.  
+  📄 [RWA Documentation](./Phase_15_Rwa_Documentation.md)
+- **Phase 16: Decentralized Storage Network** — Fault-tolerant distributed storage with cryptographic proofs.  
+  📄 [Storage Documentation](./Phase_16_Storage_Documentation.md)
+- **Phase 17: Compute-as-a-Service (CaaS)** — Tokenized leasing of decentralized GPU/TPU power for AI models.  
+  📄 [Compute Documentation](./Phase_17_Compute_Documentation.md)
+- **Phase 18: AI Agent Marketplace** — Autonomous discovery and payment routing for specialized AI agents.  
+  📄 [AI Market Documentation](./Phase_18_Aimarket_Documentation.md)
+- **Phase 19: CBDC Gateway** — Institutional bridge for Central Bank Digital Currencies.  
+  📄 [CBDC Documentation](./Phase_19_Cbdc_Documentation.md)
+- **Phase 20: ISO 20022 Integration** — Traditional finance message parsing and clearing integration.  
+  📄 [ISO 20022 Documentation](./Phase_20_Iso20022_Documentation.md)
+- **Phase 21: Institutional Custody** — HSM integration and quantum-safe multisignature cold storage.  
+  📄 [Custody Documentation](./Phase_21_Custody_Documentation.md)
+
+### Scalability, SuperApp & Mainnet (Phases 22–25)
+- **Phase 22: SuperApp Ecosystem & Multi-Service Hub** — Unified client interface aggregating D-Commerce, Cortex compute leasing, and wallet management.  
+  📄 [SuperApp Documentation](./Phase_22_Superapp_Documentation.md)
+- **Phase 23: Global Compliance & Cross-Border Jurisdiction** — Multi-jurisdictional compliance routing, regulatory anchors, and legal wrappers.  
+  📄 [Global Compliance Documentation](./Phase_23_Global_Documentation.md)
+- **Phase 24: Mainnet Genesis & Staking Economics** — Mainnet parameter deployment, genesis distribution, and validator staking rules.  
+  📄 [Mainnet Documentation](./Phase_24_Mainnet_Documentation.md)
+- **Phase 25: Layer-2 Rollups & High-Throughput Sequencer** — Optimistic and ZK-rollup scaling layer targeting 100,000+ TPS.  
+  📄 [Rollups Documentation](./Phase_25_Rollups_Documentation.md)
 
 ### Global Impact & Frontier Technology (Phases 26–32)
 - **Phase 26: Global ESG Marketplace** — Scaled global trading platform for verified ecological and renewable credits.  
