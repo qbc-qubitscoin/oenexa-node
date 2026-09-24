@@ -1,4 +1,4 @@
-# OENEXA (OEN) — Quantum-Safe Layer-1 Blockchain
+# OENEXA Node (`oenexa-node`) — Quantum-Safe Layer-1 Blockchain
 ### *The Post-Quantum Layer-1 for AI, Data Centers, and Everyday Commerce*
 #### Master Whitepaper (Version 2.0) Implementation
 
